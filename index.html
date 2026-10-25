@@ -1,0 +1,2092 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17151a">
+<title>Minha Vida</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root {
+    /* Mesmo visual do Painel do Fillipe */
+    --bg: #17151a; --side: #1d1b21; --card: #232127; --card-2: #2a272f; --line: #34313a;
+    --fg: #f3efe9; --muted: #a39d97; --dim: #6f6a66;
+    --accent: #e8875a; --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+    --green: #4fd18b; --purple: #a98bff; --pink: #ff6fa8; --amber: #f5b544; --blue: #6c8cff; --red: #ff5a6e;
+    --r: 18px;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f3ee; --side: #efebe5; --card: #ffffff; --card-2: #f2eee8; --line: #e2dcd3;
+    --fg: #1f1c1a; --muted: #6d6660; --dim: #a29a92;
+    --green: #1f9e5c; --purple: #7d5ff0; --pink: #e14b88; --amber: #d18f12; --blue: #4466ee; --red: #dd3f55;
+    color-scheme: light;
+  }
+  :root[data-theme="light"] .pf-kpi, :root[data-theme="light"] .pf-card, :root[data-theme="light"] .pf-area, :root[data-theme="light"] .pf-bk { box-shadow: 0 1px 3px rgba(60,40,20,.06); }
+  :root[data-theme="light"] .pf-nav button:hover { background: rgba(0,0,0,.04); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Segoe UI", Roboto, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+
+  .pf { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .pf-side { background: var(--side); border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 22px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .pf-brand { all: unset; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 12px; }
+  .pf-brand[aria-selected="true"] { background: var(--accent-soft); }
+  .pf-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: #1b1310; display: grid; place-items: center; font-family: Georgia, serif; font-size: 20px; flex: none; }
+  .pf-brand strong { display: block; font-size: 15px; font-weight: 600; }
+  .pf-brand span { font-size: 12px; color: var(--muted); }
+  .pf-nav { display: flex; flex-direction: column; gap: 4px; }
+  .pf-nav button { all: unset; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 11px; color: var(--muted); font-size: 14px; white-space: nowrap; }
+  .pf-nav button svg { width: 18px; height: 18px; flex: none; }
+  .pf-nav button:hover { color: var(--fg); background: rgba(255,255,255,.03); }
+  .pf-nav button[aria-selected="true"] { color: var(--accent); background: var(--accent-soft); }
+  .pf-nav .cnt { margin-left: auto; font-size: 11px; background: var(--red); color: #fff; border-radius: 999px; padding: 1px 7px; }
+  .pf-foot { margin-top: auto; }
+
+  .pf-main { padding: 28px clamp(16px, 3vw, 32px) 60px; display: grid; gap: 22px; align-content: start; min-width: 0; }
+  .pf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .pf-h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -.01em; }
+  .pf-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .pf-eye { all: unset; cursor: pointer; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--card); border: 1px solid var(--line); color: var(--muted); flex: none; }
+  .pf-eye svg { width: 19px; height: 19px; }
+  .pf-eye[aria-pressed="true"] { color: var(--accent); }
+  .pf-page { display: grid; gap: 18px; }
+
+  .pf-kpis { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pf-kpis.k3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pf-kpi, .pf-card, .pf-area { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; overflow: hidden; }
+  .pf-kpi::before, .pf-glow::before, .pf-area::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 0% 0%, var(--glow, transparent), transparent 60%); opacity: .14; pointer-events: none; }
+  .pf-kpi > *, .pf-glow > *, .pf-area > * { position: relative; }
+  .pf-kpi { min-height: 130px; gap: 6px; }
+  .pf-kpi-top, .pf-card-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pf-kpi-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .pf-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--glow, var(--accent)) 18%, transparent); color: var(--glow, var(--accent)); flex: none; }
+  .pf-ico svg { width: 17px; height: 17px; }
+  .pf-kpi-val { font-size: clamp(22px, 2.6vw, 30px); font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.15; }
+  .pf-kpi-note { font-size: 12px; color: var(--muted); }
+  .pf-hero { --glow: var(--accent); }
+  .pf-hero .pf-kpi-val { font-size: clamp(32px, 5vw, 46px); }
+  .pf-card-h h2, .pf-area h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .pf-card-note { font-size: 12px; color: var(--muted); margin: -6px 0 0; }
+  .pf-row { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+  .pf-three { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+  .pf-areas { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+  .pf-area-h { display: flex; align-items: center; gap: 10px; }
+  .pf-area-h h2 { flex: 1; }
+  .pf-open { all: unset; cursor: pointer; font-size: 12px; color: var(--muted); padding: 4px 8px; border-radius: 8px; }
+  .pf-open:hover { color: var(--accent); background: var(--accent-soft); }
+  .pf-stats { margin: 0; display: grid; gap: 10px; }
+  .pf-stats div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .pf-stats div:last-child { border-bottom: 0; padding-bottom: 0; }
+  .pf-stats dt { font-size: 13px; color: var(--muted); }
+  .pf-stats dd { margin: 0; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .neg { color: var(--red) !important; }
+  .pos { color: var(--green) !important; }
+  .sav { color: var(--blue) !important; }
+
+  .pf-empty { display: grid; place-items: center; text-align: center; gap: 8px; color: var(--muted); font-size: 13px; min-height: 100px; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; }
+  .pf-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--amber) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--amber) 40%, var(--line)); font-size: 14px; }
+
+  /* Barras */
+  .pf-track { height: 10px; border-radius: 999px; background: var(--card-2); overflow: hidden; }
+  .pf-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--amber)); transition: width .5s; }
+  .pf-fill.ok { background: var(--green); }
+  .pf-fill.warn { background: var(--amber); }
+  .pf-fill.bad { background: var(--red); }
+  .pf-cats { display: grid; gap: 12px; }
+  .pf-cat .n { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+  .pf-cat .n span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pf-cat .pf-track { height: 7px; }
+  .pf-cat .pf-fill.red { background: var(--red); }
+  .pf-chart svg { display: block; width: 100%; height: auto; }
+  .pf-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--muted); }
+  .pf-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  /* Formulários */
+  .pf-lbl { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
+  .pf-in { width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 15px; outline: none; min-width: 0; }
+  .pf-in:focus { border-color: var(--accent); }
+  textarea.pf-in { resize: vertical; min-height: 70px; }
+  .pf-money { display: flex; align-items: baseline; gap: 8px; background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px; }
+  .pf-money:focus-within { border-color: var(--glow, var(--accent)); }
+  .pf-money span { color: var(--muted); font-size: 20px; }
+  .pf-money input { all: unset; flex: 1; min-width: 0; font-size: 32px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .pf-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pf-pick { all: unset; cursor: pointer; padding: 8px 14px; border-radius: 999px; background: var(--card-2); border: 1px solid var(--line); font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
+  .pf-pick[aria-pressed="true"] { color: #17151a; background: var(--glow, var(--accent)); border-color: transparent; font-weight: 600; }
+  .pf-pick.bk { padding: 5px 12px 5px 5px; }
+  .pf-pick .x { color: var(--dim); font-size: 15px; line-height: 1; padding: 0 2px; }
+  .pf-pick .x:hover { color: var(--red); }
+  .pf-inline { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; }
+  .pf-grid2 { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-btn { all: unset; cursor: pointer; text-align: center; padding: 13px 18px; border-radius: 12px; background: var(--glow, var(--accent)); color: #17151a; font-weight: 650; font-size: 15px; }
+  .pf-btn:active { transform: scale(.98); }
+  .pf-btn.ghost { background: var(--card-2); color: var(--fg); border: 1px solid var(--line); font-weight: 500; }
+  .pf-btn.small { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+  .pf-btn.danger { background: var(--red); color: #fff; }
+  .pf-x { all: unset; cursor: pointer; color: var(--dim); padding: 4px 8px; border-radius: 8px; font-size: 16px; line-height: 1; }
+  .pf-x:hover { color: var(--red); background: rgba(255,90,110,.12); }
+
+  /* Listas */
+  .pf-list { display: grid; }
+  .pf-tx { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .pf-tx:last-child { border-bottom: 0; }
+  .pf-tx .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pf-tx small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; white-space: normal; }
+  .pf-tx .v { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .pf-dayh { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 16px 0 4px; }
+  .pf-dayh:first-child { padding-top: 0; }
+  .pf-subh { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  .pf-todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .pf-todo li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 12px; border-radius: 12px; background: var(--card-2); font-size: 14px; }
+  .pf-check { all: unset; cursor: pointer; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--dim); display: grid; place-items: center; }
+  .pf-check.done { background: var(--green); border-color: var(--green); color: #0f1a14; }
+  .pf-check svg { width: 13px; height: 13px; }
+  .done-t { color: var(--dim); text-decoration: line-through; }
+  .pf-todo small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .pf-todo li.ev { border-left: 4px solid var(--c); }
+
+  .pf-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pf-tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); width: fit-content; }
+  .pf-tabs button { all: unset; cursor: pointer; padding: 9px 18px; border-radius: 10px; font-size: 14px; color: var(--muted); }
+  .pf-tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .pf-navd { display: flex; align-items: center; gap: 10px; }
+  .pf-navd b { font-size: 16px; font-weight: 600; flex: 1; text-transform: capitalize; text-align: center; }
+  .pf-arrow { all: unset; cursor: pointer; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--card-2); border: 1px solid var(--line); flex: none; }
+  .pf-arrow svg { width: 18px; height: 18px; }
+
+  .pf-goals { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+  .pf-goal-nums { display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pf-goal-nums b { color: var(--fg); font-weight: 600; }
+  .pf-tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; background: var(--card-2); color: var(--muted); white-space: nowrap; }
+  .pf-tag.late { color: var(--red); background: color-mix(in srgb, var(--red) 14%, transparent); }
+  .pf-tag.ok { color: var(--green); background: color-mix(in srgb, var(--green) 14%, transparent); }
+  .pf-tag.main { color: var(--accent); background: var(--accent-soft); }
+  .pf-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Metas (sistemas) */
+  .pf-goallist { display: grid; gap: 14px; }
+  .pf-gstats { margin: 0; display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pf-gstats div { background: var(--card-2); border-radius: 12px; padding: 12px; display: grid; gap: 4px; min-width: 0; }
+  .pf-gstats dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .pf-gstats dd { margin: 0; font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .pf-track-m { position: relative; overflow: visible; height: 12px; }
+  .pf-mark { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--fg); }
+  .pf-sys { background: var(--card-2); border-radius: 14px; padding: 14px; display: grid; gap: 8px; }
+  .pf-sys-big { font-size: 18px; }
+  .pf-sys-big b { font-size: 26px; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .pf-alert, .pf-okmsg { font-size: 14px; padding: 10px 12px; border-radius: 10px; line-height: 1.4; }
+  .pf-alert { background: color-mix(in srgb, var(--red) 14%, transparent); }
+  .pf-alert b { color: var(--red); }
+  .pf-okmsg { background: color-mix(in srgb, var(--green) 14%, transparent); }
+  .pf-gform { display: grid; gap: 10px; }
+  .pf-gcal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .pf-gcal .wd { text-align: center; font-size: 11px; color: var(--dim); text-transform: uppercase; padding: 4px 0; aspect-ratio: auto; }
+  .pf-gcal span { aspect-ratio: 1; border-radius: 8px; display: grid; place-items: center; font-size: 12px; position: relative; font-variant-numeric: tabular-nums; }
+  .pf-gcal .g-ok { background: color-mix(in srgb, var(--green) 26%, transparent); color: var(--green); font-weight: 650; }
+  .pf-gcal .g-bad { background: color-mix(in srgb, var(--red) 26%, transparent); color: var(--red); font-weight: 650; }
+  .pf-gcal .g-fut, .pf-gcal .g-now { background: var(--card-2); color: var(--muted); }
+  .pf-gcal .g-out { color: var(--dim); opacity: .45; }
+  .pf-gcal .today { outline: 1.5px solid var(--accent); }
+  .pf-gcal .blank { visibility: hidden; }
+  .pf-gcal i { position: absolute; bottom: 3px; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+  @media (max-width: 760px) { .pf-gstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .pf-gcal .g-part { background: color-mix(in srgb, var(--amber) 26%, transparent); color: var(--amber); font-weight: 650; }
+  /* Vida */
+  .pf-hab { display: grid; gap: 10px; padding: 14px; border-radius: 14px; background: var(--card-2); border-left: 4px solid var(--c); }
+  .pf-hab .pf-todo li { background: var(--card); }
+  /* Sino e avisos */
+  .pf-head { position: relative; }
+  .pf-head-btns { display: flex; gap: 8px; }
+  .pf-bell { position: relative; }
+  .pf-bell[data-on="true"] { color: var(--red); border-color: color-mix(in srgb, var(--red) 50%, var(--line)); }
+  .pf-bell .n { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+  .pf-pop { position: absolute; right: 0; top: 52px; z-index: 12; width: min(380px, calc(100vw - 32px)); max-height: 70vh; overflow-y: auto; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.35); display: grid; gap: 10px; }
+  .pf-pop[hidden] { display: none; }
+  .pf-pop-h { display: flex; justify-content: space-between; align-items: center; }
+  .pf-pop-list { display: grid; gap: 6px; }
+  .pf-aviso { all: unset; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border-radius: 12px; background: var(--card-2); font-size: 14px; }
+  .pf-aviso:hover { outline: 1px solid var(--line); }
+  .pf-aviso .pf-dot { margin: 5px 0 0; }
+  .pf-aviso small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  /* Janela de edição */
+  .pf-sheet { position: fixed; inset: 0; z-index: 15; background: rgba(0,0,0,.5); display: grid; place-items: center; padding: 16px; }
+  .pf-sheet[hidden] { display: none; }
+  .pf-sheet-box { width: min(100%, 460px); max-height: 90vh; overflow-y: auto; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+  .pf-tx .acts { display: flex; gap: 2px; }
+  .pf-ed { all: unset; cursor: pointer; color: var(--dim); padding: 4px 6px; border-radius: 8px; display: grid; place-items: center; }
+  .pf-ed svg { width: 15px; height: 15px; }
+  .pf-ed:hover { color: var(--accent); background: var(--accent-soft); }
+
+  /* Agenda */
+  .pf-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .pf-cal .wd { text-align: center; font-size: 11px; color: var(--dim); text-transform: uppercase; padding: 4px 0; }
+  .pf-cal button { all: unset; cursor: pointer; aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center; font-size: 14px; font-variant-numeric: tabular-nums; position: relative; }
+  .pf-cal button:hover { background: var(--card-2); }
+  .pf-cal button.today { outline: 1.5px solid var(--accent); }
+  .pf-cal button.sel { background: var(--accent); color: #17151a; font-weight: 650; }
+  .pf-cal button.blank { visibility: hidden; }
+  .pf-rib { position: absolute; left: 5px; right: 5px; bottom: 5px; display: flex; gap: 2px; }
+  .pf-rib span { flex: 1; height: 5px; border-radius: 3px; }
+  .pf-cal button.sel .pf-rib span { box-shadow: 0 0 0 1.5px #17151a; }
+  .rep-x { display: grid; gap: 6px; }
+  .rep-x.pf-picks { display: flex; }
+  .rep-x[hidden] { display: none !important; }
+  .pf-chk input { display: none; }
+  .pf-chk:has(input:checked) { color: #17151a; background: var(--accent); border-color: transparent; font-weight: 600; }
+  .pf-sws { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pf-sw { all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 2px rgba(0,0,0,.15); }
+  .pf-sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--c); }
+  .pf-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c); margin-right: 8px; flex: none; }
+  .pf-cname { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
+
+  /* Bancos */
+  .pf-bankgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); }
+  .pf-bk { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 10px; min-width: 0; }
+  .pf-bk.main { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+  .pf-bk-h { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .pf-bk-h b { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pf-bk dl { margin: 0; display: grid; gap: 4px; font-size: 12px; }
+  .pf-bk dl div { display: flex; justify-content: space-between; gap: 6px; }
+  .pf-bk dt { color: var(--muted); }
+  .pf-bk dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pf-logo-b { display: grid; place-items: center; font-weight: 800; letter-spacing: -.03em; flex: none; position: relative; line-height: 1; font-family: Arial, sans-serif; }
+  .pf-logo-b small { position: absolute; right: -5px; bottom: -5px; font-size: 8px; background: var(--fg); color: var(--bg); border-radius: 4px; padding: 2px 3px; font-weight: 800; letter-spacing: 0; }
+
+  /* Tela de senha */
+  .pf-lock { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: grid; place-items: center; padding: 20px; }
+  .pf-lock[hidden] { display: none; }
+  .pf-lock-box { display: grid; justify-items: center; gap: 18px; width: min(100%, 300px); }
+  .pf-lock-box .pf-logo { width: 56px; height: 56px; font-size: 28px; border-radius: 16px; }
+  .pf-dots { display: flex; gap: 12px; height: 16px; }
+  .pf-dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--dim); }
+  .pf-dots i.on { background: var(--accent); border-color: var(--accent); }
+  .pf-dots.shake { animation: shake .35s; }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .pf-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
+  .pf-keys button { all: unset; cursor: pointer; height: 62px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; font-size: 22px; font-weight: 600; }
+  .pf-keys button:active { background: var(--card-2); }
+  .pf-keys button.blank { visibility: hidden; }
+
+  .pf-toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--card-2); border: 1px solid var(--line); padding: 12px 18px; border-radius: 12px; font-size: 14px; transition: .25s; pointer-events: none; box-shadow: 0 8px 30px rgba(0,0,0,.3); z-index: 30; }
+  .pf-toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 1100px) { .pf-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-row { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 760px) {
+    .pf { grid-template-columns: minmax(0, 1fr); }
+    .pf-side { position: sticky; height: auto; z-index: 5; border-right: 0; border-bottom: 1px solid var(--line); padding: 12px 12px 10px; gap: 10px; padding-top: max(12px, env(safe-area-inset-top)); overflow: visible; }
+    .pf-nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
+    .pf-nav::-webkit-scrollbar { display: none; }
+    .pf-side { flex-direction: column; }
+    .pf-foot { margin-top: 0; }
+    .pf-main { padding: 18px 16px 60px; }
+    .pf-kpis.k3 { grid-template-columns: minmax(0, 1fr); }
+    .pf-kpi { min-height: 0; padding: 16px; }
+    .pf-h1 { font-size: 22px; }
+  }
+  @media (max-width: 420px) { .pf-kpis { grid-template-columns: minmax(0, 1fr); } .pf-grid2 { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="pf">
+  <aside class="pf-side">
+    <button class="pf-brand" data-go="painel" id="brand">
+      <div class="pf-logo">F</div>
+      <div><strong>Fillipe</strong><span>Painel geral</span></div>
+    </button>
+    <nav class="pf-nav" id="nav"></nav>
+    <nav class="pf-nav pf-foot" id="nav-foot"></nav>
+  </aside>
+  <main class="pf-main">
+    <header class="pf-head">
+      <div><h1 class="pf-h1" id="titulo"></h1><p class="pf-sub" id="resumo"></p></div>
+      <div class="pf-head-btns"><button class="pf-eye" id="eye" data-act="eye" aria-label="Esconder valores"></button><button class="pf-eye pf-bell" id="bell" data-act="bell" aria-label="Avisos"></button></div>
+      <div class="pf-pop" id="pop" hidden></div>
+    </header>
+    <section class="pf-page" id="view"></section>
+  </main>
+</div>
+<div class="pf-lock" id="lock" hidden>
+  <div class="pf-lock-box">
+    <div class="pf-logo" id="lock-logo">F</div>
+    <b>Digite sua senha</b>
+    <div class="pf-dots" id="dots"></div>
+    <div class="pf-keys">
+      <button data-pin="1">1</button><button data-pin="2">2</button><button data-pin="3">3</button>
+      <button data-pin="4">4</button><button data-pin="5">5</button><button data-pin="6">6</button>
+      <button data-pin="7">7</button><button data-pin="8">8</button><button data-pin="9">9</button>
+      <button class="blank" tabindex="-1"></button><button data-pin="0">0</button><button data-pin="del" aria-label="Apagar">⌫</button>
+    </div>
+  </div>
+</div>
+<div class="pf-sheet" id="sheet" hidden><div class="pf-sheet-box" id="sheet-box"></div></div>
+<div class="pf-toast" id="toast"></div>
+
+<script>
+// ---------- Ícones ----------
+const sv = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const IC = {
+  painel: sv('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
+  lanc: sv('<path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="9.5"/>'),
+  contas: sv('<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/>'),
+  hist: sv('<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/>'),
+  semana: sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 13v4M12 12v5M16 14v3"/>'),
+  compras: sv('<path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/>'),
+  desejos: sv('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'),
+  agenda: sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'),
+  metas: sv('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),
+  vida: sv('<path d="M3 12h4l3-8 4 16 3-8h4"/>'),
+  rel: sv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 17v-3M12 17v-6M16 17v-4"/>'),
+  bell: sv('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>'),
+  edit: sv('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+  config: sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  money: sv('<path d="M12 2v20M17 6.5c0-1.9-2.2-3-5-3s-5 1.2-5 3.2c0 4.6 10 2.4 10 7.1 0 2-2.2 3.2-5 3.2s-5-1.1-5-3"/>'),
+  card: sv('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'),
+  safe: sv('<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><circle cx="16" cy="14" r="1.2"/>'),
+  up: sv('<path d="M12 19V5M5 12l7-7 7 7"/>'),
+  down: sv('<path d="M12 5v14M5 12l7 7 7-7"/>'),
+  swap: sv('<path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>'),
+  check: sv('<path d="M5 12l5 5L20 7"/>'),
+  left: sv('<path d="M15 18l-6-6 6-6"/>'),
+  right: sv('<path d="M9 18l6-6-6-6"/>'),
+  eye: sv('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+  eyeOff: sv('<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
+  lock: sv('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+};
+IC.ajustes = IC.card;
+
+const TABS = [
+  ['lanc', 'Lançamentos'], ['contas', 'Contas a pagar'], ['hist', 'Histórico'], ['semana', 'Resumo da semana'], ['rel', 'Relatório do mês'],
+  ['metas', 'Metas'], ['vida', 'Vida'], ['compras', 'Lista de compras'], ['agenda', 'Agenda'],
+];
+const TITLES = { painel: 'Painel geral', ajustes: 'Bancos e backup', config: 'Configurações', ...Object.fromEntries(TABS) };
+const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
+const CAT_IN = ['Salário', 'Freela', 'Venda', 'Presente', 'Outros'];
+const AREAS = ['Dinheiro', 'Carreira', 'Estudos', 'Saúde', 'Casa', 'Pessoal'];
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const SEM = ['seg','ter','qua','qui','sex','sáb','dom']; // semana começa na segunda
+const SEM_L = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const COLORS = { red: '#ff5a6e', green: '#4fd18b', blue: '#6c8cff', orange: '#e8875a', amber: '#f5b544', purple: '#a98bff', pink: '#ff6fa8' };
+const COLOR_NAMES = { red: 'Conta a pagar / gasto', green: 'Ganho', blue: 'Guardado / investido', orange: '', amber: '', purple: '', pink: '' };
+const evColor = e => COLORS[e.color] || COLORS.purple;
+
+// Selos dos bancos (cores de cada marca)
+const LOGOS = {
+  nu: { bg: '#820AD1', fg: '#fff', t: 'nu' },
+  nupj: { bg: '#820AD1', fg: '#fff', t: 'nu', tag: 'PJ' },
+  infinite: { bg: '#0d0d0d', fg: '#3BE58C', t: '∞' },
+  itau: { bg: '#EC7000', fg: '#0b2d6e', t: 'itaú' },
+  picpay: { bg: '#21C25E', fg: '#fff', t: 'P' },
+  inter: { bg: '#FF7A00', fg: '#fff', t: 'inter' },
+};
+const SEED = [['nu', 'Nubank Pessoal'], ['nupj', 'Nubank PJ'], ['infinite', 'InfinitePay'], ['itau', 'Itaú'], ['picpay', 'PicPay'], ['inter', 'Inter']];
+
+// ---------- Dados (ficam salvos no próprio aparelho) ----------
+const KEY = 'vida-app';
+const blank = () => ({ banks: [], tx: [], bills: [], shop: [], wishes: [], events: [], goals: [], habits: [] });
+let S;
+try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { S = blank(); }
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch (e) { alert('Não consegui salvar no aparelho. Faça um backup em Bancos e backup.'); }
+  if (typeof scheduleSync === 'function') scheduleSync(); // atualiza os avisos no servidor
+}
+function fixData() {
+  S.cfg = Object.assign({ name: 'Fillipe', accent: 'orange', main: 'nu', theme: 'dark', hideVals: false, limit: 0,
+    hiddenBanks: [], hiddenTabs: [], catsOut: CAT_OUT.slice(), catsIn: CAT_IN.slice(), colorNames: { ...COLOR_NAMES }, lastBackup: '' }, S.cfg || {});
+  if (!S.bills) S.bills = [];
+  if (!S.habits) S.habits = [];
+  // Primeira vez: já cadastra os bancos do Fillipe. Todo banco tem "em conta" e "guardado".
+  if (!S.seeded) {
+    if (!S.tx.length) S.banks = [];
+    S.banks = S.banks.map(b => ({ id: b.id, name: b.name, logo: b.logo || null,
+      initConta: b.initConta ?? (b.type === 'guardado' ? 0 : (b.initial || 0)), initGuard: b.initGuard ?? (b.type === 'guardado' ? (b.initial || 0) : 0) }));
+    for (const [id, name] of SEED) if (!S.banks.some(b => b.id === id)) S.banks.push({ id, name, logo: id, initConta: 0, initGuard: 0 });
+    S.seeded = true;
+  }
+  if (!S.banks.some(b => b.id === S.cfg.main) && S.banks[0]) S.cfg.main = S.banks[0].id;
+  // Metas antigas (com etapas) continuam funcionando; "Quero comprar" vira meta de dinheiro.
+  for (const g of S.goals) if (!g.kind) g.kind = 'steps';
+  for (const w of S.wishes || []) S.goals.push({ id: w.id, kind: 'money', title: w.name, cents: w.cents, initial: w.saved || 0,
+    start: today(), deadline: w.deadline && w.deadline >= today() ? w.deadline : '', done: !!w.bought });
+  S.wishes = [];
+}
+fixData(); save();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+// ---------- Utilidades ----------
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const brlRaw = c => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const brl = c => S.cfg.hideVals ? 'R$ •••' : brlRaw(c);
+function parseMoney(s) {
+  s = String(s || '').replace(/[R$\s]/g, '');
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ''); // "1.000" = mil
+  const v = parseFloat(s);
+  return isFinite(v) ? Math.round(v * 100) : NaN;
+}
+const pad = n => String(n).padStart(2, '0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => iso(new Date());
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = pd(s); d.setDate(d.getDate() + n); return iso(d); };
+const addMonths = (s, n) => { const d = pd(s), day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); return iso(d); };
+const weekStart = s => addDays(s, -((pd(s).getDay() + 6) % 7));
+const fmtD = s => { const d = pd(s); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); };
+const fmtShort = s => { const d = pd(s); return d.getDate() + ' ' + MESES[d.getMonth()].slice(0, 3); };
+const fmtLong = s => { const d = pd(s); return SEM_L[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()]; };
+const daysUntil = s => Math.round((pd(s) - pd(today())) / 864e5);
+const plural = (n, a, b) => n + ' ' + (n === 1 ? a : b);
+const bankName = id => (S.banks.find(b => b.id === id) || { name: '(banco apagado)' }).name;
+const byDateDesc = (a, b) => (b.date + b.id).localeCompare(a.date + a.id);
+const find = (arr, id) => arr.find(x => x.id === id);
+
+// Saldo de um banco: em conta e guardado. Guardar tira de "em conta" e põe em "guardado".
+function balance(id) {
+  const b = S.banks.find(x => x.id === id) || {};
+  let conta = b.initConta || 0, guard = b.initGuard || 0;
+  for (const t of S.tx) {
+    if (t.type === 'in' && t.bank === id) conta += t.cents;
+    else if (t.type === 'out' && t.bank === id) conta -= t.cents;
+    else if (t.type === 'tr') { if (t.to === id) conta += t.cents; if (t.from === id) conta -= t.cents; }
+    else if (t.type === 'save' && t.bank === id) { conta -= t.cents; guard += t.cents; }
+    else if (t.type === 'unsave' && t.bank === id) { conta += t.cents; guard -= t.cents; }
+  }
+  return { conta, guard };
+}
+const banksOrdered = () => [...S.banks].sort((a, b) => (b.id === S.cfg.main) - (a.id === S.cfg.main));
+const banksVisible = () => banksOrdered().filter(b => !S.cfg.hiddenBanks.includes(b.id));
+function logo(b, s = 30) {
+  const L = LOGOS[b.logo] || { bg: 'var(--card-2)', fg: 'var(--accent)', t: (b.name || '?').trim().charAt(0).toUpperCase() };
+  const fs = Math.round(s * (L.t.length <= 1 ? .55 : L.t.length === 2 ? .48 : .3));
+  return `<span class="pf-logo-b" style="width:${s}px;height:${s}px;border-radius:${Math.round(s * .3)}px;background:${L.bg};color:${L.fg};font-size:${fs}px">${esc(L.t)}${L.tag && s >= 24 ? `<small>${L.tag}</small>` : ''}</span>`;
+}
+function sums(a, b, bank) {
+  let inn = 0, out = 0, nIn = 0, nOut = 0, sv = 0;
+  for (const t of S.tx) {
+    if (t.date < a || t.date > b || (bank && t.bank !== bank)) continue;
+    if (t.type === 'in') { inn += t.cents; nIn++; }
+    else if (t.type === 'out') { out += t.cents; nOut++; }
+    else if (t.type === 'save') sv += t.cents;
+    else if (t.type === 'unsave') sv -= t.cents;
+  }
+  return { in: inn, out, nIn, nOut, sv };
+}
+function monthRange(d = new Date()) {
+  return [iso(new Date(d.getFullYear(), d.getMonth(), 1)), iso(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1800);
+}
+const empty = msg => `<div class="pf-empty">${msg}</div>`;
+
+// ---------- Contas a pagar ----------
+// Fixa: todo mês no mesmo dia, a partir do mês em que começou. Variável: uma data só.
+function monthKeys(a, b) {
+  const r = []; let [y, m] = a.split('-').map(Number); const [yb, mb] = b.split('-').map(Number);
+  while (y < yb || (y === yb && m <= mb)) { r.push(y + '-' + pad(m)); if (++m > 12) { m = 1; y++; } }
+  return r;
+}
+const dueIn = (k, day) => { const [y, m] = k.split('-').map(Number); return `${k}-${pad(Math.min(day, new Date(y, m, 0).getDate()))}`; };
+const isPaid = (b, key) => key === 'v' ? !!b.paid : !!(b.paid && b.paid[key]);
+// Todas as contas até o mês atual (pra achar atrasadas e as do mês)
+function billInst() {
+  const cur = today().slice(0, 7), out = [];
+  for (const b of S.bills) {
+    if (b.kind === 'var') out.push({ b, key: 'v', due: b.date, paid: isPaid(b, 'v') });
+    else for (const k of monthKeys(b.start, cur)) out.push({ b, key: k, due: dueIn(k, b.day), paid: isPaid(b, k) });
+  }
+  return out;
+}
+// Contas que vencem num mês (pra agenda e resumo)
+function billsInMonth(k) {
+  const out = [];
+  for (const b of S.bills) {
+    if (b.kind === 'var') { if (b.date.slice(0, 7) === k) out.push({ b, key: 'v', due: b.date, paid: isPaid(b, 'v') }); }
+    else if (k >= b.start) out.push({ b, key: k, due: dueIn(k, b.day), paid: isPaid(b, k) });
+  }
+  return out;
+}
+function billsBetween(a, b) {
+  const keys = monthKeys(a.slice(0, 7), b.slice(0, 7));
+  return keys.flatMap(billsInMonth).filter(i => i.due >= a && i.due <= b);
+}
+function billTag(i) {
+  if (i.paid) return '<span class="pf-tag ok">paga</span>';
+  const d = daysUntil(i.due);
+  if (d < 0) return `<span class="pf-tag late">atrasada há ${plural(-d, 'dia', 'dias')}</span>`;
+  if (d === 0) return '<span class="pf-tag late">vence hoje</span>';
+  return `<span class="pf-tag ${d <= 3 ? 'main' : ''}">vence em ${plural(d, 'dia', 'dias')}</span>`;
+}
+function billRow(i) {
+  return `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto auto">
+    <span class="t">${esc(i.b.name)}<small>${fmtD(i.due)} · ${i.b.group ? 'parcela' : i.b.kind === 'fixa' ? 'fixa' : 'variável'}${i.b.bank ? ' · ' + esc(bankName(i.b.bank)) : ''} ${billTag(i)}</small></span>
+    <span class="v ${i.paid ? '' : 'neg'}">${brl(i.b.cents)}</span>
+    <span class="acts"><button class="pf-btn ${i.paid ? 'ghost' : ''} small" style="--glow:var(--red)" data-act="billpay" data-id="${i.b.id}" data-key="${i.key}">${i.paid ? 'Desfazer' : 'Paguei'}</button>${i.b.kind === 'var' ? `<button class="pf-x" data-act="billdelv" data-id="${i.b.id}" aria-label="Apagar">×</button>` : ''}</span>
+  </div>`;
+}
+function billSummary() {
+  const t = today(), cur = t.slice(0, 7), inst = billInst();
+  const pend = inst.filter(i => !i.paid);
+  const late = pend.filter(i => i.due < t);
+  const thisMonth = pend.filter(i => i.due.slice(0, 7) === cur || i.due < t);
+  const nextM = billsInMonth(addDays(monthRange()[1], 1).slice(0, 7)).filter(i => !i.paid);
+  const next = [...pend, ...nextM].filter(i => i.due >= t).sort((a, b) => a.due.localeCompare(b.due))[0];
+  return { pend, late, thisMonth, next, inst, total: thisMonth.reduce((s, i) => s + i.b.cents, 0), lateTotal: late.reduce((s, i) => s + i.b.cents, 0) };
+}
+
+// ---------- Estado da tela ----------
+const U = {
+  view: 'painel',
+  l: { out: { bank: S.cfg.main, cat: null }, in: { bank: S.cfg.main, cat: null }, sv: { bank: S.cfg.main, dir: 'save' }, ev: { color: 'purple' } },
+  h: { mode: 'mes', ref: today(), a: addDays(today(), -30), b: today(), bank: '' },
+  ag: { month: today().slice(0, 7), sel: today() },
+  wk: { ref: today(), sel: today() },
+  bt: 'fixa',
+  gm: {},
+  hm: {},
+  rel: today().slice(0, 7),
+  bell: false,
+};
+
+// ---------- Painel geral ----------
+function bankCards() {
+  return '<div class="pf-bankgrid">' + banksVisible().map(b => {
+    const x = balance(b.id);
+    return `<div class="pf-bk ${b.id === S.cfg.main ? 'main' : ''}"><div class="pf-bk-h">${logo(b)}<b>${esc(b.name)}</b></div>
+      <dl><div><dt>Em conta</dt><dd class="${x.conta < 0 ? 'neg' : ''}">${brl(x.conta)}</dd></div><div><dt>Guardado</dt><dd class="sav">${brl(x.guard)}</dd></div></dl></div>`;
+  }).join('') + '</div>';
+}
+function backupBanner() {
+  if (!S.tx.length && !S.bills.length && !S.events.length) return '';
+  const d = S.cfg.lastBackup ? -daysUntil(S.cfg.lastBackup) : null;
+  if (d !== null && d < 7) return '';
+  return `<div class="pf-banner"><span>${d === null ? 'Você ainda não salvou nenhum backup.' : `Faz ${d} dias que você não salva um backup.`} Se o celular der problema, os dados se perdem.</span><button class="pf-btn small" data-act="export">Salvar backup</button></div>`;
+}
+function limitCard(out) {
+  const lim = S.cfg.limit;
+  if (!lim) return '';
+  const p = out / lim * 100, cls = p >= 90 ? 'bad' : p >= 70 ? 'warn' : 'ok';
+  const resta = lim - out;
+  return `<div class="pf-card"><div class="pf-card-h"><h2>Limite de gasto do mês</h2><span class="pf-tag ${p >= 90 ? 'late' : p >= 70 ? 'main' : 'ok'}">${Math.round(p)}% usado</span></div>
+    <div class="pf-track"><div class="pf-fill ${cls}" style="width:${Math.min(100, p)}%"></div></div>
+    <div class="pf-goal-nums"><span>Gastei <b>${brl(out)}</b></span><span>Limite <b>${brl(lim)}</b></span><span>${resta >= 0 ? 'Ainda posso gastar' : 'Passei'} <b class="${resta < 0 ? 'neg' : ''}">${brl(Math.abs(resta))}</b></span></div></div>`;
+}
+function vPainel() {
+  let conta = 0, guard = 0;
+  for (const b of S.banks) { const x = balance(b.id); conta += x.conta; guard += x.guard; }
+  const [a, b] = monthRange();
+  const m = sums(a, b);
+  const mes = MESES[new Date().getMonth()];
+  const res = m.in - m.out;
+  return `${backupBanner()}
+  <div class="pf-kpi pf-hero">
+    <div class="pf-kpi-top"><span class="pf-kpi-label">Tenho no total</span><span class="pf-ico">${IC.money}</span></div>
+    <span class="pf-kpi-val ${conta + guard < 0 ? 'neg' : ''}">${brl(conta + guard)}</span>
+    <span class="pf-kpi-note">Em conta ${brl(conta)} · Guardado ${brl(guard)}</span>
+  </div>
+  ${bankCards()}
+  <div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--purple)">
+      <div class="pf-kpi-top"><span class="pf-kpi-label">Em conta</span><span class="pf-ico">${IC.card}</span></div>
+      <span class="pf-kpi-val">${brl(conta)}</span><span class="pf-kpi-note">somando todos os bancos</span>
+    </div>
+    <div class="pf-kpi" style="--glow:var(--blue)">
+      <div class="pf-kpi-top"><span class="pf-kpi-label">Guardado</span><span class="pf-ico">${IC.safe}</span></div>
+      <span class="pf-kpi-val sav">${brl(guard)}</span><span class="pf-kpi-note">somando todos os bancos</span>
+    </div>
+    <div class="pf-kpi" style="--glow:var(--green)">
+      <div class="pf-kpi-top"><span class="pf-kpi-label">Entrou em ${mes}</span><span class="pf-ico">${IC.up}</span></div>
+      <span class="pf-kpi-val pos">${brl(m.in)}</span>
+      <span class="pf-kpi-note">${plural(m.nIn, 'ganho', 'ganhos')}</span>
+    </div>
+    <div class="pf-kpi" style="--glow:var(--red)">
+      <div class="pf-kpi-top"><span class="pf-kpi-label">Saiu em ${mes}</span><span class="pf-ico">${IC.down}</span></div>
+      <span class="pf-kpi-val neg">${brl(m.out)}</span>
+      <span class="pf-kpi-note">${plural(m.nOut, 'gasto', 'gastos')} · sobrou <b class="${res < 0 ? 'neg' : 'pos'}">${brl(res)}</b></span>
+    </div>
+  </div>
+  ${limitCard(m.out)}
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Entradas e saídas por mês</h2>
+      <div class="pf-legend"><span><i style="background:var(--green)"></i>Entrou</span><span><i style="background:var(--red)"></i>Saiu</span></div></div>
+      <div class="pf-chart">${monthChart()}</div></div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Pra onde foi o dinheiro em ${mes}</h2></div>${catBars(a, b)}</div>
+  </div>
+  <div class="pf-areas">${areaContas()}${areaSemana()}${areaMetas()}${areaAgenda()}${areaCompras()}</div>`;
+}
+function areaBox(glow, ic, title, go, body) {
+  return `<article class="pf-area" style="--glow:var(${glow})"><div class="pf-area-h"><span class="pf-ico">${IC[ic]}</span><h2>${title}</h2><button class="pf-open" data-go="${go}">abrir →</button></div>${body}</article>`;
+}
+function areaContas() {
+  const s = billSummary();
+  const list = s.pend.sort((a, b) => a.due.localeCompare(b.due)).slice(0, 3);
+  const body = `<dl class="pf-stats"><div><dt>A pagar no mês</dt><dd class="neg">${brl(s.total)}</dd></div><div><dt>Atrasadas</dt><dd class="${s.late.length ? 'neg' : ''}">${s.late.length}</dd></div></dl>`
+    + (list.length ? '<ul class="pf-todo">' + list.map(i => `<li class="ev" style="grid-template-columns:1fr;--c:var(--red)"><span>${esc(i.b.name)} · ${brl(i.b.cents)}<small>${fmtShort(i.due)} ${billTag(i)}</small></span></li>`).join('') + '</ul>' : '<span class="pf-kpi-note">Nada pendente.</span>');
+  return areaBox('--red', 'contas', 'Contas a pagar', 'contas', body);
+}
+function areaSemana() {
+  const a = weekStart(today()), s = sums(a, addDays(a, 6));
+  return areaBox('--blue', 'semana', 'Esta semana', 'semana', `<dl class="pf-stats"><div><dt>Ganhos</dt><dd class="pos">${brl(s.in)}</dd></div><div><dt>Gastos</dt><dd class="neg">${brl(s.out)}</dd></div><div><dt>Guardado</dt><dd class="sav">${brl(s.sv)}</dd></div></dl>`);
+}
+function areaAgenda() {
+  const t = today();
+  const next = evBetween(t, addDays(t, 60)).filter(e => !e.done).slice(0, 4);
+  const body = next.length ? '<ul class="pf-todo">' + next.map(e => `<li class="ev" style="grid-template-columns:1fr;--c:${evColor(e)}"><span>${esc(e.title)}<small>${e.date === t ? 'Hoje' : fmtShort(e.date)}${e.time ? ' · ' + e.time : ''}</small></span></li>`).join('') + '</ul>' : '<span class="pf-kpi-note">Nada marcado pra frente.</span>';
+  return areaBox('--purple', 'agenda', 'Próximos compromissos', 'agenda', body);
+}
+function areaMetas() {
+  const list = S.goals.filter(g => !g.done).slice(0, 4);
+  const body = list.length ? '<div class="pf-cats">' + list.map(g => {
+    if (g.kind !== 'money') { const p = goalPct(g); return `<div class="pf-cat"><div class="n"><span>${esc(g.title)}</span><span>${Math.round(p)}%</span></div><div class="pf-track"><div class="pf-fill ok" style="width:${p}%"></div></div></div>`; }
+    const s = goalSys(g), p = Math.min(100, Math.max(0, s.saved) / g.cents * 100);
+    return `<div class="pf-cat"><div class="n"><span>${esc(g.title)}</span>${goalTag(g, s)}</div><div class="pf-track"><div class="pf-fill ${!s.noDate && s.diff < 0 ? 'bad' : 'ok'}" style="width:${p}%"></div></div>
+      <div class="pf-kpi-note" style="margin-top:5px">${brl(s.saved)} de ${brl(g.cents)}${s.noDate || s.complete ? '' : ' · guardar ' + brl(s.diff < 0 ? s.rate : Math.ceil(s.daily)) + '/dia'}</div></div>`;
+  }).join('') + '</div>' : '<span class="pf-kpi-note">Nenhuma meta ainda.</span>';
+  return areaBox('--green', 'metas', 'Metas', 'metas', body);
+}
+function areaCompras() {
+  const pend = S.shop.filter(i => !i.done);
+  const body = pend.length ? '<ul class="pf-todo">' + pend.slice(0, 4).map(i => `<li style="grid-template-columns:1fr"><span>${esc(i.name)}</span></li>`).join('') + '</ul>' + (pend.length > 4 ? `<span class="pf-kpi-note">+ ${pend.length - 4} itens</span>` : '') : '<span class="pf-kpi-note">Lista vazia.</span>';
+  return areaBox('--amber', 'compras', 'Lista de compras', 'compras', body);
+}
+function monthChart() {
+  const now = new Date(), data = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const [a, b] = monthRange(d);
+    data.push({ l: MESES[d.getMonth()].slice(0, 3), ...sums(a, b) });
+  }
+  const max = Math.max(1, ...data.map(x => Math.max(x.in, x.out)));
+  const W = 600, H = 220, base = 190, top = 14, gw = W / 6, bw = 26;
+  let g = `<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
+  data.forEach((x, i) => {
+    const cx = gw * i + gw / 2;
+    const hi = (x.in / max) * (base - top), ho = (x.out / max) * (base - top);
+    g += `<rect x="${cx - bw - 2}" y="${base - hi}" width="${bw}" height="${hi}" rx="5" fill="var(--green)"><title>Entrou ${brl(x.in)}</title></rect>`;
+    g += `<rect x="${cx + 2}" y="${base - ho}" width="${bw}" height="${ho}" rx="5" fill="var(--red)"><title>Saiu ${brl(x.out)}</title></rect>`;
+    g += `<text x="${cx}" y="${H - 6}" text-anchor="middle" font-size="13" fill="var(--muted)">${x.l}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Entradas e saídas dos últimos 6 meses">${g}</svg>`;
+}
+function catBars(a, b, bank) {
+  const tot = {};
+  let all = 0;
+  for (const t of S.tx) {
+    if (t.type !== 'out' || t.date < a || t.date > b || (bank && t.bank !== bank)) continue;
+    const c = t.cat || 'Outros';
+    tot[c] = (tot[c] || 0) + t.cents; all += t.cents;
+  }
+  const rows = Object.entries(tot).sort((x, y) => y[1] - x[1]);
+  if (!rows.length) return '<span class="pf-kpi-note">Nenhum gasto nesse período.</span>';
+  return '<div class="pf-cats">' + rows.map(([c, v]) => `<div class="pf-cat"><div class="n"><span>${esc(c)}</span><span>${brl(v)} · ${Math.round(v / all * 100)}%</span></div><div class="pf-track"><div class="pf-fill red" style="width:${v / rows[0][1] * 100}%"></div></div></div>`).join('') + '</div>';
+}
+
+// ---------- Lançamentos ----------
+function picks(kind, field, items, sel) {
+  return `<div class="pf-picks">${items.map(([v, l]) => `<button type="button" class="pf-pick" data-act="pick" data-k="${kind}" data-f="${field}" data-v="${esc(v)}" aria-pressed="${sel === v}">${esc(l)}</button>`).join('')}</div>`;
+}
+function bankPicks(kind, sel) {
+  const list = banksVisible();
+  if (!list.length) return '<span class="pf-kpi-note">Cadastre um banco em Bancos e backup.</span>';
+  return `<div class="pf-picks">${list.map(b => `<button type="button" class="pf-pick bk" data-act="pick" data-k="${kind}" data-f="bank" data-v="${b.id}" aria-pressed="${sel === b.id}">${logo(b, 22)}${esc(b.name)}</button>`).join('')}</div>`;
+}
+function saveBox() {
+  const st = U.l.sv, goals = S.goals.filter(g => g.kind === 'money' && !g.done);
+  return `<form class="pf-card pf-glow" style="--glow:var(--blue)" data-form="sv">
+    <div class="pf-card-h"><h2>Guardar</h2><span class="pf-ico">${IC.safe}</span></div>
+    ${picks('sv', 'dir', [['save', 'Guardei'], ['unsave', 'Tirei do guardado']], st.dir)}
+    <span class="pf-lbl">Quanto</span>
+    <div class="pf-money"><span>R$</span><input name="v" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+    <span class="pf-lbl">Em qual banco</span>
+    ${bankPicks('sv', st.bank)}
+    ${goals.length ? `<span class="pf-lbl">Pra qual meta (opcional)</span>${picks('sv', 'goal', goals.map(g => [g.id, g.title]), st.goal)}` : ''}
+    <input name="date" type="date" class="pf-in" value="${today()}">
+    <button class="pf-btn">Registrar</button>
+  </form>`;
+}
+function lancBox(kind) {
+  const out = kind === 'out', st = U.l[kind];
+  return `<form class="pf-card pf-glow" style="--glow:var(${out ? '--red' : '--green'})" data-form="tx" data-kind="${kind}">
+    <div class="pf-card-h"><h2>${out ? 'Gastos' : 'Ganhos'}</h2><span class="pf-ico">${out ? IC.down : IC.up}</span></div>
+    <span class="pf-lbl">Quanto ${out ? 'gastei' : 'ganhei'}</span>
+    <div class="pf-money"><span>R$</span><input name="v" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+    <span class="pf-lbl">${out ? 'De qual banco saiu' : 'Em qual banco entrou'}</span>
+    ${bankPicks(kind, st.bank)}
+    <span class="pf-lbl">Categoria</span>
+    ${picks(kind, 'cat', (out ? S.cfg.catsOut : S.cfg.catsIn).map(c => [c, c]), st.cat)}
+    <div class="pf-grid2"><input name="desc" class="pf-in" placeholder="Descrição (opcional)" autocomplete="off"><input name="date" type="date" class="pf-in" value="${today()}"></div>
+    ${out ? `<span class="pf-lbl">Pagamento</span>
+    <select name="parc" class="pf-in" data-parc><option value="1">À vista</option>${[...Array(23)].map((_, i) => `<option value="${i + 2}">Parcelado em ${i + 2}x</option>`).join('')}</select>
+    <div class="parc-x rep-x" hidden><span class="pf-lbl">Primeira parcela vence em</span><input name="first" type="date" class="pf-in" value="${addMonths(today(), 1)}">
+      <span class="pf-kpi-note">As parcelas vão pras Contas a pagar, uma por mês. Vira gasto quando você marca "Paguei".</span></div>` : ''}
+    <button class="pf-btn">Registrar ${out ? 'gasto' : 'ganho'}</button>
+  </form>`;
+}
+function txRow(t) {
+  let title, sub, val, cls;
+  if (t.type === 'tr') {
+    title = t.desc || 'Transferência'; sub = `${esc(bankName(t.from))} → ${esc(bankName(t.to))}`; val = brl(t.cents); cls = '';
+  } else if (t.type === 'save' || t.type === 'unsave') {
+    const g = t.goal && find(S.goals, t.goal);
+    title = (t.type === 'save' ? 'Guardei' : 'Tirei do guardado') + (g ? ' · ' + g.title : ''); sub = esc(bankName(t.bank)); val = brl(t.cents); cls = 'sav';
+  } else {
+    title = t.desc || t.cat || (t.type === 'in' ? 'Ganho' : 'Gasto');
+    sub = esc(bankName(t.bank)) + (t.desc && t.cat ? ' · ' + esc(t.cat) : '');
+    val = (t.type === 'in' ? '+ ' : '− ') + brl(t.cents); cls = t.type === 'in' ? 'pos' : 'neg';
+  }
+  return `<div class="pf-tx"><span class="t">${esc(title)}<small>${sub}</small></span><span class="v ${cls}">${val}</span><span class="acts"><button class="pf-ed" data-act="txedit" data-id="${t.id}" aria-label="Editar">${IC.edit}</button><button class="pf-x" data-act="deltx" data-id="${t.id}" aria-label="Apagar">×</button></span></div>`;
+}
+function txList(list, emptyMsg = 'Nada lançado ainda.') {
+  if (!list.length) return `<span class="pf-kpi-note">${emptyMsg}</span>`;
+  let html = '', day = '';
+  for (const t of list) {
+    if (t.date !== day) { day = t.date; html += `<div class="pf-dayh">${t.date === today() ? 'Hoje' : fmtLong(t.date)}</div>`; }
+    html += txRow(t);
+  }
+  return `<div class="pf-list">${html}</div>`;
+}
+function vLanc() {
+  const opts = banksOrdered().map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  const recent = [...S.tx].sort(byDateDesc).slice(0, 15);
+  return `<div class="pf-three">${lancBox('out')}${lancBox('in')}${saveBox()}</div>
+  ${S.banks.length > 1 ? `<form class="pf-card pf-glow" style="--glow:var(--purple)" data-form="tr">
+    <div class="pf-card-h"><h2>Mover entre bancos</h2><span class="pf-ico">${IC.swap}</span></div>
+    <p class="pf-card-note">Passa dinheiro em conta de um banco pro outro. Não conta como gasto nem ganho.</p>
+    <div class="pf-grid2"><select name="from" class="pf-in">${opts}</select><select name="to" class="pf-in">${opts}</select></div>
+    <div class="pf-inline"><input name="v" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off"><button class="pf-btn">Mover</button></div>
+  </form>` : ''}
+  <div class="pf-card"><div class="pf-card-h"><h2>Últimos lançamentos</h2></div>${txList(recent)}</div>`;
+}
+
+// ---------- Contas a pagar (aba) ----------
+function vContas() {
+  const s = billSummary(), t = today(), cur = t.slice(0, 7), kind = U.bt;
+  const pend = s.pend.filter(i => i.b.kind === kind).sort((a, b) => a.due.localeCompare(b.due));
+  const paid = s.inst.filter(i => i.paid && i.b.kind === kind && i.due.slice(0, 7) === cur);
+  const fixas = S.bills.filter(b => b.kind === 'fixa').sort((a, b) => a.day - b.day);
+  const mesNome = MESES[new Date().getMonth()];
+  return `<div class="pf-kpis k3">
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">A pagar em ${mesNome}</span><span class="pf-kpi-val neg">${brl(s.total)}</span><span class="pf-kpi-note">${plural(s.thisMonth.length, 'conta pendente', 'contas pendentes')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Em atraso</span><span class="pf-kpi-val ${s.late.length ? 'neg' : ''}">${brl(s.lateTotal)}</span><span class="pf-kpi-note">${s.late.length ? plural(s.late.length, 'conta atrasada', 'contas atrasadas') : 'nenhuma atrasada'}</span></div>
+    <div class="pf-kpi" style="--glow:var(--amber)"><span class="pf-kpi-label">Próximo vencimento</span><span class="pf-kpi-val">${s.next ? esc(s.next.b.name) : '—'}</span><span class="pf-kpi-note">${s.next ? fmtD(s.next.due) + ' · ' + brl(s.next.b.cents) : 'nada pra frente'}</span></div>
+  </div>
+  <div class="pf-tabs" role="tablist">${[['fixa', 'Fixas'], ['var', 'Variáveis']].map(([k, l]) => `<button role="tab" data-act="bt" data-v="${k}" aria-selected="${kind === k}">${l}</button>`).join('')}</div>
+  <div class="pf-row">
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Pra pagar</h2><span class="pf-tag ${pend.length ? 'late' : 'ok'}">${pend.length}</span></div>
+      ${pend.length ? `<div class="pf-list">${pend.map(billRow).join('')}</div>` : '<span class="pf-kpi-note">Nada pendente aqui.</span>'}
+      ${paid.length ? `<span class="pf-subh">Pagas em ${mesNome}</span><div class="pf-list">${paid.map(billRow).join('')}</div>` : ''}
+    </div>
+    <div style="display:grid;gap:14px;align-content:start">
+      <form class="pf-card pf-glow" style="--glow:var(--red)" data-form="bill">
+        <div class="pf-card-h"><h2>Nova conta ${kind === 'fixa' ? 'fixa' : 'variável'}</h2><span class="pf-ico">${IC.contas}</span></div>
+        <p class="pf-card-note" style="margin:0">${kind === 'fixa' ? 'Repete todo mês no mesmo dia (luz, internet, aluguel…).' : 'Acontece uma vez só (parcela, boleto, empréstimo…).'}</p>
+        <input name="name" class="pf-in" placeholder="Nome da conta" autocomplete="off">
+        <input name="v" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off">
+        ${kind === 'fixa'
+          ? `<div class="pf-grid2"><input name="day" class="pf-in" type="number" min="1" max="31" inputmode="numeric" placeholder="Vence dia"><input name="start" class="pf-in" type="month" value="${cur}" title="Começa em"></div>`
+          : `<input name="date" class="pf-in" type="date" value="${t}">`}
+        <button class="pf-btn">Adicionar conta</button>
+      </form>
+      ${kind === 'fixa' && fixas.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Minhas contas fixas</h2></div><div class="pf-list">${fixas.map(b => `<div class="pf-tx"><span class="t">${esc(b.name)}<small>todo dia ${b.day}</small></span><span class="v">${brl(b.cents)}</span><button class="pf-x" data-act="billdel" data-id="${b.id}" aria-label="Apagar">×</button></div>`).join('')}</div></div>` : ''}
+    </div>
+  </div>
+  <p class="pf-card-note" style="margin:0">Ao tocar em "Paguei", o app pergunta se já quer registrar como gasto no banco principal. As contas pendentes aparecem em vermelho na Agenda.</p>`;
+}
+
+// ---------- Histórico ----------
+function histRange() {
+  const h = U.h, r = pd(h.ref);
+  if (h.mode === 'dia') return [h.ref, h.ref, fmtLong(h.ref) + ' de ' + r.getFullYear()];
+  if (h.mode === 'semana') { const a = weekStart(h.ref), b = addDays(a, 6); return [a, b, fmtShort(a) + ' a ' + fmtShort(b)]; }
+  if (h.mode === 'mes') { const [a, b] = monthRange(r); return [a, b, MESES[r.getMonth()] + ' de ' + r.getFullYear()]; }
+  if (h.mode === 'ano') return [r.getFullYear() + '-01-01', r.getFullYear() + '-12-31', String(r.getFullYear())];
+  const a = h.a <= h.b ? h.a : h.b, b = h.a <= h.b ? h.b : h.a;
+  return [a, b, fmtD(a) + ' a ' + fmtD(b)];
+}
+// Lista do histórico: com busca, procura em tudo (qualquer data); sem busca, mostra o período escolhido
+function histResults() {
+  const h = U.h, q = (h.q || '').trim().toLowerCase(), [a, b] = histRange();
+  const inBank = t => !h.bank || t.bank === h.bank || t.from === h.bank || t.to === h.bank;
+  if (!q) return txList(S.tx.filter(t => t.date >= a && t.date <= b && inBank(t)).sort(byDateDesc), 'Nada nesse período.');
+  const txt = t => [t.desc, t.cat, bankName(t.bank), t.from && bankName(t.from), t.to && bankName(t.to), t.goal && (find(S.goals, t.goal) || {}).title].join(' ').toLowerCase();
+  const list = S.tx.filter(t => inBank(t) && txt(t).includes(q)).sort(byDateDesc);
+  const out = list.filter(t => t.type === 'out').reduce((s, t) => s + t.cents, 0), inn = list.filter(t => t.type === 'in').reduce((s, t) => s + t.cents, 0);
+  return `<p class="pf-kpi-note" style="margin:0">${plural(list.length, 'resultado', 'resultados')} em todas as datas${out ? ` · gastos <b class="neg">${brl(out)}</b>` : ''}${inn ? ` · ganhos <b class="pos">${brl(inn)}</b>` : ''}</p>${txList(list, 'Nada encontrado.')}`;
+}
+function vHist() {
+  const h = U.h, [a, b, label] = histRange();
+  const s = sums(a, b, h.bank), res = s.in - s.out;
+  const days = Math.round((pd(b) - pd(a)) / 864e5) + 1;
+  const modes = [['dia', 'Dia'], ['semana', 'Semana'], ['mes', 'Mês'], ['ano', 'Ano'], ['custom', 'Personalizado']];
+  return `<div class="pf-card">
+    <div class="pf-seg">${modes.map(([m, l]) => `<button class="pf-pick" data-act="hmode" data-v="${m}" aria-pressed="${h.mode === m}">${l}</button>`).join('')}</div>
+    ${h.mode === 'custom'
+      ? `<div class="pf-grid2"><input type="date" class="pf-in" data-act="hdate" data-f="a" value="${h.a}"><input type="date" class="pf-in" data-act="hdate" data-f="b" value="${h.b}"></div>`
+      : `<div class="pf-navd"><button class="pf-arrow" data-act="hshift" data-v="-1" aria-label="Anterior">${IC.left}</button><b>${label}</b><button class="pf-arrow" data-act="hshift" data-v="1" aria-label="Próximo">${IC.right}</button></div>`}
+    <select class="pf-in" data-act="hbank"><option value="">Todos os bancos</option>${banksOrdered().map(x => `<option value="${x.id}" ${h.bank === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>
+  </div>
+  <div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--green)"><span class="pf-kpi-label">Entrou</span><span class="pf-kpi-val pos">${brl(s.in)}</span><span class="pf-kpi-note">${plural(s.nIn, 'ganho', 'ganhos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Saiu</span><span class="pf-kpi-val neg">${brl(s.out)}</span><span class="pf-kpi-note">${plural(s.nOut, 'gasto', 'gastos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--blue)"><span class="pf-kpi-label">Guardei</span><span class="pf-kpi-val sav">${brl(s.sv)}</span><span class="pf-kpi-note">guardado menos tirado</span></div>
+    <div class="pf-kpi" style="--glow:var(--amber)"><span class="pf-kpi-label">Sobrou</span><span class="pf-kpi-val ${res < 0 ? 'neg' : ''}">${brl(res)}</span><span class="pf-kpi-note">gasto médio ${brl(Math.round(s.out / days))}/dia</span></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Lançamentos</h2></div>
+      <input class="pf-in" type="search" data-act="hq" placeholder="Buscar em todos os lançamentos (ex: ifood, mercado)" value="${esc(h.q || '')}" autocomplete="off">
+      <div id="hist-res">${histResults()}</div></div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Gastos por categoria</h2></div>${catBars(a, b, h.bank)}</div>
+  </div>`;
+}
+
+// ---------- Resumo da semana ----------
+function weekChart(a, sel) {
+  const data = [...Array(7)].map((_, i) => { const d = addDays(a, i); return { d, ...sums(d, d) }; });
+  const max = Math.max(1, ...data.map(x => Math.max(x.in, x.out)));
+  const W = 630, H = 240, base = 186, top = 14, gw = W / 7, bw = 22, t = today();
+  let g = `<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
+  data.forEach((x, i) => {
+    const cx = gw * i + gw / 2, on = x.d === sel;
+    const hi = (x.in / max) * (base - top), ho = (x.out / max) * (base - top);
+    g += `<g data-act="wkday" data-v="${x.d}" style="cursor:pointer">
+      <rect x="${gw * i + 4}" y="2" width="${gw - 8}" height="${H - 4}" rx="14" fill="${on ? 'var(--accent-soft)' : 'transparent'}"/>
+      <rect x="${cx - bw - 2}" y="${base - hi}" width="${bw}" height="${Math.max(hi, x.in ? 2 : 0)}" rx="5" fill="var(--green)"><title>Ganhos ${brl(x.in)}</title></rect>
+      <rect x="${cx + 2}" y="${base - ho}" width="${bw}" height="${Math.max(ho, x.out ? 2 : 0)}" rx="5" fill="var(--red)"><title>Gastos ${brl(x.out)}</title></rect>
+      <text x="${cx}" y="${base + 22}" text-anchor="middle" font-size="13" font-weight="${on ? 700 : 400}" fill="${on ? 'var(--accent)' : 'var(--muted)'}">${SEM[i]}</text>
+      <text x="${cx}" y="${base + 40}" text-anchor="middle" font-size="12" fill="${x.d === t ? 'var(--accent)' : 'var(--dim)'}">${pd(x.d).getDate()}</text>
+    </g>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Ganhos e gastos por dia da semana">${g}</svg>`;
+}
+function vSemana() {
+  const a = weekStart(U.wk.ref), b = addDays(a, 6), sel = U.wk.sel >= a && U.wk.sel <= b ? U.wk.sel : a;
+  const s = sums(a, b), prev = sums(addDays(a, -7), addDays(a, -1)), res = s.in - s.out;
+  let comp = 'Sem gastos na semana passada pra comparar.';
+  if (prev.out) {
+    const p = Math.round((s.out - prev.out) / prev.out * 100);
+    comp = p === 0 ? 'Gastou o mesmo que na semana passada.' : `Gastou <b class="${p > 0 ? 'neg' : 'pos'}">${Math.abs(p)}% ${p > 0 ? 'a mais' : 'a menos'}</b> que na semana passada (${brl(prev.out)}).`;
+  }
+  const evs = evBetween(a, b);
+  const bills = billsBetween(a, b).sort((x, y) => x.due.localeCompare(y.due));
+  const dTx = S.tx.filter(t => t.date === sel).sort(byDateDesc);
+  const dEv = evs.filter(e => e.date === sel), dBills = bills.filter(i => i.due === sel);
+  const evLi = e => `<li class="ev" style="--c:${evColor(e)};grid-template-columns:minmax(0,1fr) auto"><span class="${e.done ? 'done-t' : ''}">${esc(e.title)}<small>${fmtShort(e.date)} · ${SEM_L[pd(e.date).getDay()]}${e.time ? ' · ' + e.time : ''}${isRep(e) ? ' · ' + repLabel(e) : ''}</small></span>${e.done ? '<span class="pf-tag ok">feito</span>' : ''}</li>`;
+  return `<div class="pf-card"><div class="pf-navd"><button class="pf-arrow" data-act="wkshift" data-v="-1" aria-label="Semana anterior">${IC.left}</button><b>${fmtShort(a)} a ${fmtShort(b)}</b><button class="pf-arrow" data-act="wkshift" data-v="1" aria-label="Próxima semana">${IC.right}</button></div></div>
+  <div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--green)"><span class="pf-kpi-label">Ganhos</span><span class="pf-kpi-val pos">${brl(s.in)}</span><span class="pf-kpi-note">${plural(s.nIn, 'ganho', 'ganhos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Gastos</span><span class="pf-kpi-val neg">${brl(s.out)}</span><span class="pf-kpi-note">${plural(s.nOut, 'gasto', 'gastos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--blue)"><span class="pf-kpi-label">Guardado</span><span class="pf-kpi-val sav">${brl(s.sv)}</span><span class="pf-kpi-note">nessa semana</span></div>
+    <div class="pf-kpi" style="--glow:var(--amber)"><span class="pf-kpi-label">Sobrou</span><span class="pf-kpi-val ${res < 0 ? 'neg' : ''}">${brl(res)}</span><span class="pf-kpi-note">ganhos menos gastos</span></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Dia a dia</h2><div class="pf-legend"><span><i style="background:var(--green)"></i>Ganhos</span><span><i style="background:var(--red)"></i>Gastos</span></div></div>
+      <p class="pf-card-note" style="margin:0">Toque num dia pra ver os detalhes.</p>
+      <div class="pf-chart">${weekChart(a, sel)}</div>
+      <p class="pf-kpi-note" style="margin:0">${comp}</p>
+    </div>
+    <div class="pf-card pf-glow" style="--glow:var(--accent)">
+      <div class="pf-card-h"><h2 style="text-transform:capitalize">${sel === today() ? 'Hoje' : fmtLong(sel)}</h2></div>
+      ${txList(dTx, 'Nenhum lançamento nesse dia.')}
+      ${dBills.length ? `<span class="pf-subh">Contas que vencem</span><div class="pf-list">${dBills.map(billRow).join('')}</div>` : ''}
+      ${dEv.length ? `<span class="pf-subh">Agenda</span><ul class="pf-todo">${dEv.map(evLi).join('')}</ul>` : ''}
+    </div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Agendamentos da semana</h2><span class="pf-tag main">${evs.length}</span></div>
+      ${evs.length ? `<ul class="pf-todo">${evs.map(evLi).join('')}</ul>` : '<span class="pf-kpi-note">Nada marcado nessa semana.</span>'}
+      ${bills.length ? `<span class="pf-subh">Contas da semana</span><div class="pf-list">${bills.map(billRow).join('')}</div>` : ''}
+    </div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Gastos por categoria</h2></div>${catBars(a, b)}</div>
+  </div>`;
+}
+
+// ---------- Relatório do mês ----------
+// Quanto tinha no total (todos os bancos, em conta + guardado) no fim de um dia
+function totalAt(d) {
+  let c = 0;
+  for (const b of S.banks) c += (b.initConta || 0) + (b.initGuard || 0);
+  for (const t of S.tx) if (t.date <= d) { if (t.type === 'in') c += t.cents; else if (t.type === 'out') c -= t.cents; }
+  return c;
+}
+function pctChange(now, before) {
+  if (!before) return '';
+  const p = Math.round((now - before) / before * 100);
+  return p === 0 ? 'igual ao mês anterior' : `${Math.abs(p)}% ${p > 0 ? 'a mais' : 'a menos'} que o mês anterior`;
+}
+function vRel() {
+  const [y, m] = U.rel.split('-').map(Number), ref = new Date(y, m - 1, 1);
+  const [a, b] = monthRange(ref), [pa, pb] = monthRange(new Date(y, m - 2, 1));
+  const t = today(), end = b < t ? b : t, nome = MESES[m - 1];
+  const s = sums(a, b), p = sums(pa, pb), res = s.in - s.out;
+  const days = Math.round((pd(end) - pd(a)) / 864e5) + 1;
+  const outs = S.tx.filter(x => x.type === 'out' && x.date >= a && x.date <= b);
+  // dia que mais gastou e dias sem gasto
+  const byDay = {};
+  for (const x of outs) byDay[x.date] = (byDay[x.date] || 0) + x.cents;
+  const top = Object.entries(byDay).sort((u, v) => v[1] - u[1])[0];
+  const noSpend = a > t ? 0 : days - Object.keys(byDay).filter(d => d <= end).length;
+  const biggest = [...outs].sort((u, v) => v.cents - u.cents).slice(0, 5);
+  // gasto por banco
+  const byBank = {};
+  for (const x of outs) byBank[x.bank] = (byBank[x.bank] || 0) + x.cents;
+  const bankRows = Object.entries(byBank).sort((u, v) => v[1] - u[1]);
+  // contas do mês
+  const bills = billsInMonth(U.rel), paid = bills.filter(i => i.paid), late = bills.filter(i => !i.paid && i.due < t);
+  // metas: quanto guardou pra cada uma no mês
+  const goals = S.goals.filter(g => g.kind === 'money').map(g => {
+    let c = 0;
+    for (const x of S.tx) if (x.goal === g.id && x.date >= a && x.date <= b) c += x.type === 'save' ? x.cents : x.type === 'unsave' ? -x.cents : 0;
+    return { g, c, s: goalSys(g) };
+  }).filter(o => o.c || !o.g.done);
+  // vida: cumprimento de cada sistema no mês
+  const habs = S.habits.map(h => {
+    let sched = 0, ok = 0;
+    for (let d = a > h.start ? a : h.start; d <= end && (!h.until || d <= h.until); d = addDays(d, 1)) {
+      if (d === t && habState(h, d) !== 'ok') continue; // hoje ainda não acabou
+      if (habOn(h, d)) { sched++; if (habState(h, d) === 'ok') ok++; }
+    }
+    return { h, sched, ok, pct: sched ? Math.round(ok / sched * 100) : null };
+  }).filter(o => o.sched);
+  const patr = totalAt(end), patrPrev = totalAt(pb);
+  const lim = S.cfg.limit;
+  return `<div class="pf-card"><div class="pf-navd"><button class="pf-arrow" data-act="relshift" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${nome} de ${y}</b><button class="pf-arrow" data-act="relshift" data-v="1" aria-label="Próximo mês">${IC.right}</button></div>
+    <p style="margin:0;font-size:15px;line-height:1.5">Em ${nome} você ganhou <b class="pos">${brl(s.in)}</b>, gastou <b class="neg">${brl(s.out)}</b> e guardou <b class="sav">${brl(s.sv)}</b>. ${res >= 0 ? `Sobraram <b class="pos">${brl(res)}</b>.` : `Gastou <b class="neg">${brl(-res)}</b> a mais do que ganhou.`}${b >= t && a <= t ? ' <span class="pf-tag main">mês em andamento</span>' : ''}</p>
+  </div>
+  <div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--green)"><span class="pf-kpi-label">Entrou</span><span class="pf-kpi-val pos">${brl(s.in)}</span><span class="pf-kpi-note">${pctChange(s.in, p.in) || plural(s.nIn, 'ganho', 'ganhos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Saiu</span><span class="pf-kpi-val neg">${brl(s.out)}</span><span class="pf-kpi-note">${pctChange(s.out, p.out) || plural(s.nOut, 'gasto', 'gastos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--blue)"><span class="pf-kpi-label">Guardei</span><span class="pf-kpi-val sav">${brl(s.sv)}</span><span class="pf-kpi-note">${pctChange(s.sv, p.sv) || 'guardado menos tirado'}</span></div>
+    <div class="pf-kpi" style="--glow:var(--accent)"><span class="pf-kpi-label">Tinha no total no fim</span><span class="pf-kpi-val">${brl(patr)}</span><span class="pf-kpi-note">${patr - patrPrev >= 0 ? 'cresceu' : 'diminuiu'} <b class="${patr - patrPrev >= 0 ? 'pos' : 'neg'}">${brl(Math.abs(patr - patrPrev))}</b> no mês</span></div>
+  </div>
+  ${lim ? `<div class="pf-card"><div class="pf-card-h"><h2>Limite de gasto</h2><span class="pf-tag ${s.out > lim ? 'late' : 'ok'}">${s.out > lim ? 'passou ' + brl(s.out - lim) : 'dentro do limite'}</span></div>
+    <div class="pf-track"><div class="pf-fill ${s.out / lim >= .9 ? 'bad' : s.out / lim >= .7 ? 'warn' : 'ok'}" style="width:${Math.min(100, s.out / lim * 100)}%"></div></div>
+    <div class="pf-goal-nums"><span>Gastei <b>${brl(s.out)}</b></span><span>Limite <b>${brl(lim)}</b></span></div></div>` : ''}
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Pra onde foi o dinheiro</h2></div>${catBars(a, b)}</div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Números do mês</h2></div>
+      <dl class="pf-stats">
+        <div><dt>Gasto médio por dia</dt><dd>${brl(Math.round(s.out / Math.max(1, days)))}</dd></div>
+        <div><dt>Dia que mais gastei</dt><dd>${top ? `${brl(top[1])} <small class="pf-kpi-note">${fmtShort(top[0])}</small>` : '—'}</dd></div>
+        <div><dt>Dias sem gastar nada</dt><dd>${noSpend}</dd></div>
+        <div><dt>Contas pagas</dt><dd>${paid.length} de ${bills.length}</dd></div>
+        <div><dt>Contas atrasadas</dt><dd class="${late.length ? 'neg' : ''}">${late.length}</dd></div>
+      </dl></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Maiores gastos</h2></div>
+      ${biggest.length ? `<div class="pf-list">${biggest.map(txRow).join('')}</div>` : '<span class="pf-kpi-note">Nenhum gasto no mês.</span>'}</div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Gasto por banco</h2></div>
+      ${bankRows.length ? `<div class="pf-list">${bankRows.map(([id, c]) => { const bk = find(S.banks, id) || { name: '(banco apagado)' }; return `<div class="pf-tx" style="grid-template-columns:auto minmax(0,1fr) auto">${logo(bk, 26)}<span class="t">${esc(bk.name)}</span><span class="v neg">${brl(c)}</span></div>`; }).join('')}</div>` : '<span class="pf-kpi-note">Nenhum gasto no mês.</span>'}</div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Metas</h2></div>
+      ${goals.length ? `<div class="pf-list">${goals.map(o => `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t">${esc(o.g.title)}<small>${goalTag(o.g, o.s)}</small></span><span class="v sav">${o.c >= 0 ? '+ ' : '− '}${brl(Math.abs(o.c))}</span></div>`).join('')}</div>` : '<span class="pf-kpi-note">Nenhuma meta.</span>'}</div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Vida</h2></div>
+      ${habs.length ? `<div class="pf-cats">${habs.map(o => `<div class="pf-cat"><div class="n"><span>${esc(o.h.title)}</span><span>${o.ok} de ${o.sched} dias · ${o.pct}%</span></div><div class="pf-track"><div class="pf-fill ${o.pct >= 80 ? 'ok' : o.pct >= 50 ? 'warn' : 'bad'}" style="width:${o.pct}%"></div></div></div>`).join('')}</div>` : '<span class="pf-kpi-note">Nenhum sistema nesse mês.</span>'}</div>
+  </div>`;
+}
+
+// ---------- Lista de compras ----------
+function vCompras() {
+  const pend = S.shop.filter(i => !i.done), done = S.shop.filter(i => i.done);
+  const li = i => `<li><button class="pf-check ${i.done ? 'done' : ''}" data-act="shoptg" data-id="${i.id}" aria-label="Marcar">${i.done ? IC.check : ''}</button><span class="${i.done ? 'done-t' : ''}">${esc(i.name)}</span><button class="pf-x" data-act="shopdel" data-id="${i.id}" aria-label="Apagar">×</button></li>`;
+  return `<form class="pf-card pf-glow" style="--glow:var(--amber)" data-form="shop">
+    <div class="pf-inline"><input name="name" class="pf-in" placeholder="Adicionar item (ex: arroz, sabão…)" autocomplete="off"><button class="pf-btn">Adicionar</button></div>
+  </form>
+  <div class="pf-card"><div class="pf-card-h"><h2>Pra comprar</h2><span class="pf-tag main">${pend.length}</span></div>
+    ${pend.length ? `<ul class="pf-todo">${pend.map(li).join('')}</ul>` : '<span class="pf-kpi-note">Nada pendente.</span>'}</div>
+  ${done.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Já peguei</h2><button class="pf-btn ghost small" data-act="shopclear">Limpar</button></div><ul class="pf-todo">${done.map(li).join('')}</ul></div>` : ''}`;
+}
+
+// ---------- Agenda ----------
+// Repetições: um compromisso marcado uma vez vale pra vários dias.
+const REP = [['none', 'Não repete'], ['daily', 'Todo dia'], ['every', 'A cada X dias'], ['weekly', 'Dias da semana'], ['monthly', 'Todo mês'], ['yearly', 'Todo ano']];
+const isRep = e => e.rep && e.rep.type !== 'none';
+const lastDay = d => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+function occursOn(e, d) {
+  if (d < e.date) return false;
+  if (!isRep(e)) return d === e.date;
+  const r = e.rep;
+  if ((r.until && d > r.until) || (e.skip && e.skip[d])) return false;
+  const a = pd(e.date), b = pd(d);
+  switch (r.type) {
+    case 'daily': return true;
+    case 'every': return dayIdx(e.date, d) % Math.max(1, r.n || 1) === 0;
+    case 'weekly': return (r.days || []).includes((b.getDay() + 6) % 7);
+    case 'monthly': return b.getDate() === Math.min(a.getDate(), lastDay(b));
+    case 'yearly': return b.getMonth() === a.getMonth() && b.getDate() === Math.min(a.getDate(), lastDay(b));
+  }
+  return false;
+}
+// Compromissos de um dia (cada repetição tem o seu "feito")
+function evOn(d) {
+  return S.events.filter(e => occursOn(e, d))
+    .map(e => ({ ...e, date: d, done: isRep(e) ? !!(e.doneDates && e.doneDates[d]) : e.done }))
+    .sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+}
+function evBetween(a, b) { const out = []; for (let d = a; d <= b; d = addDays(d, 1)) out.push(...evOn(d)); return out; }
+function repLabel(e) {
+  if (!isRep(e)) return '';
+  const r = e.rep, orig = find(S.events, e.id) || e;
+  const l = { daily: 'todo dia', every: `a cada ${r.n} dias`, weekly: (r.days || []).map(i => SEM[i]).join(', '),
+    monthly: `todo dia ${pd(orig.date).getDate()}`, yearly: `todo ano em ${fmtShort(orig.date)}` }[r.type];
+  return '↻ ' + l + (r.until ? ' até ' + fmtD(r.until) : '');
+}
+function vAgenda() {
+  const ag = U.ag, [y, m] = ag.month.split('-').map(Number);
+  const first = new Date(y, m - 1, 1), nDays = new Date(y, m, 0).getDate(), t = today();
+  const mBills = billsInMonth(ag.month);
+  // cores de cada dia (sem repetir, no máximo 4 fitas). Conta pendente = vermelho.
+  const dayColors = {};
+  const addC = (d, c) => { const l = dayColors[d] || (dayColors[d] = []); if (!l.includes(c)) l.push(c); };
+  for (const i of mBills) if (!i.paid) addC(i.due, COLORS.red);
+  for (const e of evBetween(`${ag.month}-01`, `${ag.month}-${pad(nDays)}`)) if (!e.done) addC(e.date, evColor(e));
+  let cells = SEM.map(d => `<span class="wd">${d}</span>`).join('');
+  for (let i = 0; i < (first.getDay() + 6) % 7; i++) cells += '<button class="blank" tabindex="-1"></button>';
+  for (let d = 1; d <= nDays; d++) {
+    const ds = `${y}-${pad(m)}-${pad(d)}`;
+    cells += `<button data-act="agday" data-v="${ds}" class="${ds === t ? 'today' : ''} ${ds === ag.sel ? 'sel' : ''}">${d}${dayColors[ds] ? '<span class="pf-rib">' + dayColors[ds].slice(0, 4).map(c => `<span style="background:${c}"></span>`).join('') + '</span>' : ''}</button>`;
+  }
+  const dayEv = evOn(ag.sel);
+  const dayBills = billsInMonth(ag.sel.slice(0, 7)).filter(i => i.due === ag.sel);
+  const next = evBetween(t, addDays(t, 90)).filter(e => !e.done).slice(0, 8);
+  const li = e => `<li class="ev" style="--c:${evColor(e)}"><button class="pf-check ${e.done ? 'done' : ''}" data-act="evtg" data-id="${e.id}" data-d="${e.date}" aria-label="Feito">${e.done ? IC.check : ''}</button><span class="${e.done ? 'done-t' : ''}">${esc(e.title)}<small>${e.time || 'dia todo'}${e.notes ? ' · ' + esc(e.notes) : ''}${isRep(e) ? ' · ' + repLabel(e) : ''}</small></span><button class="pf-x" data-act="evdel" data-id="${e.id}" data-d="${e.date}" aria-label="Apagar">×</button></li>`;
+  const sd = pd(ag.sel), selWd = (sd.getDay() + 6) % 7;
+  const repOpt = ([k, l]) => `<option value="${k}">${k === 'monthly' ? 'Todo mês no dia ' + sd.getDate() : k === 'yearly' ? 'Todo ano em ' + fmtShort(ag.sel) : k === 'weekly' ? 'Em dias da semana' : l}</option>`;
+  const names = S.cfg.colorNames;
+  const legend = Object.entries(COLORS).filter(([k]) => names[k]).map(([k, c]) => `<span><i style="background:${c};border-radius:50%"></i>${esc(names[k])}</span>`).join('');
+  return `<div class="pf-row">
+    <div class="pf-card">
+      <div class="pf-navd"><button class="pf-arrow" data-act="agmonth" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${MESES[m - 1]} de ${y}</b><button class="pf-arrow" data-act="agmonth" data-v="1" aria-label="Próximo mês">${IC.right}</button></div>
+      <div class="pf-cal">${cells}</div>
+      ${legend ? `<div class="pf-legend">${legend}</div>` : ''}
+    </div>
+    <div class="pf-card pf-glow" style="--glow:var(--purple)">
+      <div class="pf-card-h"><h2 style="text-transform:capitalize">${ag.sel === t ? 'Hoje' : fmtLong(ag.sel)}</h2></div>
+      ${dayBills.length ? `<div class="pf-list">${dayBills.map(billRow).join('')}</div>` : ''}
+      ${dayEv.length ? `<ul class="pf-todo">${dayEv.map(li).join('')}</ul>` : dayBills.length ? '' : '<span class="pf-kpi-note">Nada nesse dia.</span>'}
+      <form data-form="ev" style="display:grid;gap:10px">
+        <input name="title" class="pf-in" placeholder="O que fazer" autocomplete="off">
+        <div class="pf-grid2"><input name="time" type="time" class="pf-in"><input name="notes" class="pf-in" placeholder="Obs (opcional)" autocomplete="off"></div>
+        <span class="pf-lbl">Repetir</span>
+        <select name="rep" class="pf-in" data-rep>${REP.map(repOpt).join('')}</select>
+        <div class="rep-x rep-every" hidden><input name="n" type="number" min="2" value="2" inputmode="numeric" class="pf-in"><span class="pf-kpi-note">A cada quantos dias. 2 = dia sim, dia não.</span></div>
+        <div class="rep-x rep-weekly pf-picks" hidden>${SEM.map((s, i) => `<label class="pf-pick pf-chk"><input type="checkbox" name="wd" value="${i}" ${i === selWd ? 'checked' : ''}>${s}</label>`).join('')}</div>
+        <div class="rep-x rep-until" hidden><span class="pf-lbl">Até quando (opcional)</span><input name="until" type="date" class="pf-in" min="${ag.sel}"></div>
+        <span class="pf-lbl">Cor</span>
+        <div class="pf-sws">${Object.entries(COLORS).map(([k, c]) => `<button type="button" class="pf-sw" style="--c:${c}" data-act="pick" data-k="ev" data-f="color" data-v="${k}" aria-pressed="${U.l.ev.color === k}" aria-label="${esc(names[k] || 'Cor ' + k)}" title="${esc(names[k] || '')}"></button>`).join('')}</div>
+        <button class="pf-btn">Adicionar nesse dia</button>
+      </form>
+    </div>
+  </div>
+  <div class="pf-card"><div class="pf-card-h"><h2>Próximos</h2></div>
+    ${next.length ? '<div class="pf-list">' + next.map(e => { const d = daysUntil(e.date); return `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t"><span class="pf-dot" style="--c:${evColor(e)}"></span>${esc(e.title)}<small>${e.date === t ? 'Hoje' : fmtLong(e.date)}${e.time ? ' · ' + e.time : ''}</small></span><span class="pf-tag ${d <= 1 ? 'main' : ''}">${d === 0 ? 'hoje' : d === 1 ? 'amanhã' : 'em ' + d + ' dias'}</span></div>`; }).join('') + '</div>' : '<span class="pf-kpi-note">Nada marcado.</span>'}
+  </div>`;
+}
+
+// ---------- Metas de vida (sistemas) ----------
+// A meta vira um sistema: o valor é dividido pelos dias até a data, e cada dia mostra se o total guardado está em dia.
+const dayIdx = (a, b) => Math.round((pd(b) - pd(a)) / 864e5);
+function goalSaved(g, upTo) {
+  let s = g.initial || 0;
+  for (const t of S.tx) {
+    if (t.goal !== g.id || (upTo && t.date > upTo)) continue;
+    if (t.type === 'save') s += t.cents; else if (t.type === 'unsave') s -= t.cents;
+  }
+  return s;
+}
+function goalSys(g) {
+  const t = today(), saved = goalSaved(g);
+  if (!g.deadline) return { saved, noDate: true, falta: Math.max(0, g.cents - saved), complete: saved >= g.cents };
+  const ini = g.initial || 0, N = Math.max(1, dayIdx(g.start, g.deadline) + 1), need = Math.max(0, g.cents - ini);
+  // quanto deveria ter guardado no fim de um dia
+  const expAt = d => { const i = dayIdx(g.start, d); return i < 0 ? ini : i >= N - 1 ? g.cents : Math.round(ini + need * (i + 1) / N); };
+  const expected = t < g.start ? ini : expAt(t > g.deadline ? g.deadline : t);
+  const daysLeft = Math.max(0, dayIdx(t, g.deadline) + 1);
+  const falta = Math.max(0, g.cents - saved);
+  return { saved, N, daily: need / N, expAt, expected, diff: saved - expected, daysLeft, falta,
+    rate: daysLeft ? Math.ceil(falta / daysLeft) : falta, complete: saved >= g.cents, late: t > g.deadline && saved < g.cents };
+}
+const goalBehind = g => { if (g.done || g.kind !== 'money') return false; const s = goalSys(g); return !s.noDate && !s.complete && s.diff < 0; };
+function goalTag(g, s) {
+  if (g.done) return '<span class="pf-tag ok">realizada</span>';
+  if (s.complete) return '<span class="pf-tag ok">dinheiro completo</span>';
+  if (s.noDate) return '<span class="pf-tag">sem data</span>';
+  if (s.late) return `<span class="pf-tag late">prazo passou</span>`;
+  if (s.diff < 0) return `<span class="pf-tag late">devendo ${brl(-s.diff)}</span>`;
+  return `<span class="pf-tag ok">em dia${s.diff > 0 ? ' · adiantado ' + brl(s.diff) : ''}</span>`;
+}
+function goalCal(g, s) {
+  const t = today();
+  const def = (t < g.start ? g.start : t > g.deadline ? g.deadline : t).slice(0, 7);
+  const mk = U.gm[g.id] || def, [y, m] = mk.split('-').map(Number);
+  const first = new Date(y, m - 1, 1), nDays = new Date(y, m, 0).getDate();
+  const dep = new Set(S.tx.filter(x => x.goal === g.id && x.type === 'save').map(x => x.date));
+  let cells = SEM.map(d => `<span class="wd">${d}</span>`).join('');
+  for (let i = 0; i < (first.getDay() + 6) % 7; i++) cells += '<span class="blank"></span>';
+  for (let d = 1; d <= nDays; d++) {
+    const ds = `${y}-${pad(m)}-${pad(d)}`;
+    let cls;
+    if (ds < g.start || ds > g.deadline) cls = 'g-out';
+    else if (ds > t) cls = 'g-fut';
+    else if (goalSaved(g, ds) >= s.expAt(ds)) cls = 'g-ok';
+    else cls = ds === t ? 'g-now' : 'g-bad';
+    cells += `<span class="${cls} ${ds === t ? 'today' : ''}" title="${fmtD(ds)}${cls === 'g-out' ? '' : ' · deveria ter ' + brl(s.expAt(ds))}">${d}${dep.has(ds) ? '<i></i>' : ''}</span>`;
+  }
+  // contagem de todos os dias que já passaram
+  let ok = 0, bad = 0;
+  for (let d = g.start; d < t && d <= g.deadline; d = addDays(d, 1)) goalSaved(g, d) >= s.expAt(d) ? ok++ : bad++;
+  return `<div class="pf-navd"><button class="pf-arrow" data-act="gmonth" data-id="${g.id}" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${MESES[m - 1]} de ${y}</b><button class="pf-arrow" data-act="gmonth" data-id="${g.id}" data-v="1" aria-label="Próximo mês">${IC.right}</button></div>
+    <div class="pf-gcal">${cells}</div>
+    <div class="pf-legend"><span><i style="background:var(--green)"></i>em dia (${ok})</span><span><i style="background:var(--red)"></i>devendo (${bad})</span><span><i style="background:var(--blue);border-radius:50%"></i>dia que guardei</span></div>`;
+}
+function goalCard(g) {
+  if (g.kind !== 'money') return stepCard(g);
+  const s = goalSys(g), pct = Math.min(100, g.cents ? Math.max(0, s.saved) / g.cents * 100 : 0);
+  const head = `<div class="pf-card-h"><h2>${esc(g.title)}</h2>${goalTag(g, s)}</div>
+    <div class="pf-goal-nums"><span>Meta <b>${brl(g.cents)}</b></span>${g.deadline ? `<span>até <b>${fmtD(g.deadline)}</b></span>${s.daysLeft ? `<span>faltam <b>${plural(s.daysLeft, 'dia', 'dias')}</b></span>` : ''}` : ''}<span><b>${Math.round(pct)}%</b> guardado</span></div>`;
+  const actions = `<div class="pf-actions"><button class="pf-btn ghost small" data-act="gedit" data-id="${g.id}">Editar valor e data</button><button class="pf-btn ghost small" data-act="gdone" data-id="${g.id}">${g.done ? 'Reabrir' : 'Realizei a meta'}</button><button class="pf-btn ghost small" data-act="gdel" data-id="${g.id}">Apagar</button></div>`;
+  if (g.done) return `<article class="pf-card">${head}${actions}</article>`;
+  const expPct = s.noDate ? null : Math.min(100, s.expected / g.cents * 100);
+  const bar = `<div class="pf-track pf-track-m"><div class="pf-fill ${!s.noDate && s.diff < 0 ? 'bad' : 'ok'}" style="width:${pct}%"></div>${expPct !== null && !s.complete ? `<span class="pf-mark" style="left:${expPct}%" title="Onde deveria estar hoje"></span>` : ''}</div>`;
+  const diffBox = s.noDate ? `<div><dt>Falta</dt><dd>${brl(s.falta)}</dd></div>`
+    : `<div><dt>Deveria ter hoje</dt><dd>${brl(s.expected)}</dd></div><div><dt>${s.diff < 0 ? 'Estou devendo' : 'Adiantado'}</dt><dd class="${s.diff < 0 ? 'neg' : 'pos'}">${brl(Math.abs(s.diff))}</dd></div>`;
+  const stats = `<dl class="pf-gstats"><div><dt>Já guardei</dt><dd class="sav">${brl(s.saved)}</dd></div>${diffBox}<div><dt>Falta pra meta</dt><dd>${brl(s.falta)}</dd></div></dl>`;
+  let sys;
+  if (s.complete) sys = `<div class="pf-okmsg">Você já tem todo o dinheiro dessa meta. Quando realizar, toque em "Realizei a meta".</div>`;
+  else if (s.noDate) sys = `<form class="pf-sys" data-form="gdate" data-g="${g.id}"><span class="pf-subh">Ligar o sistema</span><p class="pf-card-note" style="margin:0">Coloque até quando quer realizar essa meta, e o app calcula quanto guardar por dia.</p><div class="pf-inline"><input name="deadline" type="date" class="pf-in" min="${today()}"><button class="pf-btn small">Ligar</button></div></form>`;
+  else sys = `<div class="pf-sys"><span class="pf-subh">O sistema</span>
+      <div class="pf-sys-big">Guarde <b>${brl(Math.ceil(s.daily))}</b> por dia</div>
+      <div class="pf-goal-nums"><span>por semana <b>${brl(Math.ceil(s.daily * 7))}</b></span><span>por mês <b>${brl(Math.ceil(s.daily * 30))}</b></span></div>
+      ${s.late ? `<div class="pf-alert">O prazo passou e faltam <b>${brl(s.falta)}</b>. Toque em "Editar valor e data" pra marcar uma nova data.</div>`
+        : s.diff < 0 ? `<div class="pf-alert">Pra ficar em dia hoje, guarde <b>${brl(-s.diff)}</b>. Ou guarde <b>${brl(s.rate)}</b> por dia daqui até ${fmtD(g.deadline)}.</div>`
+        : `<div class="pf-okmsg">Você está em dia. É só seguir guardando ${brl(Math.ceil(s.daily))} por dia.</div>`}
+    </div>`;
+  const k = 'g_' + g.id, st = U.l[k] || (U.l[k] = { bank: S.cfg.main, dir: 'save' });
+  const form = `<form class="pf-gform" data-form="gsave" data-g="${g.id}" style="--glow:var(--blue)">
+    <span class="pf-subh">Guardar pra essa meta</span>
+    ${picks(k, 'dir', [['save', 'Guardei'], ['unsave', 'Tirei']], st.dir)}
+    <div class="pf-inline"><input name="v" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off"><button class="pf-btn">Registrar</button></div>
+    ${bankPicks(k, st.bank)}
+  </form>`;
+  const hist = S.tx.filter(x => x.goal === g.id).sort(byDateDesc).slice(0, 5);
+  return `<article class="pf-card pf-glow" style="--glow:var(--blue)">
+    ${head}${bar}${stats}
+    <div class="pf-row">
+      <div style="display:grid;gap:14px;align-content:start;min-width:0">${sys}${form}</div>
+      <div style="display:grid;gap:12px;align-content:start;min-width:0">${s.noDate ? '' : goalCal(g, s)}
+        ${hist.length ? `<span class="pf-subh">Últimos registros</span><div class="pf-list">${hist.map(txRow).join('')}</div>` : ''}</div>
+    </div>
+    ${actions}
+  </article>`;
+}
+// Metas antigas com etapas (antes do sistema de dinheiro)
+const goalPct = g => g.done ? 100 : g.steps && g.steps.length ? g.steps.filter(s => s.done).length / g.steps.length * 100 : 0;
+function stepCard(g) {
+  const p = goalPct(g);
+  return `<article class="pf-card">
+    <div class="pf-card-h"><h2>${esc(g.title)}</h2><span class="pf-tag ${g.done ? 'ok' : ''}">${g.done ? 'concluída' : Math.round(p) + '%'}</span></div>
+    <div class="pf-track"><div class="pf-fill ok" style="width:${p}%"></div></div>
+    ${g.steps.length ? `<ul class="pf-todo">${g.steps.map(s => `<li><button class="pf-check ${s.done ? 'done' : ''}" data-act="sttg" data-g="${g.id}" data-id="${s.id}">${s.done ? IC.check : ''}</button><span class="${s.done ? 'done-t' : ''}">${esc(s.t)}</span><button class="pf-x" data-act="stdel" data-g="${g.id}" data-id="${s.id}">×</button></li>`).join('')}</ul>` : ''}
+    <div class="pf-actions"><button class="pf-btn ghost small" data-act="gdone" data-id="${g.id}">${g.done ? 'Reabrir' : 'Concluir'}</button><button class="pf-btn ghost small" data-act="gdel" data-id="${g.id}">Apagar</button></div>
+  </article>`;
+}
+function vMetas() {
+  const order = g => g.done ? 2 : 0;
+  const list = [...S.goals].sort((a, b) => (order(a) - order(b)) || (a.deadline || '9').localeCompare(b.deadline || '9'));
+  const active = list.filter(g => !g.done), done = list.filter(g => g.done);
+  return `<form class="pf-card pf-glow" style="--glow:var(--green)" data-form="goal">
+    <div class="pf-card-h"><h2>Nova meta</h2><span class="pf-ico">${IC.metas}</span></div>
+    <p class="pf-card-note" style="margin:0">Coloque quanto custa e até quando. O app monta o sistema: quanto guardar por dia pra chegar lá na data certa.</p>
+    <input name="title" class="pf-in" placeholder="Qual a meta (ex: comprar moto)" autocomplete="off">
+    <div class="pf-grid2"><input name="v" class="pf-in" inputmode="decimal" placeholder="Quanto custa R$" autocomplete="off"><input name="initial" class="pf-in" inputmode="decimal" placeholder="Já tenho R$ (opcional)" autocomplete="off"></div>
+    <span class="pf-lbl">Até quando quero realizar</span>
+    <input name="deadline" type="date" class="pf-in" min="${today()}">
+    <button class="pf-btn">Criar meta</button>
+  </form>
+  ${active.length ? `<div class="pf-goallist">${active.map(goalCard).join('')}</div>` : empty('Nenhuma meta ainda. Crie a primeira acima.')}
+  ${done.length ? `<span class="pf-subh">Realizadas</span><div class="pf-goallist">${done.map(goalCard).join('')}</div>` : ''}`;
+}
+
+// ---------- Vida (sistemas de hábitos) ----------
+// Mesma regra das metas: o sistema diz o que fazer em cada dia; dia feito = verde, dia perdido = vermelho.
+const VAREAS = { Corpo: '#e8875a', Mente: '#a98bff', Estudo: '#f5b544', Trabalho: '#ff6fa8', Casa: '#6c8cff', Outros: '#4fd18b' };
+const FREQ = [['daily', 'Todo dia'], ['weekly', 'Em dias da semana'], ['every', 'A cada X dias']];
+const habOn = (h, d) => occursOn({ date: h.start, rep: { type: h.freq.type, days: h.freq.days, n: h.freq.n, until: h.until } }, d);
+const habItems = (h, d) => { const wd = (pd(d).getDay() + 6) % 7; return h.items.filter(i => !i.days || !i.days.length || i.days.includes(wd)); };
+const habLog = (h, d) => (h.log && h.log[d]) || { done: false, items: {} };
+// ok = fez · part = fez uma parte · none = não fez
+function habState(h, d) {
+  const l = habLog(h, d);
+  if (l.done) return 'ok';
+  return Object.values(l.items || {}).some(Boolean) ? 'part' : 'none';
+}
+function freqLabel(h) {
+  const f = h.freq;
+  const l = f.type === 'daily' ? 'todo dia' : f.type === 'every' ? `a cada ${f.n} dias` : (f.days || []).map(i => SEM[i]).join(', ');
+  return l + (h.time ? ` · ${h.time}${h.timeEnd ? ' às ' + h.timeEnd : ''}` : '');
+}
+function habStats(h) {
+  const t = today(), end = h.until && h.until < t ? h.until : addDays(t, -1);
+  let sched = 0, ok = 0, part = 0, miss = 0;
+  for (let d = h.start; d <= end; d = addDays(d, 1)) {
+    if (!habOn(h, d)) continue;
+    sched++; const s = habState(h, d);
+    if (s === 'ok') ok++; else if (s === 'part') part++; else miss++;
+  }
+  // sequência: dias programados seguidos feitos, contando hoje se já fez
+  let streak = 0;
+  for (let d = habOn(h, t) && habState(h, t) === 'ok' ? t : addDays(t, -1); d >= h.start; d = addDays(d, -1)) {
+    if (!habOn(h, d)) continue;
+    if (habState(h, d) === 'ok') streak++; else break;
+  }
+  let left = 0;
+  if (h.until) for (let d = t; d <= h.until; d = addDays(d, 1)) if (habOn(h, d)) left++;
+  return { sched, ok, part, miss, streak, left, pct: sched ? Math.round(ok / sched * 100) : 100 };
+}
+function habTag(h, st) {
+  if (h.until && h.until < today()) return `<span class="pf-tag">terminou · ${st.pct}% cumprido</span>`;
+  if (!st.sched) return '<span class="pf-tag main">começando</span>';
+  if (st.miss) return `<span class="pf-tag late">perdeu ${plural(st.miss, 'dia', 'dias')}</span>`;
+  return `<span class="pf-tag ok">em dia · ${st.pct}%</span>`;
+}
+function habCal(h) {
+  const t = today(), mk = U.hm[h.id] || t.slice(0, 7), [y, m] = mk.split('-').map(Number);
+  const first = new Date(y, m - 1, 1), nDays = new Date(y, m, 0).getDate();
+  let cells = SEM.map(d => `<span class="wd">${d}</span>`).join('');
+  for (let i = 0; i < (first.getDay() + 6) % 7; i++) cells += '<span class="blank"></span>';
+  for (let d = 1; d <= nDays; d++) {
+    const ds = `${y}-${pad(m)}-${pad(d)}`;
+    let cls = 'g-out';
+    if (ds >= h.start && habOn(h, ds)) {
+      const s = habState(h, ds);
+      cls = s === 'ok' ? 'g-ok' : ds > t ? 'g-fut' : ds === t ? (s === 'part' ? 'g-part' : 'g-now') : s === 'part' ? 'g-part' : 'g-bad';
+    }
+    cells += `<span class="${cls} ${ds === t ? 'today' : ''}">${d}</span>`;
+  }
+  return `<div class="pf-navd"><button class="pf-arrow" data-act="hmonth" data-id="${h.id}" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${MESES[m - 1]} de ${y}</b><button class="pf-arrow" data-act="hmonth" data-id="${h.id}" data-v="1" aria-label="Próximo mês">${IC.right}</button></div>
+    <div class="pf-gcal">${cells}</div>
+    <div class="pf-legend"><span><i style="background:var(--green)"></i>fiz</span><span><i style="background:var(--amber)"></i>fiz uma parte</span><span><i style="background:var(--red)"></i>não fiz</span></div>`;
+}
+// Bloco "o que fazer" de um sistema num dia (com checklist)
+function habToday(h, d) {
+  const items = habItems(h, d), l = habLog(h, d), done = l.done;
+  return `<div class="pf-hab" style="--c:${VAREAS[h.area] || VAREAS.Outros}">
+    <div class="pf-card-h"><span><b>${esc(h.title)}</b><small class="pf-kpi-note" style="display:block">${esc(h.area)} · ${freqLabel(h)}</small></span>
+      <button class="pf-btn small ${done ? '' : 'ghost'}" style="--glow:var(--green)" data-act="habdone" data-id="${h.id}" data-d="${d}">${done ? '✓ Fiz' : 'Marcar como feito'}</button></div>
+    ${items.length ? `<ul class="pf-todo">${items.map(i => { const on = done || !!(l.items && l.items[i.id]); return `<li style="grid-template-columns:auto minmax(0,1fr)"><button class="pf-check ${on ? 'done' : ''}" data-act="habitem" data-id="${h.id}" data-i="${i.id}" data-d="${d}">${on ? IC.check : ''}</button><span class="${on ? 'done-t' : ''}">${esc(i.t)}</span></li>`; }).join('')}</ul>` : ''}
+  </div>`;
+}
+function habCard(h) {
+  const st = habStats(h);
+  const itemLi = i => `<li style="grid-template-columns:minmax(0,1fr) auto"><span>${esc(i.t)}<small>${i.days && i.days.length ? i.days.map(x => SEM[x]).join(', ') : 'todos os dias do sistema'}</small></span><button class="pf-x" data-act="habidel" data-id="${h.id}" data-i="${i.id}" aria-label="Remover">×</button></li>`;
+  return `<article class="pf-card pf-glow" style="--glow:${VAREAS[h.area] || VAREAS.Outros}">
+    <div class="pf-card-h"><h2>${esc(h.title)}</h2>${habTag(h, st)}</div>
+    <div class="pf-goal-nums"><span>${esc(h.area)}</span><span><b>${freqLabel(h)}</b></span><span>desde ${fmtD(h.start)}</span>${h.until ? `<span>até <b>${fmtD(h.until)}</b></span><span>faltam <b>${plural(st.left, 'dia', 'dias')}</b> de treino</span>` : ''}</div>
+    <dl class="pf-gstats"><div><dt>Cumprimento</dt><dd class="${st.pct < 80 && st.sched ? 'neg' : 'pos'}">${st.pct}%</dd></div><div><dt>Sequência</dt><dd>${plural(st.streak, 'dia', 'dias')}</dd></div><div><dt>Feitos</dt><dd class="pos">${st.ok}</dd></div><div><dt>Perdidos</dt><dd class="${st.miss ? 'neg' : ''}">${st.miss}</dd></div></dl>
+    <div class="pf-row">
+      <div style="display:grid;gap:12px;align-content:start;min-width:0">
+        <span class="pf-subh">O que fazer</span>
+        ${h.items.length ? `<ul class="pf-todo">${h.items.map(itemLi).join('')}</ul>` : '<span class="pf-kpi-note">Coloque exatamente o que fazer (ex: 3x12 supino, 20 min de esteira).</span>'}
+        <form data-form="habitem" data-h="${h.id}" style="display:grid;gap:8px">
+          <div class="pf-inline"><input name="t" class="pf-in" placeholder="Adicionar o que fazer" autocomplete="off"><button class="pf-btn ghost small">+</button></div>
+          <div class="pf-picks">${SEM.map((s, i) => `<label class="pf-pick pf-chk"><input type="checkbox" name="wd" value="${i}">${s}</label>`).join('')}</div>
+          <span class="pf-kpi-note">Sem marcar dia = vale pra todos os dias. Marque pra fazer um plano por dia (ex: seg peito, qua costas).</span>
+        </form>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start;min-width:0">${habCal(h)}</div>
+    </div>
+    <div class="pf-actions"><button class="pf-btn ghost small" data-act="habedit" data-id="${h.id}">Editar horário e data final</button><button class="pf-btn ghost small" data-act="habdel" data-id="${h.id}">Apagar</button></div>
+  </article>`;
+}
+function vVida() {
+  const t = today(), list = S.habits;
+  const hoje = list.filter(h => h.start <= t && habOn(h, t)).sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+  const feitos = hoje.filter(h => habState(h, t) === 'ok').length;
+  return `<div class="pf-card pf-glow" style="--glow:var(--accent)">
+    <div class="pf-card-h"><h2>Hoje</h2>${hoje.length ? `<span class="pf-tag ${feitos === hoje.length ? 'ok' : 'main'}">${feitos} de ${hoje.length} feitos</span>` : ''}</div>
+    ${hoje.length ? `<div style="display:grid;gap:10px">${hoje.map(h => habToday(h, t)).join('')}</div>` : '<span class="pf-kpi-note">Nenhum sistema programado pra hoje.</span>'}
+  </div>
+  <form class="pf-card" data-form="habit">
+    <div class="pf-card-h"><h2>Novo sistema</h2><span class="pf-ico">${IC.vida}</span></div>
+    <p class="pf-card-note" style="margin:0">Não é "ir pra academia". É: todo dia, das 18h às 19h, até 30/11, fazendo exatamente isso. Se seguir o sistema, a meta acontece.</p>
+    <input name="title" class="pf-in" placeholder="Nome (ex: Academia)" autocomplete="off">
+    <span class="pf-lbl">Área</span>
+    <div class="pf-picks">${Object.entries(VAREAS).map(([a, c]) => `<label class="pf-pick pf-chk" style="--accent:${c}"><input type="radio" name="area" value="${a}" ${a === 'Corpo' ? 'checked' : ''}>${a}</label>`).join('')}</div>
+    <span class="pf-lbl">Quando</span>
+    <select name="freq" class="pf-in" data-freq>${FREQ.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select>
+    <div class="rep-x rep-weekly pf-picks" hidden>${SEM.map((s, i) => `<label class="pf-pick pf-chk"><input type="checkbox" name="wd" value="${i}" ${i < 5 ? 'checked' : ''}>${s}</label>`).join('')}</div>
+    <div class="rep-x rep-every" hidden><input name="n" type="number" min="2" value="2" inputmode="numeric" class="pf-in"><span class="pf-kpi-note">A cada quantos dias. 2 = dia sim, dia não.</span></div>
+    <div class="pf-grid2"><label style="display:grid;gap:6px"><span class="pf-lbl">Das</span><input name="time" type="time" class="pf-in"></label><label style="display:grid;gap:6px"><span class="pf-lbl">Até</span><input name="timeEnd" type="time" class="pf-in"></label></div>
+    <div class="pf-grid2"><label style="display:grid;gap:6px"><span class="pf-lbl">Começa</span><input name="start" type="date" class="pf-in" value="${t}"></label><label style="display:grid;gap:6px"><span class="pf-lbl">Até quando (a meta)</span><input name="until" type="date" class="pf-in"></label></div>
+    <span class="pf-lbl">O que fazer (um por linha)</span>
+    <textarea name="items" class="pf-in" placeholder="Aquecimento 10 min&#10;Supino 4x10&#10;Esteira 20 min"></textarea>
+    <button class="pf-btn">Criar sistema</button>
+  </form>
+  ${list.length ? `<div class="pf-goallist">${list.map(habCard).join('')}</div>` : ''}`;
+}
+
+// ---------- Central de avisos (sino) ----------
+function avisos() {
+  const t = today(), out = [];
+  const bs = billSummary();
+  for (const i of bs.pend.filter(i => i.due <= addDays(t, 3)).sort((a, b) => a.due.localeCompare(b.due))) {
+    const d = daysUntil(i.due);
+    out.push({ lvl: d < 0 ? 'bad' : d === 0 ? 'bad' : 'warn', go: 'contas', t: `${i.b.name} · ${brl(i.b.cents)}`,
+      s: d < 0 ? `Conta atrasada há ${plural(-d, 'dia', 'dias')}` : d === 0 ? 'Conta vence hoje' : `Conta vence em ${plural(d, 'dia', 'dias')} (${fmtShort(i.due)})` });
+  }
+  for (const g of S.goals.filter(goalBehind)) {
+    const s = goalSys(g);
+    out.push({ lvl: 'bad', go: 'metas', t: `Meta ${g.title}: devendo ${brl(-s.diff)}`, s: `Guarde ${brl(-s.diff)} hoje pra ficar em dia, ou ${brl(s.rate)} por dia até ${fmtD(g.deadline)}` });
+  }
+  for (const h of S.habits) {
+    if (h.start > t) continue;
+    const y = addDays(t, -1);
+    if (habOn(h, y) && h.start <= y && habState(h, y) !== 'ok') out.push({ lvl: 'bad', go: 'vida', t: `${h.title}: ontem ficou ${habState(h, y) === 'part' ? 'pela metade' : 'sem fazer'}`, s: 'Hoje é dia de voltar pro sistema' });
+    if (habOn(h, t) && habState(h, t) !== 'ok') out.push({ lvl: 'info', go: 'vida', t: `Hoje: ${h.title}`, s: freqLabel(h) });
+  }
+  for (const e of evOn(t).filter(e => !e.done)) out.push({ lvl: 'info', go: 'agenda', t: `Hoje: ${e.title}`, s: e.time || 'dia todo' });
+  for (const e of evOn(addDays(t, 1)).filter(e => !e.done)) out.push({ lvl: 'info', go: 'agenda', t: `Amanhã: ${e.title}`, s: e.time || 'dia todo' });
+  if (S.cfg.limit) {
+    const [a, b] = monthRange(), o = sums(a, b).out, p = o / S.cfg.limit * 100;
+    if (p >= 90) out.push({ lvl: p >= 100 ? 'bad' : 'warn', go: 'painel', t: p >= 100 ? 'Passou do limite de gasto do mês' : `Já usou ${Math.round(p)}% do limite do mês`, s: `${brl(o)} de ${brl(S.cfg.limit)}` });
+  }
+  const lb = S.cfg.lastBackup ? -daysUntil(S.cfg.lastBackup) : null;
+  if ((S.tx.length || S.bills.length) && (lb === null || lb >= 7)) out.push({ lvl: 'warn', go: 'ajustes', t: 'Salve um backup', s: lb === null ? 'Você nunca salvou um backup' : `Último backup há ${lb} dias` });
+  return out;
+}
+function bellPop() {
+  const list = avisos(), ico = { bad: 'var(--red)', warn: 'var(--amber)', info: 'var(--blue)' };
+  return `<div class="pf-pop-h"><b>Avisos</b><button class="pf-x" data-act="bell" aria-label="Fechar">×</button></div>
+    ${list.length ? `<div class="pf-pop-list">${list.map(a => `<button class="pf-aviso" data-go="${a.go}" style="--c:${ico[a.lvl]}"><span class="pf-dot"></span><span>${esc(a.t)}<small>${esc(a.s)}</small></span></button>`).join('')}</div>` : '<p class="pf-kpi-note" style="margin:0">Tudo em dia. Nenhum aviso agora.</p>'}`;
+}
+
+// ---------- Editar lançamento ----------
+function openSheet(html) { $('#sheet-box').innerHTML = html; $('#sheet').hidden = false; }
+function closeSheet() { $('#sheet').hidden = true; $('#sheet-box').innerHTML = ''; }
+function txEditForm(t) {
+  const bankSel = (name, sel) => `<select name="${name}" class="pf-in">${banksOrdered().map(b => `<option value="${b.id}" ${b.id === sel ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select>`;
+  const money = (t.cents / 100).toFixed(2).replace('.', ',');
+  let fields = '';
+  if (t.type === 'in' || t.type === 'out') {
+    const cats = [...new Set([...(t.type === 'out' ? S.cfg.catsOut : S.cfg.catsIn), ...(t.cat ? [t.cat] : [])])];
+    fields = `<span class="pf-lbl">Banco</span>${bankSel('bank', t.bank)}
+      <span class="pf-lbl">Categoria</span><select name="cat" class="pf-in"><option value="">Sem categoria</option>${cats.map(c => `<option ${c === t.cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      <span class="pf-lbl">Descrição</span><input name="desc" class="pf-in" value="${esc(t.desc)}" autocomplete="off">`;
+  } else if (t.type === 'tr') {
+    fields = `<div class="pf-grid2"><label style="display:grid;gap:6px"><span class="pf-lbl">De</span>${bankSel('from', t.from)}</label><label style="display:grid;gap:6px"><span class="pf-lbl">Para</span>${bankSel('to', t.to)}</label></div>`;
+  } else {
+    const goals = S.goals.filter(g => g.kind === 'money');
+    fields = `<span class="pf-lbl">Banco</span>${bankSel('bank', t.bank)}
+      <span class="pf-lbl">Meta</span><select name="goal" class="pf-in"><option value="">Nenhuma</option>${goals.map(g => `<option value="${g.id}" ${g.id === t.goal ? 'selected' : ''}>${esc(g.title)}</option>`).join('')}</select>`;
+  }
+  const label = { in: 'ganho', out: 'gasto', tr: 'transferência', save: 'guardado', unsave: 'retirada do guardado' }[t.type];
+  return `<form data-form="txedit" data-id="${t.id}" style="display:grid;gap:12px">
+    <div class="pf-card-h"><h2>Editar ${label}</h2><button type="button" class="pf-x" data-act="sheetclose" aria-label="Fechar">×</button></div>
+    <span class="pf-lbl">Valor</span><div class="pf-money"><span>R$</span><input name="v" inputmode="decimal" value="${money}" autocomplete="off"></div>
+    ${fields}
+    <span class="pf-lbl">Data</span><input name="date" type="date" class="pf-in" value="${t.date}">
+    <div class="pf-actions"><button class="pf-btn">Salvar</button><button type="button" class="pf-btn ghost" data-act="sheetclose">Cancelar</button></div>
+  </form>`;
+}
+
+// ---------- Bancos e backup ----------
+function vAjustes() {
+  const row = b => {
+    const x = balance(b.id);
+    return `<div class="pf-tx" style="grid-template-columns:auto minmax(0,1fr) auto auto">${logo(b)}<span class="t">${esc(b.name)}${b.id === S.cfg.main ? ' <span class="pf-tag main">principal</span>' : ''}<small>Em conta ${brl(x.conta)} · Guardado ${brl(x.guard)}</small></span><button class="pf-btn ghost small" data-act="bset" data-id="${b.id}">Ajustar saldo</button><button class="pf-x" data-act="bdel" data-id="${b.id}" aria-label="Apagar">×</button></div>`;
+  };
+  return `<div class="pf-card"><div class="pf-card-h"><h2>Meus bancos</h2></div>
+    <p class="pf-card-note" style="margin:0">Use "Ajustar saldo" pra colocar quanto tem hoje em cada banco. Depois disso o app atualiza sozinho com os lançamentos.</p>
+    ${S.banks.length ? `<div class="pf-list">${banksOrdered().map(row).join('')}</div>` : '<span class="pf-kpi-note">Nenhum banco ainda.</span>'}</div>
+  <form class="pf-card pf-glow" style="--glow:var(--accent)" data-form="bank">
+    <div class="pf-card-h"><h2>Adicionar banco</h2><span class="pf-ico">${IC.card}</span></div>
+    <input name="name" class="pf-in" placeholder="Nome (ex: Carteira, Caixa)" autocomplete="off">
+    <div class="pf-grid2"><input name="conta" class="pf-in" inputmode="decimal" placeholder="Em conta hoje R$" autocomplete="off"><input name="guard" class="pf-in" inputmode="decimal" placeholder="Guardado hoje R$" autocomplete="off"></div>
+    <button class="pf-btn">Adicionar</button>
+  </form>
+  <div class="pf-card pf-glow" style="--glow:var(--blue)">
+    <div class="pf-card-h"><h2>Backup</h2>${S.cfg.lastBackup ? `<span class="pf-tag">último: ${fmtD(S.cfg.lastBackup)}</span>` : ''}</div>
+    <p class="pf-card-note" style="margin:0">Seus dados ficam só neste aparelho. Salve um backup de vez em quando, e use ele pra passar os dados do celular pro PC (ou o contrário).</p>
+    <div class="pf-actions"><button class="pf-btn small" data-act="export">Salvar backup</button><button class="pf-btn ghost small" data-act="import">Carregar backup</button></div>
+    <input type="file" id="importfile" accept=".json,application/json" hidden>
+  </div>`;
+}
+
+// ---------- Configurações ----------
+function catEditor(t, list) {
+  return `<div class="pf-picks">${list.map(c => `<span class="pf-pick" data-act="catren" data-t="${t}" data-v="${esc(c)}" title="Toque pra renomear">${esc(c)}<span class="x" data-act="catdel" data-t="${t}" data-v="${esc(c)}" aria-label="Remover">×</span></span>`).join('')}</div>
+    <form data-form="cat" data-t="${t}" class="pf-inline"><input name="name" class="pf-in" placeholder="Nova categoria" autocomplete="off"><button class="pf-btn ghost small">+</button></form>`;
+}
+function vConfig() {
+  const c = S.cfg;
+  return `<div class="pf-row">
+  <div style="display:grid;gap:14px;align-content:start">
+    <form class="pf-card" data-form="cfg">
+      <div class="pf-card-h"><h2>Geral</h2><span class="pf-ico">${IC.config}</span></div>
+      <span class="pf-lbl">Meu nome</span>
+      <input name="name" class="pf-in" value="${esc(c.name)}" autocomplete="off">
+      <span class="pf-lbl">Banco principal</span>
+      <select name="main" class="pf-in">${banksOrdered().map(b => `<option value="${b.id}" ${b.id === c.main ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
+      <span class="pf-lbl">Limite de gasto por mês</span>
+      <input name="limit" class="pf-in" inputmode="decimal" placeholder="R$ (deixe vazio pra não usar)" value="${c.limit ? (c.limit / 100).toFixed(2).replace('.', ',') : ''}" autocomplete="off">
+      <button class="pf-btn">Salvar</button>
+    </form>
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Aparência</h2></div>
+      <span class="pf-lbl">Modo</span>
+      <div class="pf-picks">${[['dark', 'Escuro'], ['light', 'Claro']].map(([k, l]) => `<button type="button" class="pf-pick" data-act="theme" data-v="${k}" aria-pressed="${c.theme === k}">${l}</button>`).join('')}</div>
+      <span class="pf-lbl">Cor de destaque</span>
+      <div class="pf-sws">${Object.entries(COLORS).map(([k, col]) => `<button type="button" class="pf-sw" style="--c:${col}" data-act="accent" data-v="${k}" aria-pressed="${c.accent === k}" aria-label="Cor ${k}"></button>`).join('')}</div>
+      <span class="pf-lbl">Esconder valores</span>
+      <div class="pf-picks"><button type="button" class="pf-pick" data-act="eye" aria-pressed="${c.hideVals}">${c.hideVals ? 'Valores escondidos' : 'Valores aparecendo'}</button></div>
+      <p class="pf-card-note" style="margin:0">Também dá pra usar o botão de olho no topo de qualquer tela.</p>
+    </div>
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Abas no menu</h2></div>
+      <p class="pf-card-note" style="margin:0">Toque pra mostrar ou esconder.</p>
+      <div class="pf-picks">${TABS.map(([id, l]) => `<button type="button" class="pf-pick" data-act="tabtg" data-v="${id}" aria-pressed="${!c.hiddenTabs.includes(id)}">${l}</button>`).join('')}</div>
+    </div>
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Bancos no painel</h2></div>
+      <p class="pf-card-note" style="margin:0">Banco escondido continua somando no total, só não aparece nos quadradinhos e nos lançamentos.</p>
+      <div class="pf-picks">${banksOrdered().map(b => `<button type="button" class="pf-pick bk" data-act="banktg" data-v="${b.id}" aria-pressed="${!c.hiddenBanks.includes(b.id)}">${logo(b, 22)}${esc(b.name)}</button>`).join('')}</div>
+    </div>
+  </div>
+  <div style="display:grid;gap:14px;align-content:start">
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Categorias de gasto</h2></div>
+      <p class="pf-card-note" style="margin:0">Toque numa categoria pra renomear, ou no × pra remover.</p>
+      ${catEditor('out', c.catsOut)}
+      <div class="pf-card-h"><h2>Categorias de ganho</h2></div>
+      ${catEditor('in', c.catsIn)}
+    </div>
+    <form class="pf-card" data-form="colors">
+      <div class="pf-card-h"><h2>Nome das cores da agenda</h2></div>
+      <p class="pf-card-note" style="margin:0">Aparece como legenda embaixo do calendário.</p>
+      ${Object.entries(COLORS).map(([k, col]) => `<label class="pf-cname"><span class="pf-dot" style="--c:${col};width:16px;height:16px;margin:0"></span><input name="${k}" class="pf-in" value="${esc(c.colorNames[k] || '')}" placeholder="Sem nome" autocomplete="off"></label>`).join('')}
+      <button class="pf-btn">Salvar nomes</button>
+    </form>
+    ${notifCard()}
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Senha pra entrar</h2><span class="pf-ico">${IC.lock}</span></div>
+      <p class="pf-card-note" style="margin:0">${c.pin ? 'O app pede a senha ao abrir e depois de 2 minutos fora dele.' : 'Crie uma senha de 4 a 6 números. O app vai pedir ela toda vez que abrir.'}</p>
+      <div class="pf-actions">${c.pin ? '<button class="pf-btn small" data-act="pinchange">Trocar senha</button><button class="pf-btn ghost small" data-act="pinoff">Tirar senha</button><button class="pf-btn ghost small" data-act="lock">Bloquear agora</button>' : '<button class="pf-btn small" data-act="pinset">Criar senha</button>'}</div>
+    </div>
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Apagar tudo</h2></div>
+      <p class="pf-card-note" style="margin:0">Zera o app neste aparelho. Salve um backup antes, isso não tem volta.</p>
+      <div class="pf-actions"><button class="pf-btn danger small" data-act="wipe">Apagar todos os dados</button></div>
+    </div>
+  </div>
+  </div>`;
+}
+
+// ---------- Senha ----------
+// Protege contra quem pegar o aparelho. Guarda só um código da senha, não a senha em si.
+function hashPin(p) {
+  let h = 2166136261 >>> 0;
+  const s = 'vida-app:' + p;
+  for (let r = 0; r < 800; r++) for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i) + r; h = Math.imul(h, 16777619) >>> 0; }
+  return h.toString(16);
+}
+let pinBuf = '', unlocked = !S.cfg.pin, hiddenAt = 0;
+function drawDots() { $('#dots').innerHTML = [...Array(S.cfg.pinLen || 4)].map((_, i) => `<i class="${i < pinBuf.length ? 'on' : ''}"></i>`).join(''); }
+function lock() { if (!S.cfg.pin) return; unlocked = false; pinBuf = ''; $('#lock').hidden = false; $('#lock-logo').textContent = S.cfg.name.charAt(0).toUpperCase(); drawDots(); }
+function pinKey(k) {
+  if (k === 'del') pinBuf = pinBuf.slice(0, -1);
+  else if (pinBuf.length < (S.cfg.pinLen || 4)) pinBuf += k;
+  drawDots();
+  if (pinBuf.length === (S.cfg.pinLen || 4)) {
+    if (hashPin(pinBuf) === S.cfg.pin) { unlocked = true; $('#lock').hidden = true; pinBuf = ''; }
+    else { const d = $('#dots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); setTimeout(() => { pinBuf = ''; drawDots(); }, 350); }
+  }
+}
+function askNewPin() {
+  const a = prompt('Crie uma senha de 4 a 6 números');
+  if (a === null) return false;
+  if (!/^\d{4,6}$/.test(a)) { alert('A senha precisa ter de 4 a 6 números.'); return false; }
+  if (prompt('Digite de novo pra confirmar') !== a) { alert('As senhas não são iguais.'); return false; }
+  S.cfg.pin = hashPin(a); S.cfg.pinLen = a.length;
+  return true;
+}
+function checkPin() {
+  const a = prompt('Digite a senha atual');
+  if (a === null) return false;
+  if (hashPin(a) !== S.cfg.pin) { alert('Senha errada.'); return false; }
+  return true;
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (S.cfg.pin && unlocked && Date.now() - hiddenAt > 120000) lock();
+});
+document.addEventListener('keydown', e => {
+  if ($('#lock').hidden) return;
+  if (/^\d$/.test(e.key)) pinKey(e.key);
+  else if (e.key === 'Backspace') pinKey('del');
+});
+
+// ---------- Notificações ----------
+// O app monta os avisos dos próximos 7 dias e manda pro servidor, que avisa o celular na hora certa.
+// Fica salvo só neste aparelho (não vai no backup), porque cada aparelho tem a sua inscrição.
+const PUSH_SERVER = 'https://vida-push.vida-push.workers.dev';
+const VAPID_PUBLIC = 'BLCNWyLtUetWYpu_JT9LZ59H2GV6EeQUlL7f8C507zUs13xtb0w32aLBtIcIwumTeql9uKZ0rknfYWeacXZww9c';
+const DEV_KEY = 'vida-dev';
+const NOTIF_DEF = { on: false, contas: true, agenda: true, vida: true, metas: true, hContas: '09:00', hMetas: '20:00' };
+function devCfg() {
+  let d;
+  try { d = JSON.parse(localStorage.getItem(DEV_KEY)); } catch (e) {}
+  if (!d || !d.id) {
+    const rnd = () => [...crypto.getRandomValues(new Uint8Array(18))].map(x => x.toString(36).padStart(2, '0')).join('').slice(0, 32);
+    d = { id: rnd(), token: rnd(), ...NOTIF_DEF };
+    try { localStorage.setItem(DEV_KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  return Object.assign({ ...NOTIF_DEF }, d);
+}
+function setDev(patch) { const d = Object.assign(devCfg(), patch); try { localStorage.setItem(DEV_KEY, JSON.stringify(d)); } catch (e) {} return d; }
+const notifReady = () => 'serviceWorker' in navigator && 'PushManager' in window && location.protocol === 'https:' && !PUSH_SERVER.startsWith('PREENCHER');
+const atTime = (d, hm) => { const [h, m] = (hm || '09:00').split(':').map(Number); const x = pd(d); x.setHours(h, m, 0, 0); return x.getTime(); };
+
+function buildReminders() {
+  const n = devCfg(), t = today(), end = addDays(t, 7), out = [];
+  if (n.contas) {
+    const seen = new Set(), list = [];
+    for (const i of [...billInst(), ...billsBetween(t, addDays(end, 1))]) {
+      const k = i.b.id + ':' + i.key;
+      if (!i.paid && !seen.has(k)) { seen.add(k); list.push(i); }
+    }
+    for (let d = t; d <= end; d = addDays(d, 1)) for (const i of list) {
+      const late = dayIdx(i.due, d), money = brlRaw(i.b.cents);
+      let body = null;
+      if (i.due === addDays(d, 1)) body = `${money} vence amanhã`;
+      else if (i.due === d) body = `${money} vence hoje`;
+      else if (late > 0) body = `${money} atrasada há ${plural(late, 'dia', 'dias')}`;
+      if (body) out.push({ k: `bill:${i.b.id}:${i.key}:${d}`, at: atTime(d, n.hContas), title: `Conta: ${i.b.name}`, body, go: 'contas' });
+    }
+  }
+  if (n.agenda) for (const e of evBetween(t, end)) {
+    if (e.done) continue;
+    out.push({ k: `ev:${e.id}:${e.date}`, at: e.time ? atTime(e.date, e.time) - 30 * 6e4 : atTime(e.date, '08:00'),
+      title: e.title, body: (e.time ? `Às ${e.time}` : 'Hoje') + (e.notes ? ' · ' + e.notes : ''), go: 'agenda' });
+  }
+  if (n.vida) for (const h of S.habits) for (let d = t > h.start ? t : h.start; d <= end && (!h.until || d <= h.until); d = addDays(d, 1)) {
+    if (!habOn(h, d) || habState(h, d) === 'ok') continue;
+    const items = habItems(h, d).map(i => i.t);
+    out.push({ k: `hab:${h.id}:${d}`, at: h.time ? atTime(d, h.time) - 15 * 6e4 : atTime(d, '08:00'),
+      title: `Hora de: ${h.title}${h.time ? ' (' + h.time + (h.timeEnd ? '–' + h.timeEnd : '') + ')' : ''}`,
+      body: items.length ? items.slice(0, 4).join(' · ') + (items.length > 4 ? '…' : '') : 'Siga o sistema hoje.', go: 'vida' });
+  }
+  if (n.metas) for (const g of S.goals) {
+    if (g.kind !== 'money' || g.done || !g.deadline) continue;
+    const s = goalSys(g);
+    if (s.complete) continue;
+    // conta como se nada mais fosse guardado; se você guardar, o app atualiza os avisos
+    for (let d = t; d <= end && d <= g.deadline; d = addDays(d, 1)) {
+      const need = s.expAt(d) - s.saved;
+      if (need > 0) out.push({ k: `goal:${g.id}:${d}`, at: atTime(d, n.hMetas), title: `Meta: ${g.title}`, body: `Guarde ${brlRaw(need)} hoje pra ficar em dia`, go: 'metas' });
+    }
+  }
+  const now = Date.now() - 6e4;
+  return out.filter(r => r.at > now).sort((a, b) => a.at - b.at).slice(0, 300);
+}
+
+var syncTimer = null, lastSync = ''; // var: save() pode chamar antes desta linha rodar
+function scheduleSync(delay = 2500) { clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, delay); }
+async function syncNow() {
+  const n = devCfg();
+  if (!n.on || !notifReady()) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return;
+    const body = JSON.stringify({ id: n.id, token: n.token, sub: sub.toJSON(), reminders: buildReminders() });
+    if (body === lastSync) return;
+    const r = await fetch(PUSH_SERVER + '/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+    if (r.ok) { lastSync = body; setDev({ lastSync: Date.now() }); }
+  } catch (e) { /* sem internet: tenta de novo na próxima vez */ }
+}
+async function saveSwCfg(n) {
+  try { await (await caches.open('vida-cfg')).put('cfg', new Response(JSON.stringify({ server: PUSH_SERVER, id: n.id, token: n.token }))); } catch (e) {}
+}
+const b64ToBytes = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)), c => c.charCodeAt(0));
+async function enableNotif() {
+  if (!notifReady()) { alert('As notificações funcionam no app publicado (endereço com https), com ele instalado.'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { alert('Você não permitiu as notificações. Dá pra liberar nas configurações do navegador, em Notificações.'); return; }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC) });
+    const n = setDev({ on: true });
+    await saveSwCfg(n);
+    lastSync = '';
+    await syncNow();
+    toast('Notificações ligadas'); render();
+  } catch (e) { alert('Não consegui ligar as notificações: ' + e.message); }
+}
+async function disableNotif() {
+  setDev({ on: false });
+  try { const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch (e) {}
+  toast('Notificações desligadas'); render();
+}
+async function testNotif() {
+  const n = devCfg();
+  try {
+    await syncNow();
+    const r = await fetch(PUSH_SERVER + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: n.id, token: n.token }) });
+    toast(r.ok ? 'Teste enviado, deve chegar em segundos' : 'O servidor não respondeu');
+  } catch (e) { toast('Sem internet pra testar'); }
+}
+function notifCard() {
+  const n = devCfg(), ready = notifReady();
+  const tg = (k, l) => `<button type="button" class="pf-pick" data-act="ntg" data-v="${k}" aria-pressed="${n[k]}">${l}</button>`;
+  return `<div class="pf-card">
+    <div class="pf-card-h"><h2>Notificações</h2><span class="pf-ico">${IC.bell}</span></div>
+    ${!ready ? '<p class="pf-card-note" style="margin:0">Funcionam quando o app estiver publicado (no endereço https) e instalado no aparelho.</p>' : `
+    <p class="pf-card-note" style="margin:0">${n.on ? 'Ligadas neste aparelho. Os avisos dos próximos 7 dias ficam no servidor: abra o app pelo menos uma vez por semana pra renovar.' : 'Avisa contas, compromissos, sistemas da Vida e metas, mesmo com o app fechado.'}</p>
+    <div class="pf-actions">${n.on ? '<button class="pf-btn small" data-act="ntest">Mandar teste</button><button class="pf-btn ghost small" data-act="noff">Desligar</button>' : '<button class="pf-btn small" data-act="non">Ligar notificações</button>'}</div>
+    ${n.on ? `<span class="pf-lbl">Avisar sobre</span>
+    <div class="pf-picks">${tg('contas', 'Contas')}${tg('agenda', 'Agenda')}${tg('vida', 'Vida')}${tg('metas', 'Metas')}</div>
+    <form data-form="nhours" class="pf-grid2">
+      <label style="display:grid;gap:6px"><span class="pf-lbl">Aviso de contas às</span><input name="hContas" type="time" class="pf-in" value="${n.hContas}"></label>
+      <label style="display:grid;gap:6px"><span class="pf-lbl">Aviso das metas às</span><input name="hMetas" type="time" class="pf-in" value="${n.hMetas}"></label>
+      <button class="pf-btn ghost small" style="grid-column:1/-1">Salvar horários</button>
+    </form>
+    <p class="pf-card-note" style="margin:0">Compromissos com horário avisam 30 min antes. Sistemas da Vida com horário avisam 15 min antes.</p>` : ''}`}
+  </div>`;
+}
+
+// ---------- Desenhar ----------
+const VIEWS = { painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, vida: vVida, compras: vCompras, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+function navBtn(id, label, extra = '') { return `<button data-go="${id}" aria-selected="${U.view === id}">${IC[id]}${label}${extra}</button>`; }
+function render() {
+  const late = billSummary().late.length, behind = S.goals.filter(goalBehind).length;
+  const badge = id => id === 'contas' && late ? `<span class="cnt">${late}</span>` : id === 'metas' && behind ? `<span class="cnt">${behind}</span>` : '';
+  $('#nav').innerHTML = TABS.filter(([id]) => !S.cfg.hiddenTabs.includes(id)).map(([id, l]) => navBtn(id, l, badge(id))).join('');
+  $('#nav-foot').innerHTML = navBtn('ajustes', 'Bancos e backup') + navBtn('config', 'Configurações');
+  $('#brand').setAttribute('aria-selected', U.view === 'painel');
+  document.documentElement.style.setProperty('--accent', COLORS[S.cfg.accent] || COLORS.orange);
+  const theme = S.cfg.theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#efebe5' : '#17151a';
+  $('#brand .pf-logo').textContent = S.cfg.name.charAt(0).toUpperCase();
+  $('#brand strong').textContent = S.cfg.name;
+  $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
+  $('#eye').setAttribute('aria-pressed', S.cfg.hideVals);
+  const nAv = avisos().filter(a => a.lvl !== 'info').length;
+  $('#bell').innerHTML = IC.bell + (nAv ? `<span class="n">${nAv}</span>` : '');
+  $('#bell').dataset.on = nAv > 0;
+  $('#pop').hidden = !U.bell;
+  if (U.bell) $('#pop').innerHTML = bellPop();
+  $('#titulo').textContent = TITLES[U.view];
+  const hoje = fmtLong(today());
+  $('#resumo').textContent = hoje.charAt(0).toUpperCase() + hoje.slice(1);
+  $('#view').innerHTML = VIEWS[U.view]();
+}
+function go(v) { U.view = v; U.bell = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
+
+// ---------- Cliques ----------
+document.addEventListener('click', e => {
+  const k = e.target.closest("[data-pin]");
+  if (k) { pinKey(k.dataset.pin); return; }
+  if (!unlocked) return;
+  // fecha o sino / a janela ao tocar fora
+  if (U.bell && !e.target.closest('#pop, #bell')) { U.bell = false; $('#pop').hidden = true; }
+  if (e.target.id === 'sheet') { closeSheet(); return; }
+  const g = e.target.closest('[data-go]');
+  if (g) { go(g.dataset.go); return; }
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const { act, id, v } = el.dataset;
+  const A = {
+    pick() {
+      const st = U.l[el.dataset.k] || (U.l[el.dataset.k] = {}), f = el.dataset.f;
+      st[f] = st[f] === v ? null : v;
+      el.parentElement.querySelectorAll('[data-act=pick]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === st[f]));
+      return 'keep';
+    },
+    eye() { S.cfg.hideVals = !S.cfg.hideVals; },
+    bell() { U.bell = !U.bell; render(); return 'keep'; },
+    non() { enableNotif(); return 'keep'; },
+    noff() { disableNotif(); return 'keep'; },
+    ntest() { testNotif(); return 'keep'; },
+    ntg() { const n = devCfg(); setDev({ [v]: !n[v] }); scheduleSync(500); render(); return 'keep'; },
+    sheetclose() { closeSheet(); return 'keep'; },
+    txedit() { openSheet(txEditForm(find(S.tx, id))); return 'keep'; },
+    habdone() {
+      const h = find(S.habits, id), d = el.dataset.d, log = h.log || (h.log = {});
+      const l = log[d] || (log[d] = { done: false, items: {} });
+      l.done = !l.done;
+      l.items = {}; if (l.done) for (const i of habItems(h, d)) l.items[i.id] = true;
+      if (l.done) toast(h.title + ' feito ✓');
+    },
+    habitem() {
+      const h = find(S.habits, id), d = el.dataset.d, log = h.log || (h.log = {});
+      const l = log[d] || (log[d] = { done: false, items: {} });
+      if (l.done) { l.done = false; for (const i of habItems(h, d)) l.items[i.id] = true; }
+      l.items[el.dataset.i] = !l.items[el.dataset.i];
+      const items = habItems(h, d);
+      l.done = items.length > 0 && items.every(i => l.items[i.id]);
+      if (l.done) toast(h.title + ' completo ✓');
+    },
+    habidel() { const h = find(S.habits, id); h.items = h.items.filter(i => i.id !== el.dataset.i); },
+    hmonth() { const [y, m] = (U.hm[id] || today().slice(0, 7)).split('-').map(Number); U.hm[id] = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
+    habedit() {
+      const h = find(S.habits, id);
+      const tm = prompt('Horário (ex: 18:00-19:00, ou vazio pra sem horário)', h.time ? h.time + (h.timeEnd ? '-' + h.timeEnd : '') : '');
+      if (tm === null) return 'keep';
+      const mt = tm.trim().match(/^(\d{1,2}):(\d{2})(?:\s*-\s*(\d{1,2}):(\d{2}))?$/);
+      if (tm.trim() && !mt) { alert('Escreva assim: 18:00-19:00'); return 'keep'; }
+      const dt = prompt('Até quando? (dia/mês/ano, ou vazio pra sem fim)', h.until ? fmtD(h.until) : '');
+      if (dt === null) return 'keep';
+      const md = dt.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (dt.trim() && !md) { alert('Escreva a data assim: 30/11/2026'); return 'keep'; }
+      h.time = mt ? pad(mt[1]) + ':' + mt[2] : ''; h.timeEnd = mt && mt[3] ? pad(mt[3]) + ':' + mt[4] : '';
+      h.until = md ? `${md[3]}-${pad(md[2])}-${pad(md[1])}` : '';
+      toast('Sistema atualizado');
+    },
+    habdel() { if (!confirm('Apagar esse sistema e todo o histórico dele?')) return 'keep'; S.habits = S.habits.filter(h => h.id !== id); },
+    billdelv() {
+      const b = find(S.bills, id);
+      if (b.group && S.bills.filter(x => x.group === b.group).length > 1) {
+        if (confirm(`Apagar só a parcela "${b.name}"?\n\nOK = só essa · Cancelar = outras opções`)) S.bills = S.bills.filter(x => x.id !== id);
+        else if (confirm('Apagar TODAS as parcelas dessa compra?')) S.bills = S.bills.filter(x => x.group !== b.group);
+        else return 'keep';
+      } else if (confirm(`Apagar a conta "${b.name}"?`)) S.bills = S.bills.filter(x => x.id !== id);
+      else return 'keep';
+    },
+    deltx() { if (confirm('Apagar esse lançamento?')) S.tx = S.tx.filter(t => t.id !== id); },
+    hmode() { U.h.mode = v; },
+    hshift() {
+      const n = +v, h = U.h, d = pd(h.ref);
+      if (h.mode === 'dia') h.ref = addDays(h.ref, n);
+      else if (h.mode === 'semana') h.ref = addDays(h.ref, 7 * n);
+      else if (h.mode === 'mes') h.ref = iso(new Date(d.getFullYear(), d.getMonth() + n, 1));
+      else h.ref = iso(new Date(d.getFullYear() + n, 0, 1));
+    },
+    wkshift() {
+      U.wk.ref = addDays(U.wk.ref, 7 * v);
+      const a = weekStart(U.wk.ref), t = today();
+      U.wk.sel = t >= a && t <= addDays(a, 6) ? t : a;
+    },
+    wkday() { U.wk.sel = v; },
+    relshift() { const [y, m] = U.rel.split('-').map(Number); U.rel = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
+    bt() { U.bt = v; },
+    billpay() {
+      const b = find(S.bills, id), key = el.dataset.key;
+      if (isPaid(b, key)) {
+        const rec = key === 'v' ? b.paid : b.paid[key];
+        if (typeof rec === 'string' && confirm('Desfazer o pagamento? O gasto registrado também vai ser apagado.')) S.tx = S.tx.filter(t => t.id !== rec);
+        else if (typeof rec === 'string') return 'keep';
+        if (key === 'v') b.paid = false; else delete b.paid[key];
+      } else {
+        let rec = true;
+        const mb = find(S.banks, b.bank) || find(S.banks, S.cfg.main);
+        if (mb && confirm(`Registrar ${brlRaw(b.cents)} como gasto no ${mb.name}?\n\nOK = sim · Cancelar = só marcar como paga`)) {
+          rec = uid();
+          S.tx.push({ id: rec, type: 'out', cents: b.cents, bank: mb.id, cat: b.cat || (S.cfg.catsOut.includes('Contas') ? 'Contas' : ''), desc: b.name, date: today() });
+        }
+        if (key === 'v') b.paid = rec; else (b.paid || (b.paid = {}))[key] = rec;
+        toast(b.name + ' paga');
+      }
+    },
+    billdel() { if (confirm('Apagar essa conta fixa? Ela some de todos os meses.')) S.bills = S.bills.filter(b => b.id !== id); },
+    shoptg() { const i = find(S.shop, id); i.done = !i.done; },
+    shopdel() { S.shop = S.shop.filter(i => i.id !== id); },
+    shopclear() { S.shop = S.shop.filter(i => !i.done); },
+    gmonth() {
+      const g = find(S.goals, id), t = today();
+      const cur = U.gm[id] || (t < g.start ? g.start : t > g.deadline ? g.deadline : t).slice(0, 7);
+      const [y, m] = cur.split('-').map(Number);
+      U.gm[id] = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7);
+    },
+    gedit() {
+      const g = find(S.goals, id);
+      const c = prompt(`Quanto custa "${g.title}"?`, (g.cents / 100).toFixed(2).replace('.', ','));
+      if (c === null) return 'keep';
+      const dt = prompt('Até quando quer realizar? (dia/mês/ano)', g.deadline ? fmtD(g.deadline) : '');
+      if (dt === null) return 'keep';
+      const nc = parseMoney(c), mt = dt.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!(nc > 0)) { alert('Valor inválido'); return 'keep'; }
+      if (dt.trim() && !mt) { alert('Escreva a data assim: 30/06/2027'); return 'keep'; }
+      const nd = mt ? `${mt[3]}-${pad(mt[2])}-${pad(mt[1])}` : '';
+      if (nd && nd < g.start) { alert('A data precisa ser depois do começo da meta (' + fmtD(g.start) + ').'); return 'keep'; }
+      g.cents = nc; g.deadline = nd;
+      toast('Meta atualizada');
+    },
+    agday() { U.ag.sel = v; },
+    agmonth() { const [y, m] = U.ag.month.split('-').map(Number); U.ag.month = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
+    evtg() {
+      const ev = find(S.events, id), d = el.dataset.d;
+      if (isRep(ev)) { const m = ev.doneDates || (ev.doneDates = {}); if (m[d]) delete m[d]; else m[d] = true; }
+      else ev.done = !ev.done;
+    },
+    evdel() {
+      const ev = find(S.events, id), d = el.dataset.d;
+      if (!isRep(ev)) { if (!confirm('Apagar esse compromisso?')) return 'keep'; S.events = S.events.filter(x => x.id !== id); return; }
+      if (confirm(`Apagar "${ev.title}" só no dia ${fmtD(d)}?\n\nOK = só esse dia · Cancelar = outras opções`)) { (ev.skip || (ev.skip = {}))[d] = true; return; }
+      if (confirm('Apagar a repetição inteira (todos os dias)?')) S.events = S.events.filter(x => x.id !== id);
+      else return 'keep';
+    },
+    sttg() { const s = find(find(S.goals, el.dataset.g).steps, id); s.done = !s.done; },
+    stdel() { const gl = find(S.goals, el.dataset.g); gl.steps = gl.steps.filter(s => s.id !== id); },
+    gdone() { const gl = find(S.goals, id); gl.done = !gl.done; },
+    gdel() {
+      if (!confirm('Apagar essa meta? O dinheiro que você guardou continua no guardado do banco.')) return 'keep';
+      S.goals = S.goals.filter(x => x.id !== id);
+      for (const t of S.tx) if (t.goal === id) delete t.goal;
+    },
+    bset() {
+      const b = find(S.banks, id), x = balance(id), fmt = c => (c / 100).toFixed(2).replace('.', ',');
+      const c = prompt(`Quanto tem EM CONTA hoje no ${b.name}?`, fmt(x.conta));
+      if (c === null) return 'keep';
+      const g2 = prompt(`E quanto tem GUARDADO no ${b.name}?`, fmt(x.guard));
+      if (g2 === null) return 'keep';
+      const nc = parseMoney(c), ng = parseMoney(g2);
+      if (isNaN(nc) || isNaN(ng)) { alert('Valor inválido'); return 'keep'; }
+      b.initConta = (b.initConta || 0) + nc - x.conta;
+      b.initGuard = (b.initGuard || 0) + ng - x.guard;
+      toast('Saldo do ' + b.name + ' ajustado');
+    },
+    bdel() {
+      if (id === S.cfg.main) { alert('Esse é o banco principal. Escolha outro principal em Configurações antes.'); return 'keep'; }
+      if (S.tx.some(t => t.bank === id || t.from === id || t.to === id)) { alert('Esse banco tem lançamentos. Apague os lançamentos dele antes.'); return 'keep'; }
+      if (confirm('Apagar esse banco?')) S.banks = S.banks.filter(b => b.id !== id);
+    },
+    accent() { S.cfg.accent = v; },
+    theme() { S.cfg.theme = v; },
+    tabtg() { const h = S.cfg.hiddenTabs; S.cfg.hiddenTabs = h.includes(v) ? h.filter(x => x !== v) : [...h, v]; },
+    banktg() {
+      if (v === S.cfg.main) { alert('O banco principal não pode ser escondido.'); return 'keep'; }
+      const h = S.cfg.hiddenBanks; S.cfg.hiddenBanks = h.includes(v) ? h.filter(x => x !== v) : [...h, v];
+    },
+    catren() {
+      const t = el.dataset.t, list = t === 'out' ? S.cfg.catsOut : S.cfg.catsIn;
+      const n = (prompt('Novo nome da categoria', v) || '').trim();
+      if (!n || n === v) return 'keep';
+      if (list.includes(n)) { alert('Essa categoria já existe.'); return 'keep'; }
+      list[list.indexOf(v)] = n;
+      for (const x of S.tx) if (x.cat === v && x.type === t) x.cat = n;
+    },
+    catdel() {
+      e.stopPropagation();
+      const t = el.dataset.t, key = t === 'out' ? 'catsOut' : 'catsIn';
+      if (!confirm(`Remover a categoria "${v}"? Os lançamentos antigos continuam com ela.`)) return 'keep';
+      S.cfg[key] = S.cfg[key].filter(c => c !== v);
+    },
+    pinset() { if (!askNewPin()) return 'keep'; unlocked = true; toast('Senha criada'); },
+    pinchange() { if (!checkPin() || !askNewPin()) return 'keep'; toast('Senha trocada'); },
+    pinoff() { if (!checkPin()) return 'keep'; delete S.cfg.pin; delete S.cfg.pinLen; toast('Senha removida'); },
+    lock() { lock(); return 'keep'; },
+    wipe() {
+      if (!confirm('Tem certeza? Isso apaga TUDO deste aparelho.')) return 'keep';
+      if ((prompt('Pra confirmar, escreva APAGAR') || '').trim().toUpperCase() !== 'APAGAR') return 'keep';
+      localStorage.removeItem(KEY); sessionStorage.clear(); location.reload(); return 'keep';
+    },
+    export() {
+      S.cfg.lastBackup = today(); save();
+      const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `backup-vida-${today()}.json`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    },
+    import() { $('#importfile').click(); return 'keep'; },
+  };
+  if (!A[act]) return;
+  if (A[act]() === 'keep') return;
+  save(); render();
+});
+
+document.addEventListener('input', e => {
+  if (e.target.dataset.act === 'hq') { U.h.q = e.target.value; $('#hist-res').innerHTML = histResults(); }
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.id === 'importfile' && el.files[0]) {
+    el.files[0].text().then(txt => {
+      const d = JSON.parse(txt);
+      if (!Array.isArray(d.banks) || !Array.isArray(d.tx)) throw new Error();
+      if (!confirm('Isso troca TODOS os dados deste aparelho pelos do backup. Continuar?')) return;
+      S = Object.assign(blank(), d); fixData(); save(); unlocked = true; render(); toast('Backup carregado');
+    }).catch(() => alert('Esse arquivo não é um backup válido.'));
+    return;
+  }
+  if (el.matches('[data-freq]')) {
+    el.form.querySelector('.rep-weekly').hidden = el.value !== 'weekly';
+    el.form.querySelector('.rep-every').hidden = el.value !== 'every';
+    return;
+  }
+  if (el.matches('[data-parc]')) { el.form.querySelector('.parc-x').hidden = !(+el.value > 1); return; }
+  if (el.matches('[data-rep]')) {
+    const show = { every: el.value === 'every', weekly: el.value === 'weekly', until: el.value !== 'none' };
+    for (const k in show) el.form.querySelector('.rep-' + k).hidden = !show[k];
+    return;
+  }
+  if (el.dataset.act === 'hbank') { U.h.bank = el.value; render(); }
+  if (el.dataset.act === 'hdate' && el.value) { U.h[el.dataset.f] = el.value; render(); }
+});
+
+// ---------- Formulários ----------
+document.addEventListener('submit', e => {
+  const f = e.target; e.preventDefault();
+  if (!unlocked) return;
+  const d = Object.fromEntries(new FormData(f));
+  const F = {
+    tx() {
+      const kind = f.dataset.kind, st = U.l[kind], c = parseMoney(d.v);
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (!st.bank) return toast('Escolha o banco');
+      const parc = parseInt(d.parc || '1', 10);
+      if (kind === 'out' && parc > 1) {
+        if (!d.first) return toast('Escolha quando vence a primeira parcela');
+        const group = uid(), each = Math.floor(c / parc), name = d.desc.trim() || st.cat || 'Compra';
+        for (let i = 0; i < parc; i++) S.bills.push({ id: uid(), kind: 'var', name: `${name} (${i + 1}/${parc})`, cents: each + (i === 0 ? c - each * parc : 0),
+          date: addMonths(d.first, i), paid: false, group, bank: st.bank, cat: st.cat || '' });
+        st.cat = null;
+        return toast(`Compra em ${parc}x de ${brlRaw(each)} foi pras Contas a pagar`);
+      }
+      S.tx.push({ id: uid(), type: kind, cents: c, bank: st.bank, cat: st.cat || '', desc: d.desc.trim(), date: d.date || today() });
+      st.cat = null;
+      toast((kind === 'out' ? 'Gasto de ' : 'Ganho de ') + brlRaw(c) + ' registrado');
+    },
+    sv() {
+      const st = U.l.sv, c = parseMoney(d.v), dir = st.dir || 'save';
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (!st.bank) return toast('Escolha o banco');
+      const tx = { id: uid(), type: dir, cents: c, bank: st.bank, desc: '', date: d.date || today() };
+      if (st.goal && find(S.goals, st.goal)) tx.goal = st.goal;
+      S.tx.push(tx);
+      toast((dir === 'save' ? 'Guardado ' : 'Tirado do guardado ') + brlRaw(c));
+    },
+    gsave() {
+      const g = find(S.goals, f.dataset.g), st = U.l['g_' + g.id], c = parseMoney(d.v), dir = st.dir || 'save';
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (!st.bank) return toast('Escolha o banco');
+      S.tx.push({ id: uid(), type: dir, cents: c, bank: st.bank, goal: g.id, desc: '', date: today() });
+      toast((dir === 'save' ? 'Guardado pra ' : 'Tirado de ') + g.title + ': ' + brlRaw(c));
+    },
+    gdate() {
+      if (!d.deadline || d.deadline < today()) return toast('Escolha uma data a partir de hoje');
+      const g = find(S.goals, f.dataset.g); g.deadline = d.deadline; if (g.start > d.deadline) g.start = today();
+    },
+    tr() {
+      const c = parseMoney(d.v);
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (d.from === d.to) return toast('Escolha bancos diferentes');
+      S.tx.push({ id: uid(), type: 'tr', cents: c, from: d.from, to: d.to, desc: '', date: today() });
+      toast('Movido ' + brlRaw(c));
+    },
+    bill() {
+      const c = parseMoney(d.v);
+      if (!d.name.trim()) return toast('Escreva o nome da conta');
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (U.bt === 'fixa') {
+        const day = parseInt(d.day, 10);
+        if (!(day >= 1 && day <= 31)) return toast('Escreva o dia do vencimento (1 a 31)');
+        S.bills.push({ id: uid(), kind: 'fixa', name: d.name.trim(), cents: c, day, start: d.start || today().slice(0, 7), paid: {} });
+      } else {
+        if (!d.date) return toast('Escolha a data');
+        S.bills.push({ id: uid(), kind: 'var', name: d.name.trim(), cents: c, date: d.date, paid: false });
+      }
+      toast('Conta adicionada');
+    },
+    nhours() { setDev({ hContas: d.hContas || '09:00', hMetas: d.hMetas || '20:00' }); scheduleSync(500); toast('Horários salvos'); },
+    habit() {
+      const fd = new FormData(f), title = d.title.trim();
+      if (!title) return toast('Escreva o nome do sistema');
+      const freq = { type: d.freq };
+      if (d.freq === 'weekly') { freq.days = fd.getAll('wd').map(Number); if (!freq.days.length) return toast('Escolha os dias da semana'); }
+      if (d.freq === 'every') { freq.n = parseInt(d.n, 10); if (!(freq.n >= 2)) return toast('Escreva de quantos em quantos dias (2 ou mais)'); }
+      if (d.until && d.until < (d.start || today())) return toast('A data final precisa ser depois do começo');
+      const items = d.items.split('\n').map(s => s.trim()).filter(Boolean).map(t => ({ id: uid(), t, days: [] }));
+      S.habits.push({ id: uid(), title, area: d.area || 'Outros', freq, time: d.time || '', timeEnd: d.timeEnd || '', start: d.start || today(), until: d.until || '', items, log: {} });
+      toast('Sistema criado');
+    },
+    habitem() {
+      if (!d.t.trim()) return;
+      find(S.habits, f.dataset.h).items.push({ id: uid(), t: d.t.trim(), days: new FormData(f).getAll('wd').map(Number) });
+    },
+    txedit() {
+      const t = find(S.tx, f.dataset.id), c = parseMoney(d.v);
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (t.type === 'tr' && d.from === d.to) return toast('Escolha bancos diferentes');
+      t.cents = c; t.date = d.date || t.date;
+      if ('bank' in d) t.bank = d.bank;
+      if ('cat' in d) t.cat = d.cat;
+      if ('desc' in d) t.desc = d.desc.trim();
+      if ('from' in d) { t.from = d.from; t.to = d.to; }
+      if ('goal' in d) { if (d.goal) t.goal = d.goal; else delete t.goal; }
+      closeSheet(); toast('Lançamento atualizado');
+    },
+    shop() { if (!d.name.trim()) return; S.shop.push({ id: uid(), name: d.name.trim(), done: false }); setTimeout(() => $('[data-form=shop] input').focus()); },
+    ev() {
+      if (!d.title.trim()) return toast('Escreva o que fazer');
+      const rep = { type: d.rep || 'none', until: d.until || '' };
+      if (rep.type === 'every') { rep.n = parseInt(d.n, 10); if (!(rep.n >= 2)) return toast('Escreva de quantos em quantos dias (2 ou mais)'); }
+      if (rep.type === 'weekly') { rep.days = new FormData(f).getAll('wd').map(Number); if (!rep.days.length) return toast('Escolha pelo menos um dia da semana'); }
+      S.events.push({ id: uid(), title: d.title.trim(), date: U.ag.sel, time: d.time || '', notes: d.notes.trim(), color: U.l.ev.color || 'purple', rep, done: false });
+      toast(rep.type === 'none' ? 'Compromisso adicionado' : 'Compromisso repetido adicionado');
+    },
+    goal() {
+      const c = parseMoney(d.v), ini = parseMoney(d.initial);
+      if (!d.title.trim()) return toast('Escreva a meta');
+      if (!(c > 0)) return toast('Escreva quanto custa');
+      if (d.deadline && d.deadline < today()) return toast('A data precisa ser a partir de hoje');
+      S.goals.push({ id: uid(), kind: 'money', title: d.title.trim(), cents: c, initial: ini > 0 ? ini : 0, start: today(), deadline: d.deadline || '', done: false });
+      toast('Meta criada');
+    },
+    step() { if (!d.t.trim()) return; find(S.goals, f.dataset.g).steps.push({ id: uid(), t: d.t.trim(), done: false }); },
+    bank() {
+      if (!d.name.trim()) return toast('Escreva o nome do banco');
+      const c = parseMoney(d.conta), g = parseMoney(d.guard);
+      S.banks.push({ id: uid(), name: d.name.trim(), logo: null, initConta: isNaN(c) ? 0 : c, initGuard: isNaN(g) ? 0 : g });
+      toast('Banco adicionado');
+    },
+    cfg() {
+      S.cfg.name = d.name.trim() || 'Fillipe';
+      if (d.main && d.main !== S.cfg.main) {
+        S.cfg.main = d.main;
+        S.cfg.hiddenBanks = S.cfg.hiddenBanks.filter(x => x !== d.main);
+        for (const k of ['out', 'in', 'sv']) U.l[k].bank = d.main;
+      }
+      const lim = parseMoney(d.limit);
+      S.cfg.limit = lim > 0 ? lim : 0;
+      toast('Configurações salvas');
+    },
+    cat() {
+      const n = d.name.trim(), key = f.dataset.t === 'out' ? 'catsOut' : 'catsIn';
+      if (!n) return;
+      if (S.cfg[key].includes(n)) return toast('Essa categoria já existe');
+      S.cfg[key].push(n);
+    },
+    colors() {
+      for (const k of Object.keys(COLORS)) S.cfg.colorNames[k] = (d[k] || '').trim();
+      toast('Nomes salvos');
+    },
+  };
+  const before = JSON.stringify(S);
+  F[f.dataset.form]();
+  if (JSON.stringify(S) !== before) { save(); render(); }
+});
+
+// ---------- Início ----------
+try { const v = sessionStorage.getItem('vida-view'); if (v && VIEWS[v]) U.view = v; } catch (e) {}
+// abriu por uma notificação: vai direto pra aba do aviso
+const goParam = new URLSearchParams(location.search).get('go');
+if (goParam && VIEWS[goParam]) { U.view = goParam; history.replaceState(null, '', location.pathname); }
+render();
+scheduleSync(1500);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleSync(1000); });
+if (S.cfg.pin) lock();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
