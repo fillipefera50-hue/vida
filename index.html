@@ -294,6 +294,56 @@
 
   .pf-toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--card-2); border: 1px solid var(--line); padding: 12px 18px; border-radius: 12px; font-size: 14px; transition: .25s; pointer-events: none; box-shadow: 0 8px 30px rgba(0,0,0,.3); z-index: 30; }
   .pf-toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .pf-subnav { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: -4px -2px 0; padding: 2px; }
+  .pf-subnav::-webkit-scrollbar { display: none; }
+  .pf-subnav[hidden] { display: none; }
+  .pf-subnav button { all: unset; cursor: pointer; flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .pf-subnav button svg { width: 15px; height: 15px; }
+  .pf-subnav button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 600; }
+  .pf-vida-start { min-height: 62vh; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; }
+  .pf-vida-start p { margin: 6px 0 0; color: var(--fg); font-size: 15px; }
+  .pf-vida-btn { all: unset; cursor: pointer; width: 190px; height: 190px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; font-weight: 800; letter-spacing: .14em; color: #fff;
+    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 60%, #000));
+    box-shadow: 0 0 0 10px var(--accent-soft), 0 18px 60px color-mix(in srgb, var(--accent) 45%, transparent); animation: vidaPulse 2.4s ease-in-out infinite; transition: transform .15s; }
+  .pf-vida-btn:active { transform: scale(.94); }
+  @keyframes vidaPulse { 50% { box-shadow: 0 0 0 22px transparent, 0 18px 70px color-mix(in srgb, var(--accent) 55%, transparent); } }
+  .pf-kpis.mini { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  @media (max-width: 760px) { .pf-kpis.mini { gap: 8px; } .pf-kpis.mini .pf-kpi { padding: 12px; } .pf-kpis.mini .pf-ico { display: none; } .pf-kpis.mini .pf-kpi-val { font-size: 17px; } .pf-kpis.mini .pf-kpi-label { font-size: 10px; } .pf-kpis.mini .pf-kpi-note { font-size: 11px; } }
+  .pf-wstrip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .pf-wstrip div { display: grid; gap: 3px; justify-items: center; padding: 9px 2px; border-radius: 11px; background: var(--card-2); border: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+  .pf-wstrip b { font-size: 12px; color: var(--fg); font-variant-numeric: tabular-nums; }
+  .pf-wstrip small { font-size: 9.5px; color: var(--dim); }
+  .pf-wstrip .ok { background: color-mix(in srgb, var(--green) 18%, var(--card-2)); border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+  .pf-wstrip .bad { background: color-mix(in srgb, var(--red) 15%, var(--card-2)); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
+  .pf-wstrip .today { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .pf-kind { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
+  .pf-pick button.x { all: unset; cursor: pointer; color: var(--dim); font-size: 15px; line-height: 1; padding: 0 2px; }
+  .pf-books { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .pf-book { display: grid; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--card-2); border: 1px solid var(--line); border-left: 3px solid var(--c); min-width: 0; }
+  .pf-book .pf-pick { padding: 6px 11px; font-size: 12px; }
+  .pf-quote { margin: 6px 0 0; font-size: 19px; line-height: 1.45; font-style: italic; color: var(--fg); }
+  .pf-quote.small { font-size: 15px; margin: 0; }
+  .pf-vida-start.small { min-height: 0; padding: 26px 0 10px; }
+  .pf-vida-btn.morte { width: 130px; height: 130px; font-size: 21px; color: #e9e6ee; animation: none;
+    background: radial-gradient(circle at 35% 30%, #4a4652, #26232b 60%, #121015); box-shadow: 0 0 0 8px rgba(255,255,255,.04), 0 14px 40px rgba(0,0,0,.5); }
+  :root[data-theme="light"] .pf-vida-btn.morte { color: #fff; }
+  .pf-dstrip { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; }
+  .pf-dstrip span { aspect-ratio: 1; display: grid; place-items: center; border-radius: 7px; font-size: 10.5px; background: var(--card-2); color: var(--dim); border: 1px solid var(--line); }
+  .pf-dstrip .ok { background: color-mix(in srgb, var(--green) 30%, var(--card-2)); color: var(--fg); border-color: transparent; }
+  .pf-dstrip .bad { background: color-mix(in srgb, var(--red) 30%, var(--card-2)); color: var(--fg); border-color: transparent; }
+  .pf-dstrip .now { border-color: var(--accent); color: var(--fg); }
+  .pf-dstrip .today { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .pf-advs { display: grid; gap: 10px; }
+  .pf-adv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; }
+  .pf-adv .pf-dot { margin-top: 6px; }
+  .pf-adv small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .pf-kind.big { font-size: 12px; padding: 4px 10px; }
+  .pf-dem { border-left-style: dashed !important; }
+  .pf-agwork { display: grid; gap: 8px; padding: 10px; border-radius: 14px; border: 1px dashed color-mix(in srgb, var(--pink) 50%, transparent); background: color-mix(in srgb, var(--pink) 6%, transparent); }
+  .pf-agwork .pf-subh { display: flex; align-items: center; gap: 6px; color: var(--pink); }
+  .pf-agwork .pf-subh svg { width: 14px; height: 14px; }
+  .pf-cal button.dem { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pink) 70%, transparent); }
+  .pf-subnav .cnt { font-size: 11px; background: var(--red); color: #fff; border-radius: 999px; padding: 1px 7px; }
 
   @media (max-width: 1100px) { .pf-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-row { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 760px) {
@@ -311,7 +361,7 @@
 <div class="pf">
   <aside class="pf-side">
     <div class="pf-topbar">
-      <button class="pf-brand" data-go="painel" id="brand">
+      <button class="pf-brand" data-go="geral" id="brand">
         <div class="pf-logo">F</div>
         <div><strong>Fillipe</strong><span>Painel geral</span></div>
       </button>
@@ -324,6 +374,7 @@
       <div class="pf-head-btns"><button class="pf-eye" id="eye" data-act="eye" aria-label="Esconder valores"></button><button class="pf-eye pf-bell" id="bell" data-act="bell" aria-label="Avisos"></button></div>
       <div class="pf-pop" id="pop" hidden></div>
     </header>
+    <nav class="pf-subnav" id="subnav" hidden></nav>
     <section class="pf-page" id="view"></section>
   </main>
 </div>
@@ -381,12 +432,34 @@ const IC = {
   lock: sv('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
 };
 IC.ajustes = IC.card;
+IC.dinheiro = IC.money;
+IC.geral = IC.painel;
+IC.hoje = sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
+IC.trabalho = IC.trab = sv('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>');
+IC.entregas = sv('<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h6l3-6h3M9 8h4l2 3"/>');
+IC.tattoo = sv('<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>');
+IC.demandas = sv('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 13l2 2 4-4"/>');
+IC.conhecimento = IC.livros = sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>');
+IC.cursos = sv('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6"/>');
+IC.frases = sv('<path d="M7 7H4v6h3l-1 4M17 7h-3v6h3l-1 4"/>');
+IC.quadros = sv('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>');
+IC.pend = sv('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>');
 
 const TABS = [
   ['lanc', 'Lançamentos'], ['contas', 'Contas a pagar'], ['hist', 'Histórico'], ['semana', 'Resumo da semana'], ['rel', 'Relatório do mês'],
-  ['metas', 'Metas'], ['vida', 'Vida'], ['compras', 'Lista de compras'], ['agenda', 'Agenda'],
+  ['metas', 'Metas'], ['pend', 'Pendências'], ['vida', 'Sistemas'], ['livros', 'Livros'], ['cursos', 'Cursos'], ['frases', 'Frases'], ['quadros', 'Quadros'], ['compras', 'Lista de compras'], ['agenda', 'Agenda'],
 ];
-const TITLES = { painel: 'Painel geral', ajustes: 'Bancos e backup', config: 'Configurações', ...Object.fromEntries(TABS) };
+// Abas principais: cada uma junta as telas do mesmo assunto (a 1ª é o painel dela)
+const SECTIONS = [
+  ['vida', 'Vida', ['hoje', 'pend', 'vida']],
+  ['dinheiro', 'Dinheiro', ['painel', 'lanc', 'contas', 'metas', 'hist', 'semana', 'rel', 'compras']],
+  ['trabalho', 'Trabalho', ['trab']],
+  ['conhecimento', 'Conhecimento', ['livros', 'cursos', 'frases', 'quadros']],
+  ['agenda', 'Agenda', ['agenda']],
+];
+const SUB = { hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
+const secOf = v => SECTIONS.find(s => s[2].includes(v));
+const TITLES = { ...Object.fromEntries(TABS), geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', ajustes: 'Bancos e backup', config: 'Configurações' };
 const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
 const CAT_IN = ['Salário', 'Freela', 'Venda', 'Presente', 'Outros'];
 const AREAS = ['Dinheiro', 'Carreira', 'Estudos', 'Saúde', 'Casa', 'Pessoal'];
@@ -410,7 +483,7 @@ const SEED = [['nu', 'Nubank Pessoal'], ['nupj', 'Nubank PJ'], ['infinite', 'Inf
 
 // ---------- Dados (ficam salvos no próprio aparelho) ----------
 const KEY = 'vida-app';
-const blank = () => ({ banks: [], tx: [], bills: [], debts: [], shop: [], wishes: [], events: [], goals: [], habits: [] });
+const blank = () => ({ banks: [], tx: [], bills: [], debts: [], shop: [], wishes: [], events: [], goals: [], habits: [], tasks: [], days: {} });
 let S;
 try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { S = blank(); }
 function save() {
@@ -425,6 +498,23 @@ function fixData() {
   if (!S.debts) S.debts = [];
   if (!S.av) S.av = { seen: [], hid: [] }; // avisos já vistos (sininho apaga) e limpos no ×
   if (!S.habits) S.habits = [];
+  if (!S.tasks) S.tasks = [];
+  if (!S.days) S.days = {}; // dias abertos no botão VIDA: { 'AAAA-MM-DD': { start: 'HH:MM' } }
+  // Conhecimento: na 1ª vez já vem com o que estava no vault (livros, frase, quadros, curso)
+  if (!S.know) S.know = {
+    books: [['O Livro do Desassossego', 'Fernando Pessoa'], ['De Quanta Terra Precisa um Homem?', 'Liev Tolstói'], ['A Hora da Estrela', 'Clarice Lispector'], ['Macacos', 'Clayton Nascimento'],
+      ['Quem Matou Meu Pai', 'Édouard Louis'], ['O Paraíso São os Outros', 'Valter Hugo Mãe'], ['Tudo É Rio', 'Carla Madeira'], ['Uma Vida Pequena', 'Hanya Yanagihara']]
+      .map(([title, author], i) => ({ id: 'b' + i, title, author, status: 'quero', page: 0, pages: 0, finished: '' })),
+    quotes: [{ id: 'q0', t: 'O amor não é feito pra superar, porque não é um obstáculo. Nós é que somos um obstáculo pra ele, porque não deixamos ele fluir.', author: '' }],
+    frames: [['Um Beijo Roubado', 'Ron Hicks'], ['Odisseu e Argos', 'Briton Riviere'], ['As Três Parcas', 'Alexander Rothaug'], ['O Xeque-Mate', 'Moritz Retzsch']]
+      .map(([t, author], i) => ({ id: 'f' + i, t, author, done: false })),
+    courses: [{ id: 'c0', title: 'After e Premiere', lessons: [{ id: 'l0', t: 'P01 · Interface e workspaces do Premiere', done: false, doneAt: '' }] }],
+  };
+  if (!S.cfg.workKinds) S.cfg.workKinds = ['Entrega', 'Tatuagem', 'Origyn'];
+  // faixas do "guardar primeiro": a regra de Morar sozinho
+  if (!S.cfg.tiers) S.cfg.tiers = { goal: (S.goals.find(g => /morar/i.test(g.title)) || {}).id || '', bank: '',
+    list: [[5000, 25], [10000, 35], [20000, 40], [50000, 50]].map(([from, pct], i) => ({ id: 'r' + i, from, pct })) };
+  for (const c of ['Entregas', 'Tatuagem']) if (!S.cfg.catsIn.includes(c)) S.cfg.catsIn.unshift(c);
   // Primeira vez: já cadastra os bancos do Fillipe. Todo banco tem "em conta" e "guardado".
   if (!S.seeded) {
     if (!S.tx.length) S.banks = [];
@@ -572,7 +662,7 @@ const debtLeft = d => d.cents - d.pays.reduce((s, p) => s + p.cents, 0);
 
 // ---------- Estado da tela ----------
 const U = {
-  view: 'painel',
+  view: 'hoje',
   l: { out: { bank: S.cfg.main, cat: null }, in: { bank: S.cfg.main, cat: null }, sv: { bank: S.cfg.main, dir: 'save' }, ev: { color: 'purple' } },
   h: { mode: 'mes', ref: today(), a: addDays(today(), -30), b: today(), bank: '' },
   ag: { month: today().slice(0, 7), sel: today() },
@@ -621,6 +711,7 @@ function vPainel() {
     <span class="pf-kpi-val ${conta + guard < 0 ? 'neg' : ''}">${brl(conta + guard)}</span>
     <span class="pf-kpi-note">Em conta ${brl(conta)} · Guardado ${brl(guard)}</span>
   </div>
+  ${advisorCard(true)}
   ${bankCards()}
   <div class="pf-kpis">
     <div class="pf-kpi" style="--glow:var(--purple)">
@@ -642,14 +733,14 @@ function vPainel() {
       <span class="pf-kpi-note">${plural(m.nOut, 'gasto', 'gastos')} · sobrou <b class="${res < 0 ? 'neg' : 'pos'}">${brl(res)}</b></span>
     </div>
   </div>
+  <div class="pf-areas">${areaMetas()}${areaContas()}${areaSemana()}${areaCompras()}</div>
   ${limitCard(m.out)}
   <div class="pf-row">
     <div class="pf-card"><div class="pf-card-h"><h2>Entradas e saídas por mês</h2>
       <div class="pf-legend"><span><i style="background:var(--green)"></i>Entrou</span><span><i style="background:var(--red)"></i>Saiu</span></div></div>
       <div class="pf-chart">${monthChart()}</div></div>
     <div class="pf-card"><div class="pf-card-h"><h2>Pra onde foi o dinheiro em ${mes}</h2></div>${catBars(a, b)}</div>
-  </div>
-  <div class="pf-areas">${areaContas()}${areaSemana()}${areaMetas()}${areaAgenda()}${areaCompras()}</div>`;
+  </div>`;
 }
 function areaBox(glow, ic, title, go, body) {
   return `<article class="pf-area" style="--glow:var(${glow})"><div class="pf-area-h"><span class="pf-ico">${IC[ic]}</span><h2>${title}</h2><button class="pf-open" data-go="${go}">abrir →</button></div>${body}</article>`;
@@ -794,7 +885,10 @@ const splitWhere = r => r.dest === 'goal' ? 'meta ' + ((find(S.goals, r.goal) ||
 function splitPrev(c) {
   if (!(S.cfg.split || []).length) return '<span class="pf-kpi-note">Monte a divisão no quadro "Divisão do dinheiro".</span>';
   if (splitSum() !== 100) return `<span class="pf-kpi-note neg">A divisão soma ${splitSum()}%. Precisa dar 100%.</span>`;
-  return `<div class="pf-list">${splitParts(c > 0 ? c : 0).map(({ r, v }) => `<div class="pf-tx"><span class="t">${esc(r.for || bankName(r.bank))}<small>${r.pct}% · ${esc(bankName(r.bank))} · ${splitWhere(r)}</small></span><span class="v ${r.dest === 'conta' ? 'pos' : 'sav'}">${brl(v)}</span></div>`).join('')}</div>`;
+  c = c > 0 ? c : 0;
+  const st = U.l.sp || {}, p = spPct(c), g = Math.round(c * p / 100), tg = find(S.goals, S.cfg.tiers.goal);
+  const head = p ? `<div class="pf-tx"><span class="t">Guardar primeiro<small>${p}% ${st.pct != null && st.pct !== '' ? '(escolhido)' : '(pela faixa)'} · ${esc(bankName(S.cfg.tiers.bank || S.cfg.main))} · ${tg ? 'meta ' + esc(tg.title) : 'guardado'}</small></span><span class="v sav">${brl(g)}</span></div>` : '';
+  return `<div class="pf-list">${head}${splitParts(c - g).map(({ r, v }) => `<div class="pf-tx"><span class="t">${esc(r.for || bankName(r.bank))}<small>${r.pct}% · ${esc(bankName(r.bank))} · ${splitWhere(r)}</small></span><span class="v ${r.dest === 'conta' ? 'pos' : 'sav'}">${brl(v)}</span></div>`).join('')}</div>`;
 }
 function spreadBox() {
   const st = U.l.sp || (U.l.sp = {});
@@ -806,6 +900,8 @@ function spreadBox() {
     <span class="pf-lbl">Categoria</span>
     ${picks('sp', 'cat', S.cfg.catsIn.map(c => [c, c]), st.cat)}
     <div class="pf-grid2"><input name="desc" class="pf-in" placeholder="Descrição (opcional)" autocomplete="off"><input name="date" type="date" class="pf-in" value="${today()}"></div>
+    <span class="pf-lbl">Guardar primeiro</span>
+    ${picks('sp', 'pct', [['', 'Pela faixa'], ...[0, 10, 20, 25, 30, 35, 40, 50].map(n => [String(n), n + '%'])], st.pct ?? '')}
     <span class="pf-lbl">Vai ficar assim</span>
     <div id="sp-prev">${splitPrev(0)}</div>
     <button class="pf-btn">Espalhar</button>
@@ -831,7 +927,7 @@ function vLanc() {
   const opts = banksOrdered().map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   const recent = [...S.tx].sort(byDateDesc).slice(0, 15);
   return `<div class="pf-three">${lancBox('out')}${lancBox('in')}${saveBox()}</div>
-  <div class="pf-row">${spreadBox()}${splitBox()}</div>
+  <div class="pf-row">${spreadBox()}<div style="display:grid;gap:18px;align-content:start;min-width:0">${tierBox()}${splitBox()}</div></div>
   ${S.banks.length > 1 ? `<form class="pf-card pf-glow" style="--glow:var(--purple)" data-form="tr">
     <div class="pf-card-h"><h2>Mover entre bancos</h2><span class="pf-ico">${IC.swap}</span></div>
     <p class="pf-card-note">Passa dinheiro em conta de um banco pro outro. Não conta como gasto nem ganho.</p>
@@ -1204,15 +1300,19 @@ function vAgenda() {
   const addC = (d, c) => { const l = dayColors[d] || (dayColors[d] = []); if (!l.includes(c)) l.push(c); };
   for (const i of mBills) if (!i.paid) addC(i.due, COLORS.red);
   for (const e of evBetween(`${ag.month}-01`, `${ag.month}-${pad(nDays)}`)) if (!e.done) addC(e.date, evColor(e));
+  const demDays = new Set(S.tasks.filter(x => isDem(x) && !x.done && x.date && x.date.startsWith(ag.month)).map(x => x.date));
+  for (const x of S.tasks) if (!x.done && !isDem(x) && x.date && x.date.startsWith(ag.month)) addC(x.date, PAREAS[x.area] || PAREAS.Pessoal);
   let cells = SEM.map(d => `<span class="wd">${d}</span>`).join('');
   for (let i = 0; i < (first.getDay() + 6) % 7; i++) cells += '<button class="blank" tabindex="-1"></button>';
   for (let d = 1; d <= nDays; d++) {
     const ds = `${y}-${pad(m)}-${pad(d)}`;
-    cells += `<button data-act="agday" data-v="${ds}" class="${ds === t ? 'today' : ''} ${ds === ag.sel ? 'sel' : ''}">${d}${dayColors[ds] ? '<span class="pf-rib">' + dayColors[ds].slice(0, 4).map(c => `<span style="background:${c}"></span>`).join('') + '</span>' : ''}</button>`;
+    cells += `<button data-act="agday" data-v="${ds}" class="${ds === t ? 'today' : ''} ${ds === ag.sel ? 'sel' : ''} ${demDays.has(ds) ? 'dem' : ''}">${d}${dayColors[ds] ? '<span class="pf-rib">' + dayColors[ds].slice(0, 4).map(c => `<span style="background:${c}"></span>`).join('') + '</span>' : ''}</button>`;
   }
-  const dayEv = evOn(ag.sel);
+  const dayEv = evOn(ag.sel), dayDem = demOn(ag.sel), dayPend = S.tasks.filter(x => !isDem(x) && x.date === ag.sel);
   const dayBills = billsInMonth(ag.sel.slice(0, 7)).filter(i => i.due === ag.sel);
-  const next = evBetween(t, addDays(t, 90)).filter(e => !e.done).slice(0, 8);
+  const next = [...evBetween(t, addDays(t, 90)).filter(e => !e.done),
+    ...S.tasks.filter(x => !x.done && x.date >= t && x.date <= addDays(t, 90)).map(x => ({ title: (isDem(x) ? (x.kind || 'Trabalho') : x.area) + ': ' + x.t, date: x.date, time: x.time, color: '', c: isDem(x) ? kindColor(x.kind) : PAREAS[x.area] }))]
+    .sort((a, b) => (a.date + (a.time || '99')).localeCompare(b.date + (b.time || '99'))).slice(0, 10);
   const li = e => `<li class="ev" style="--c:${evColor(e)}"><button class="pf-check ${e.done ? 'done' : ''}" data-act="evtg" data-id="${e.id}" data-d="${e.date}" aria-label="Feito">${e.done ? IC.check : ''}</button><span class="${e.done ? 'done-t' : ''}">${esc(e.title)}<small>${e.time || 'dia todo'}${e.notes ? ' · ' + esc(e.notes) : ''}${isRep(e) ? ' · ' + repLabel(e) : ''}</small></span><button class="pf-x" data-act="evdel" data-id="${e.id}" data-d="${e.date}" aria-label="Apagar">×</button></li>`;
   const sd = pd(ag.sel), selWd = (sd.getDay() + 6) % 7;
   const repOpt = ([k, l]) => `<option value="${k}">${k === 'monthly' ? 'Todo mês no dia ' + sd.getDate() : k === 'yearly' ? 'Todo ano em ' + fmtShort(ag.sel) : k === 'weekly' ? 'Em dias da semana' : l}</option>`;
@@ -1227,7 +1327,9 @@ function vAgenda() {
     <div class="pf-card pf-glow" style="--glow:var(--purple)">
       <div class="pf-card-h"><h2 style="text-transform:capitalize">${ag.sel === t ? 'Hoje' : fmtLong(ag.sel)}</h2></div>
       ${dayBills.length ? `<div class="pf-list">${dayBills.map(billRow).join('')}</div>` : ''}
-      ${dayEv.length ? `<ul class="pf-todo">${dayEv.map(li).join('')}</ul>` : dayBills.length ? '' : '<span class="pf-kpi-note">Nada nesse dia.</span>'}
+      ${dayDem.length ? `<div class="pf-agwork"><span class="pf-subh">${IC.trab}Trabalho</span><ul class="pf-todo">${dayDem.map(x => demLi(x)).join('')}</ul></div>` : ''}
+      ${dayPend.length ? `<span class="pf-subh">Pendências</span><ul class="pf-todo">${dayPend.map(taskLi).join('')}</ul>` : ''}
+      ${dayEv.length ? `<ul class="pf-todo">${dayEv.map(li).join('')}</ul>` : dayBills.length || dayDem.length || dayPend.length ? '' : '<span class="pf-kpi-note">Nada nesse dia.</span>'}
       <form data-form="ev" style="display:grid;gap:10px">
         <input name="title" class="pf-in" placeholder="O que fazer" autocomplete="off">
         <div class="pf-grid2"><input name="time" type="time" class="pf-in"><input name="notes" class="pf-in" placeholder="Obs (opcional)" autocomplete="off"></div>
@@ -1243,7 +1345,7 @@ function vAgenda() {
     </div>
   </div>
   <div class="pf-card"><div class="pf-card-h"><h2>Próximos</h2></div>
-    ${next.length ? '<div class="pf-list">' + next.map(e => { const d = daysUntil(e.date); return `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t"><span class="pf-dot" style="--c:${evColor(e)}"></span>${esc(e.title)}<small>${e.date === t ? 'Hoje' : fmtLong(e.date)}${e.time ? ' · ' + e.time : ''}</small></span><span class="pf-tag ${d <= 1 ? 'main' : ''}">${d === 0 ? 'hoje' : d === 1 ? 'amanhã' : 'em ' + d + ' dias'}</span></div>`; }).join('') + '</div>' : '<span class="pf-kpi-note">Nada marcado.</span>'}
+    ${next.length ? '<div class="pf-list">' + next.map(e => { const d = daysUntil(e.date); return `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t"><span class="pf-dot" style="--c:${e.c || evColor(e)}"></span>${esc(e.title)}<small>${e.date === t ? 'Hoje' : fmtLong(e.date)}${e.time ? ' · ' + e.time : ''}</small></span><span class="pf-tag ${d <= 1 ? 'main' : ''}">${d === 0 ? 'hoje' : d === 1 ? 'amanhã' : 'em ' + d + ' dias'}</span></div>`; }).join('') + '</div>' : '<span class="pf-kpi-note">Nada marcado.</span>'}
   </div>`;
 }
 
@@ -1489,6 +1591,331 @@ function vVida() {
   ${list.length ? `<div class="pf-goallist">${list.map(habCard).join('')}</div>` : ''}`;
 }
 
+// ---------- Pendências (trabalhos e coisas pra resolver) ----------
+const PAREAS = { Trabalho: '#ff6fa8', Estudo: '#f5b544', Dinheiro: '#ff5a6e', Saúde: '#4fd18b', Casa: '#6c8cff', Pessoal: '#a98bff' };
+const taskLate = x => !x.done && x.date && x.date < today();
+function taskTag(x) {
+  if (!x.date || x.done) return '';
+  const d = daysUntil(x.date);
+  return d < 0 ? `<span class="pf-tag late">atrasada há ${plural(-d, 'dia', 'dias')}</span>` : d === 0 ? '<span class="pf-tag main">hoje</span>' : `<span class="pf-tag">${fmtShort(x.date)}</span>`;
+}
+function taskLi(x) {
+  return `<li class="ev" style="--c:${PAREAS[x.area] || PAREAS.Pessoal}"><button class="pf-check ${x.done ? 'done' : ''}" data-act="tasktg" data-id="${x.id}" aria-label="Feito">${x.done ? IC.check : ''}</button><span class="${x.done ? 'done-t' : ''}">${esc(x.t)}<small>${esc(x.area)}${x.client ? ' · ' + esc(x.client) : ''} ${taskTag(x)}</small></span><button class="pf-x" data-act="taskdel" data-id="${x.id}" aria-label="Apagar">×</button></li>`;
+}
+const taskSort = (a, b) => (a.date || '9999').localeCompare(b.date || '9999');
+function taskForm(area = 'Trabalho') {
+  return `<form class="pf-card" data-form="task" style="gap:10px">
+    <div class="pf-inline"><input name="t" class="pf-in" placeholder="Nova pendência (ex: editar o vídeo da Aluza)" autocomplete="off"><button class="pf-btn">Adicionar</button></div>
+    <div class="pf-picks">${Object.entries(PAREAS).map(([a, c]) => `<label class="pf-pick pf-chk" style="--accent:${c}"><input type="radio" name="area" value="${a}" ${a === area ? 'checked' : ''}>${a}</label>`).join('')}</div>
+    <label style="display:grid;gap:6px"><span class="pf-lbl">Pra quando (opcional)</span><input name="date" type="date" class="pf-in"></label>
+  </form>`;
+}
+function vPend() {
+  const open = S.tasks.filter(x => !x.done).sort(taskSort), done = S.tasks.filter(x => x.done).sort((a, b) => (b.doneAt || '').localeCompare(a.doneAt || ''));
+  const groups = Object.keys(PAREAS).map(a => [a, open.filter(x => x.area === a)]).filter(([, l]) => l.length);
+  return `${taskForm()}
+  ${groups.length ? groups.map(([a, l]) => `<div class="pf-card pf-glow" style="--glow:${PAREAS[a]}"><div class="pf-card-h"><h2>${a}</h2><span class="pf-tag main">${l.length}</span></div><ul class="pf-todo">${l.map(taskLi).join('')}</ul></div>`).join('') : '<div class="pf-card"><span class="pf-kpi-note">Nenhuma pendência em aberto.</span></div>'}
+  ${done.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Feitas</h2><button class="pf-btn ghost small" data-act="taskclear">Limpar</button></div><ul class="pf-todo">${done.slice(0, 20).map(taskLi).join('')}</ul></div>` : ''}`;
+}
+
+// ---------- Hoje: o botão VIDA abre o dia e junta tudo ----------
+function dayBrief(t) {
+  const pagar = billInst().filter(i => !i.paid && i.due <= t).sort((a, b) => a.due.localeCompare(b.due));
+  const guardar = S.goals.filter(g => g.kind === 'money' && !g.done && g.deadline).map(g => {
+    const s = goalSys(g); return { title: g.title, sub: 'até ' + fmtD(g.deadline), c: s.complete ? 0 : Math.max(0, s.expAt(t > g.deadline ? g.deadline : t) - s.saved) };
+  }).filter(x => x.c > 0);  const ev = evOn(t), hab = S.habits.filter(h => h.start <= t && habOn(h, t)).sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+  const tasks = S.tasks.filter(x => !x.done && (!x.date || x.date <= t)).sort(taskSort);
+  const doneToday = S.tasks.filter(x => x.done && x.doneAt === t);
+  return { pagar, guardar, ev, hab, tasks, doneToday, sum: a => a.reduce((s, x) => s + x, 0) };
+}
+// ---------- Consultor: olha o histórico e diz até onde dá pra gastar ----------
+function advisor() {
+  const t = today(), [ma, mb] = monthRange();
+  let conta = 0; for (const bk of S.banks) conta += balance(bk.id).conta;
+  const contas = billSummary().total;
+  const metas = S.goals.filter(g => g.kind === 'money' && !g.done && g.deadline).reduce((s, g) => {
+    const x = goalSys(g); return s + (x.complete ? 0 : Math.max(0, x.expAt(g.deadline < mb ? g.deadline : mb) - x.saved));
+  }, 0);
+  const outHoje = sums(t, t).out, diasRest = dayIdx(t, mb) + 1;
+  const livre = conta - contas - metas;
+  const porDia = Math.max(0, Math.floor((livre + outHoje) / diasRest)), restaHoje = porDia - outHoje;
+  const out30 = sums(addDays(t, -30), addDays(t, -1)).out, media = Math.round(out30 / 30);
+  const passados = dayIdx(ma, t) + 1, outMes = sums(ma, t).out, proj = Math.round(outMes / passados * (dayIdx(ma, mb) + 1));
+  const ws = weekStart(t), semana = sums(ws, t).out, diasSem = dayIdx(ws, t) + 1;
+  let ant = 0; for (let i = 1; i <= 4; i++) ant += sums(addDays(ws, -7 * i), addDays(ws, -7 * i + diasSem - 1)).out;
+  ant = Math.round(ant / 4);
+  // categoria que mais subiu: últimos 30 dias contra os 30 anteriores
+  const byCat = (a, b) => { const o = {}; for (const x of S.tx) if (x.type === 'out' && x.date >= a && x.date <= b) o[x.cat || 'Outros'] = (o[x.cat || 'Outros'] || 0) + x.cents; return o; };
+  const c1 = byCat(addDays(t, -29), t), c0 = byCat(addDays(t, -59), addDays(t, -30));
+  const up = Object.entries(c1).map(([c, v]) => ({ c, v, p: c0[c] ? (v - c0[c]) / c0[c] * 100 : 0, d: v - (c0[c] || 0) })).filter(x => x.p >= 40 && x.d >= 3000).sort((a, b) => b.d - a.d)[0];
+  const msgs = [];
+  if (!S.tx.length) msgs.push({ lvl: 'info', t: 'Ainda sem histórico', s: 'Lance os gastos e ganhos e eu começo a te avisar.' });
+  if (conta < 0) msgs.push({ lvl: 'bad', t: `Conta no negativo: ${brl(conta)}`, s: 'Saiu mais do que entrou. Confira se faltou lançar algum ganho, ou segure os gastos.' });
+  else if (livre < 0) msgs.push({ lvl: 'bad', t: `Faltam ${brl(-livre)} pro mês fechar`, s: `Contas (${brl(contas)}) + metas (${brl(metas)}) passam do que tem em conta (${brl(conta)}). Segura os gastos.` });
+  else if (restaHoje < 0) msgs.push({ lvl: 'bad', t: `Hoje passou ${brl(-restaHoje)} do que podia`, s: `O mês aguenta ${brl(porDia)} por dia. Amanhã fica menor.` });
+  else msgs.push({ lvl: 'ok', t: `Pode gastar até ${brl(restaHoje)} hoje`, s: `Já tirando contas e metas do mês. Dá ${brl(porDia)} por dia até o dia ${pd(mb).getDate()}.` });
+  if (media > porDia && out30) msgs.push({ lvl: 'warn', t: `Você costuma gastar ${brl(media)} por dia`, s: `O mês só aguenta ${brl(porDia)}. Corte ${brl(media - porDia)} por dia.` });
+  if (S.cfg.limit && proj > S.cfg.limit) msgs.push({ lvl: 'warn', t: `Nesse ritmo fecha o mês com ${brl(proj)} gastos`, s: `Passa ${brl(proj - S.cfg.limit)} do limite de ${brl(S.cfg.limit)}.` });
+  if (ant && semana > ant * 1.3 && semana - ant >= 2000) msgs.push({ lvl: 'warn', t: `Semana ${Math.round((semana / ant - 1) * 100)}% acima do normal`, s: `Gastou ${brl(semana)} até agora; costuma ser ${brl(ant)} nesse ponto da semana.` });
+  if (up) msgs.push({ lvl: 'warn', t: `${up.c} subiu ${Math.round(up.p)}%`, s: `${brl(up.v)} nos últimos 30 dias, ${brl(up.d)} a mais que nos 30 anteriores.` });
+  return { conta, contas, metas, livre, porDia, restaHoje, outHoje, media, proj, msgs };
+}
+function advisorCard(full) {
+  const a = advisor(), col = { ok: 'var(--green)', warn: 'var(--amber)', bad: 'var(--red)', info: 'var(--blue)' };
+  const p = a.porDia ? Math.min(100, a.outHoje / a.porDia * 100) : (a.outHoje ? 100 : 0);
+  return `<div class="pf-card pf-glow" style="--glow:${a.restaHoje < 0 || a.livre < 0 ? 'var(--red)' : 'var(--green)'}">
+    <div class="pf-card-h"><h2>Consultor</h2><span class="pf-tag ${a.restaHoje < 0 ? 'late' : 'ok'}">hoje ${brl(a.outHoje)} de ${brl(a.porDia)}</span></div>
+    <div class="pf-track"><div class="pf-fill ${p >= 100 ? 'bad' : p >= 70 ? 'warn' : 'ok'}" style="width:${p}%"></div></div>
+    <div class="pf-advs">${a.msgs.slice(0, full ? 9 : 2).map(m => `<div class="pf-adv" style="--c:${col[m.lvl]}"><span class="pf-dot"></span><span><b>${esc(m.t)}</b><small>${esc(m.s)}</small></span></div>`).join('')}</div>
+    ${full ? `<dl class="pf-stats"><div><dt>Em conta</dt><dd>${brl(a.conta)}</dd></div><div><dt>Contas do mês</dt><dd class="neg">${brl(a.contas)}</dd></div><div><dt>Metas do mês</dt><dd class="sav">${brl(a.metas)}</dd></div><div><dt>Livre</dt><dd class="${a.livre < 0 ? 'neg' : 'pos'}">${brl(a.livre)}</dd></div></dl>` : ''}
+  </div>`;
+}
+
+// ---------- Painel geral: um resumo de cada aba ----------
+function vGeral() {
+  const t = today(), day = S.days[t], b = dayBrief(t);
+  const total = b.ev.length + b.hab.length + b.tasks.length + b.doneToday.length, feito = b.ev.filter(e => e.done).length + b.hab.filter(h => habState(h, t) === 'ok').length + b.doneToday.length;
+  let conta = 0, guard = 0; for (const bk of S.banks) { const x = balance(bk.id); conta += x.conta; guard += x.guard; }
+  const [ma, mb] = monthRange(), m = sums(ma, mb), bs = billSummary(), a = advisor();
+  const dem = S.tasks.filter(x => isDem(x) && !x.done), demHoje = dem.filter(x => x.date && x.date <= t), demMes = S.tasks.filter(x => isDem(x) && x.done && x.doneAt >= ma);
+  const lendo = S.know.books.filter(x => x.status === 'lendo'), cs = S.know.courses.filter(nextLesson), yr = t.slice(0, 4);
+  const vidaBody = `<dl class="pf-stats"><div><dt>Dia</dt><dd>${!day ? 'não começou' : day.end ? 'fechado ' + day.end : 'aberto ' + day.start}</dd></div><div><dt>Feito hoje</dt><dd>${feito} de ${total}</dd></div><div><dt>Pendências</dt><dd class="${S.tasks.some(taskLate) ? 'neg' : ''}">${S.tasks.filter(x => !x.done && !isDem(x)).length}</dd></div></dl>${dayStrip()}`;
+  const dinBody = `<dl class="pf-stats"><div><dt>Tenho</dt><dd>${brl(conta + guard)}</dd></div><div><dt>Pode gastar hoje</dt><dd class="${a.restaHoje < 0 ? 'neg' : 'pos'}">${brl(a.restaHoje)}</dd></div><div><dt>Saiu no mês</dt><dd class="neg">${brl(m.out)}</dd></div><div><dt>Contas atrasadas</dt><dd class="${bs.late.length ? 'neg' : ''}">${bs.late.length}</dd></div></dl>`;
+  const trabBody = `<dl class="pf-stats"><div><dt>Pra hoje</dt><dd class="${demHoje.some(taskLate) ? 'neg' : ''}">${demHoje.length}</dd></div><div><dt>Agendadas</dt><dd>${dem.length}</dd></div><div><dt>Feitas no mês</dt><dd class="pos">${demMes.length}</dd></div></dl>`
+    + (dem.length ? `<ul class="pf-todo">${dem.sort(taskSort).slice(0, 3).map(x => `<li class="ev" style="grid-template-columns:1fr;--c:${kindColor(x.kind)}"><span>${esc(x.t)}<small>${esc(x.kind || '')}${x.date ? ' · ' + (x.date === t ? 'hoje' : fmtShort(x.date)) : ''}</small></span></li>`).join('')}</ul>` : '');
+  const conhBody = `<dl class="pf-stats"><div><dt>Lendo</dt><dd>${lendo.length}</dd></div><div><dt>Lidos em ${yr}</dt><dd class="pos">${S.know.books.filter(x => x.status === 'li' && (x.finished || '').startsWith(yr)).length}</dd></div></dl>`
+    + (cs.length || lendo.length ? `<ul class="pf-todo">${cs.map(c => `<li class="ev" style="grid-template-columns:1fr;--c:var(--amber)"><span>${esc(nextLesson(c).t)}<small>${esc(c.title)} · ${coursePct(c)}%</small></span></li>`).join('')}${lendo.map(x => `<li class="ev" style="grid-template-columns:1fr;--c:var(--blue)"><span>${esc(x.title)}<small>${x.pages ? `pág. ${x.page || 0} de ${x.pages}` : esc(x.author)}</small></span></li>`).join('')}</ul>` : '');
+  return `${advisorCard(false)}
+    <div class="pf-areas">
+      ${areaBox('--accent', 'vida', 'Vida', 'hoje', vidaBody)}
+      ${areaBox('--green', 'dinheiro', 'Dinheiro', 'painel', dinBody)}
+      ${areaMetas()}
+      ${areaBox('--pink', 'trab', 'Trabalho', 'trab', trabBody)}
+      ${areaAgenda()}
+      ${areaBox('--blue', 'livros', 'Conhecimento', 'livros', conhBody)}
+      ${areaContas()}
+    </div>`;
+}
+
+// ---------- MORTE: fecha o dia ----------
+function closeDay(d) {
+  const s = sums(d, d), day = S.days[d] || (S.days[d] = { start: '' });
+  const ev = evOn(d), hab = S.habits.filter(h => h.start <= d && habOn(h, d));
+  day.end = d === today() ? new Date().toTimeString().slice(0, 5) : '—';
+  day.sum = { in: s.in, out: s.out, sv: s.sv };
+  day.done = [...S.tasks.filter(x => x.done && x.doneAt === d).map(x => x.t), ...ev.filter(e => e.done).map(e => e.title), ...hab.filter(h => habState(h, d) === 'ok').map(h => h.title),
+    ...S.know.courses.flatMap(c => c.lessons.filter(l => l.done && l.doneAt === d).map(l => 'Aula: ' + l.t))];
+  day.missed = [...ev.filter(e => !e.done).map(e => e.title), ...hab.filter(h => habState(h, d) !== 'ok').map(h => h.title)];
+}
+// últimos 14 dias: verde = fechou no MORTE, vermelho = abriu e não fechou, cinza = nem abriu
+function dayStrip() {
+  const t = today(); let h = '';
+  for (let i = 13; i >= 0; i--) {
+    const d = addDays(t, -i), x = S.days[d], cls = x && x.end ? 'ok' : x ? (d === t ? 'now' : 'bad') : 'off';
+    h += `<span class="${cls} ${d === t ? 'today' : ''}" title="${fmtShort(d)}">${pd(d).getDate()}</span>`;
+  }
+  return `<div class="pf-dstrip">${h}</div><div class="pf-legend"><span><i style="background:var(--green)"></i>fechou no MORTE</span><span><i style="background:var(--red)"></i>ficou aberto</span><span><i style="background:var(--dim)"></i>não abriu</span></div>`;
+}
+const openDays = () => Object.keys(S.days).filter(d => d < today() && !S.days[d].end).sort();
+function vHoje() {
+  const t = today(), day = S.days[t], b = dayBrief(t), od = openDays();
+  const pendDia = od.length ? `<div class="pf-card pf-glow" style="--glow:var(--red)"><div class="pf-card-h"><h2>${od.length === 1 ? 'Um dia ficou' : od.length + ' dias ficaram'} sem MORTE</h2><button class="pf-btn small" data-act="morteold">Fechar ${od.length === 1 ? fmtShort(od[0]) : 'todos'}</button></div><span class="pf-kpi-note">O app fecha com o que ficou registrado.</span></div>` : '';
+  if (!day) {
+    const n = b.ev.length + b.hab.length + b.tasks.length;
+    return `${pendDia}<div class="pf-vida-start">
+      <button class="pf-vida-btn" data-act="vidastart">VIDA</button>
+      <p>Toque pra começar o dia</p>
+      <span class="pf-kpi-note">${plural(n, 'coisa', 'coisas')} pra fazer${b.pagar.length ? ' · ' + plural(b.pagar.length, 'conta', 'contas') + ' pra pagar' : ''}</span>
+    </div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Seus dias</h2></div>${dayStrip()}</div>`;
+  }
+  if (day.end) {
+    const s = day.sum || { in: 0, out: 0, sv: 0 }, a = advisor();
+    return `<div class="pf-kpi pf-hero pf-morte-hero">
+        <div class="pf-kpi-top"><span class="pf-kpi-label">Dia fechado</span><button class="pf-x" data-act="morteundo" aria-label="Reabrir o dia" title="Reabrir">↺</button></div>
+        <span class="pf-kpi-val">${day.start || '?'} → ${day.end}</span>
+        <span class="pf-kpi-note">${plural(day.done.length, 'coisa feita', 'coisas feitas')}${day.missed.length ? ' · ' + day.missed.length + ' ficou pra trás' : ''}</span>
+      </div>
+      <div class="pf-kpis mini">
+        <div class="pf-kpi" style="--glow:var(--green)"><div class="pf-kpi-top"><span class="pf-kpi-label">Entrou</span></div><span class="pf-kpi-val pos">${brl(s.in)}</span></div>
+        <div class="pf-kpi" style="--glow:var(--red)"><div class="pf-kpi-top"><span class="pf-kpi-label">Saiu</span></div><span class="pf-kpi-val neg">${brl(s.out)}</span><span class="pf-kpi-note">podia ${brl(a.porDia)}</span></div>
+        <div class="pf-kpi" style="--glow:var(--blue)"><div class="pf-kpi-top"><span class="pf-kpi-label">Guardou</span></div><span class="pf-kpi-val sav">${brl(s.sv)}</span></div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-card pf-glow" style="--glow:var(--green)"><div class="pf-card-h"><h2>O que fiz</h2></div>${day.done.length ? `<ul class="pf-todo">${day.done.map(x => `<li style="grid-template-columns:auto 1fr"><span class="pf-check done">${IC.check}</span><span>${esc(x)}</span></li>`).join('')}</ul>` : '<span class="pf-kpi-note">Nada marcado como feito.</span>'}</div>
+        ${day.missed.length ? `<div class="pf-card pf-glow" style="--glow:var(--red)"><div class="pf-card-h"><h2>Ficou pra trás</h2></div><ul class="pf-todo">${day.missed.map(x => `<li style="grid-template-columns:1fr"><span>${esc(x)}</span></li>`).join('')}</ul></div>` : ''}
+      </div>
+      <div class="pf-card"><div class="pf-card-h"><h2>Seus dias</h2></div>${dayStrip()}</div>
+      <p class="pf-kpi-note" style="text-align:center">Agora é o caderno. Boa noite. 🌙</p>`;
+  }
+  const totPagar = b.sum(b.pagar.map(i => i.b.cents)), totGuardar = b.sum(b.guardar.map(x => x.c));
+  const evDone = b.ev.filter(e => e.done).length, habDone = b.hab.filter(h => habState(h, t) === 'ok').length;
+  const feito = evDone + habDone + b.doneToday.length, total = b.ev.length + b.hab.length + b.tasks.length + b.doneToday.length;
+  const trab = b.tasks.filter(x => x.area === 'Trabalho'), outras = b.tasks.filter(x => x.area !== 'Trabalho');
+  const card = (glow, title, tag, body) => `<div class="pf-card pf-glow" style="--glow:${glow}"><div class="pf-card-h"><h2>${title}</h2>${tag}</div>${body}</div>`;
+  // próximos 4 dias
+  const prox = [];
+  for (let i = 1; i <= 4; i++) {
+    const d = addDays(t, i), items = [
+      ...evOn(d).filter(e => !e.done).map(e => ({ c: evColor(e), t: e.title, s: e.time || 'dia todo' })),
+      ...billsBetween(d, d).filter(x => !x.paid).map(x => ({ c: 'var(--red)', t: `${x.b.name} · ${brl(x.b.cents)}`, s: 'conta vence' })),
+      ...S.tasks.filter(x => !x.done && x.date === d).map(x => ({ c: PAREAS[x.area], t: x.t, s: x.area })),
+    ];
+    if (items.length) prox.push(`<span class="pf-subh">${i === 1 ? 'Amanhã' : SEM_L[pd(d).getDay()]} · ${fmtShort(d)}</span><ul class="pf-todo">${items.map(x => `<li class="ev" style="grid-template-columns:1fr;--c:${x.c}"><span>${esc(x.t)}<small>${esc(x.s)}</small></span></li>`).join('')}</ul>`);
+  }
+  return `<div class="pf-kpi pf-hero">
+      <div class="pf-kpi-top"><span class="pf-kpi-label">Dia começou às ${day.start}</span><button class="pf-x" data-act="vidareset" aria-label="Recomeçar o dia" title="Recomeçar">↺</button></div>
+      <span class="pf-kpi-val">${feito} de ${total} feitos</span>
+      <div class="pf-track" style="margin-top:4px"><div class="pf-fill ok" style="width:${total ? feito / total * 100 : 100}%"></div></div>
+    </div>
+    <div class="pf-kpis mini">
+      <div class="pf-kpi" style="--glow:var(--red)"><div class="pf-kpi-top"><span class="pf-kpi-label">Pagar hoje</span><span class="pf-ico">${IC.contas}</span></div><span class="pf-kpi-val ${totPagar ? 'neg' : ''}">${brl(totPagar)}</span><span class="pf-kpi-note">${b.pagar.length ? plural(b.pagar.length, 'conta', 'contas') : 'nada vencendo'}</span></div>
+      <div class="pf-kpi" style="--glow:var(--blue)"><div class="pf-kpi-top"><span class="pf-kpi-label">Guardar hoje</span><span class="pf-ico">${IC.safe}</span></div><span class="pf-kpi-val sav">${brl(totGuardar)}</span><span class="pf-kpi-note">${b.guardar.length ? 'pra ficar em dia com as metas' : 'metas em dia'}</span></div>
+      <div class="pf-kpi" style="--glow:var(--pink)"><div class="pf-kpi-top"><span class="pf-kpi-label">Pendências</span><span class="pf-ico">${IC.pend}</span></div><span class="pf-kpi-val">${b.tasks.length}</span><span class="pf-kpi-note">${trab.length} de trabalho${b.tasks.filter(taskLate).length ? ' · <b class="neg">' + b.tasks.filter(taskLate).length + ' atrasadas</b>' : ''}</span></div>
+    </div>
+    ${pendDia}${advisorCard(false)}
+    ${quoteOfDay() ? `<div class="pf-card" style="gap:6px"><blockquote class="pf-quote small">${esc(quoteOfDay().t)}</blockquote><span class="pf-kpi-note">— ${esc(quoteOfDay().author || 'eu')} · <button class="pf-open" data-go="frases">frases →</button></span></div>` : ''}
+    ${b.pagar.length ? card('var(--red)', 'Pagar hoje', `<span class="pf-tag late">${brl(totPagar)}</span>`, `<div class="pf-txs">${b.pagar.map(billRow).join('')}</div>`) : ''}
+    ${b.guardar.length ? card('var(--blue)', 'Guardar hoje', '<button class="pf-open" data-go="metas">metas →</button>', `<ul class="pf-todo">${b.guardar.map(x => `<li class="ev" style="grid-template-columns:minmax(0,1fr) auto;--c:var(--blue)"><span>${esc(x.title)}<small>${esc(x.sub)}</small></span><b class="sav">${brl(x.c)}</b></li>`).join('')}</ul>`) : ''}
+    <div class="pf-row">
+      ${card('var(--purple)', 'Agenda de hoje', `<button class="pf-open" data-go="agenda">agenda →</button>`, b.ev.length ? `<ul class="pf-todo">${b.ev.map(e => `<li class="ev" style="grid-template-columns:auto minmax(0,1fr);--c:${evColor(e)}"><button class="pf-check ${e.done ? 'done' : ''}" data-act="evtg" data-id="${e.id}" data-d="${t}" aria-label="Feito">${e.done ? IC.check : ''}</button><span class="${e.done ? 'done-t' : ''}">${esc(e.title)}<small>${e.time || 'dia todo'}</small></span></li>`).join('')}</ul>` : '<span class="pf-kpi-note">Nada marcado pra hoje.</span>')}
+      ${card('var(--accent)', 'Sistemas de hoje', `<button class="pf-open" data-go="vida">sistemas →</button>`, b.hab.length ? `<ul class="pf-todo">${b.hab.map(h => { const ok = habState(h, t) === 'ok'; return `<li class="ev" style="grid-template-columns:auto minmax(0,1fr);--c:${VAREAS[h.area] || VAREAS.Outros}"><button class="pf-check ${ok ? 'done' : ''}" data-act="habdone" data-id="${h.id}" data-d="${t}" aria-label="Feito">${ok ? IC.check : ''}</button><span class="${ok ? 'done-t' : ''}">${esc(h.title)}<small>${freqLabel(h)}</small></span></li>`; }).join('')}</ul>` : '<span class="pf-kpi-note">Nenhum sistema hoje.</span>')}
+    </div>
+    <div class="pf-row">
+      ${card(PAREAS.Trabalho, 'Trabalhos', `<span class="pf-tag main">${trab.length}</span>`, trab.length ? `<ul class="pf-todo">${trab.map(x => demLi(x)).join('')}</ul>` : '<span class="pf-kpi-note">Nenhum trabalho pendente.</span>')}
+      ${card(PAREAS.Pessoal, 'Pendências', `<button class="pf-open" data-go="pend">todas →</button>`, outras.length ? `<ul class="pf-todo">${outras.map(taskLi).join('')}</ul>` : '<span class="pf-kpi-note">Nada pendente.</span>')}
+    </div>
+    ${(() => {
+      const cs = S.know.courses.filter(nextLesson), lendo = S.know.books.filter(x => x.status === 'lendo');
+      if (!cs.length && !lendo.length) return '';
+      return card('var(--amber)', 'Estudo e leitura', '<button class="pf-open" data-go="cursos">cursos →</button>', `<ul class="pf-todo">${cs.map(c => { const l = nextLesson(c); return `<li class="ev" style="grid-template-columns:auto minmax(0,1fr);--c:var(--amber)"><button class="pf-check" data-act="lessontg" data-id="${c.id}" data-i="${l.id}" aria-label="Feita"></button><span>${esc(l.t)}<small>${esc(c.title)} · ${coursePct(c)}%</small></span></li>`; }).join('')}
+        ${lendo.map(x => `<li class="ev" style="grid-template-columns:1fr;--c:var(--blue)"><span>Ler: ${esc(x.title)}<small>${x.pages ? `pág. ${x.page || 0} de ${x.pages}` : esc(x.author)}</small></span></li>`).join('')}</ul>`);
+    })()}
+    ${b.doneToday.length ? card('var(--green)', 'Feito hoje', `<span class="pf-tag ok">${b.doneToday.length}</span>`, `<ul class="pf-todo">${b.doneToday.map(taskLi).join('')}</ul>`) : ''}
+    ${taskForm()}
+    ${card('var(--amber)', 'Próximos 4 dias', '', prox.length ? `<div style="display:grid;gap:10px">${prox.join('')}</div>` : '<span class="pf-kpi-note">Nada nos próximos 4 dias.</span>')}
+    <div class="pf-vida-start small">
+      <button class="pf-vida-btn morte" data-act="morte">MORTE</button>
+      <p>Toque quando for dormir pra fechar o dia</p>
+    </div>`;
+}
+
+// ---------- Trabalho: demandas agendadas (aparecem na Agenda e no VIDA) ----------
+const KIND_C = ['#e8875a', '#ff6fa8', '#a98bff', '#6c8cff', '#4fd18b', '#f5b544'];
+const kindColor = k => KIND_C[Math.max(0, S.cfg.workKinds.indexOf(k)) % KIND_C.length];
+const isDem = x => x.area === 'Trabalho';
+function demLi(x, showDate) {
+  const c = kindColor(x.kind);
+  return `<li class="ev pf-dem" style="--c:${c}"><button class="pf-check ${x.done ? 'done' : ''}" data-act="tasktg" data-id="${x.id}" aria-label="Feito">${x.done ? IC.check : ''}</button><span class="${x.done ? 'done-t' : ''}">${esc(x.t)}<small><span class="pf-kind" style="--c:${c}">${esc(x.kind || 'Trabalho')}</span>${x.time ? ' ' + x.time : ''}${showDate && x.date ? ' · ' + fmtShort(x.date) : ''}${x.done && x.doneAt ? ' · feito ' + fmtShort(x.doneAt) : ''} ${x.done ? '' : taskTag(x)}</small></span><button class="pf-x" data-act="taskdel" data-id="${x.id}" aria-label="Apagar">×</button></li>`;
+}
+const demOn = d => S.tasks.filter(x => isDem(x) && x.date === d).sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
+function vTrab() {
+  const t = today(), kinds = S.cfg.workKinds, fk = U.wf || '';
+  const all = S.tasks.filter(x => isDem(x) && (!fk || x.kind === fk));
+  const open = all.filter(x => !x.done).sort((a, b) => ((a.date || '9999') + (a.time || '99')).localeCompare((b.date || '9999') + (b.time || '99')));
+  const done = all.filter(x => x.done).sort((a, b) => (b.doneAt || '').localeCompare(a.doneAt || ''));
+  const label = d => !d ? 'Sem data' : d < t ? 'Atrasadas' : d === t ? 'Hoje' : d === addDays(t, 1) ? 'Amanhã' : SEM_L[pd(d).getDay()] + ' · ' + fmtShort(d);
+  const group = (list, key, show) => { const out = []; let cur = null; for (const x of list) { const l = label(key(x)); if (l !== cur) { out.push(`<span class="pf-subh">${l}</span>`); cur = l; } out.push(`<ul class="pf-todo">${demLi(x, show)}</ul>`); } return out.join(''); };
+  const [ma, mb] = monthRange(), mes = MESES[new Date().getMonth()];
+  const doneM = S.tasks.filter(x => isDem(x) && x.done && x.doneAt >= ma && x.doneAt <= mb);
+  return `<form class="pf-card pf-glow" style="--glow:var(--pink)" data-form="dem">
+      <div class="pf-card-h"><h2>Nova demanda</h2><span class="pf-ico">${IC.trab}</span></div>
+      <input name="t" class="pf-in" placeholder="O que fazer (ex: 2 criativos em motion)" autocomplete="off">
+      <span class="pf-lbl">De quê</span>
+      <div class="pf-picks">${kinds.map((k, i) => `<label class="pf-pick pf-chk" style="--accent:${kindColor(k)}"><input type="radio" name="kind" value="${esc(k)}" ${i === 0 ? 'checked' : ''}>${esc(k)}</label>`).join('')}</div>
+      <input name="nk" class="pf-in" placeholder="Ou um tipo novo (ex: Freela)" autocomplete="off">
+      <div class="pf-grid2"><label style="display:grid;gap:6px"><span class="pf-lbl">Pra quando</span><input name="date" type="date" class="pf-in" value="${t}"></label><label style="display:grid;gap:6px"><span class="pf-lbl">Hora (opcional)</span><input name="time" type="time" class="pf-in"></label></div>
+      <button class="pf-btn">Agendar</button>
+      <span class="pf-kpi-note">Vai pra Agenda e pro VIDA no dia marcado.</span>
+    </form>
+    <div class="pf-picks"><button class="pf-pick" data-act="wf" data-v="" aria-pressed="${!fk}">Todas</button>${kinds.map(k => `<button class="pf-pick" data-act="wf" data-v="${esc(k)}" aria-pressed="${fk === k}">${esc(k)}</button>`).join('')}</div>
+    <div class="pf-row">
+      <div class="pf-card"><div class="pf-card-h"><h2>Pra fazer</h2><span class="pf-tag main">${open.length}</span></div>
+        ${open.length ? `<div style="display:grid;gap:8px">${group(open, x => x.date, false)}</div>` : '<span class="pf-kpi-note">Nada agendado.</span>'}</div>
+      <div class="pf-card"><div class="pf-card-h"><h2>Histórico</h2><span class="pf-tag ok">${done.length}</span></div>
+        ${doneM.length ? `<div class="pf-picks">${kinds.map(k => [k, doneM.filter(x => x.kind === k).length]).filter(([, n]) => n).map(([k, n]) => `<span class="pf-kind big" style="--c:${kindColor(k)}">${n} ${esc(k)}</span>`).join('')}<span class="pf-kpi-note">em ${mes}</span></div>` : ''}
+        ${done.length ? `<div style="display:grid;gap:8px">${done.slice(0, 60).map(x => `<ul class="pf-todo">${demLi(x, true)}</ul>`).join('')}</div>` : '<span class="pf-kpi-note">O que você terminar aparece aqui.</span>'}</div>
+    </div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Tipos de trabalho</h2></div>
+      <div class="pf-picks">${kinds.map(k => `<span class="pf-pick bk" style="padding-left:12px"><span class="pf-dot" style="--c:${kindColor(k)}"></span>${esc(k)}<button class="x" data-act="kinddel" data-v="${esc(k)}" aria-label="Remover">×</button></span>`).join('')}</div>
+    </div>`;
+}
+
+// ---------- Conhecimento: livros, frases, cursos e quadros ----------
+const BOOK_ST = [['quero', 'Quero ler', '#8a8590'], ['comprei', 'Comprei', '#f5b544'], ['lendo', 'Lendo', '#6c8cff'], ['li', 'Li', '#4fd18b']];
+const bookC = s => (BOOK_ST.find(b => b[0] === s) || BOOK_ST[0])[2];
+// frase do dia: muda todo dia, sempre a mesma no mesmo dia
+const quoteOfDay = () => { const q = S.know.quotes; return q.length ? q[dayIdx('2026-01-01', today()) % q.length] : null; };
+const nextLesson = c => c.lessons.find(l => !l.done);
+const coursePct = c => c.lessons.length ? Math.round(c.lessons.filter(l => l.done).length / c.lessons.length * 100) : 0;
+function vLivros() {
+  const b = S.know.books, yr = today().slice(0, 4), liAno = b.filter(x => x.status === 'li' && (x.finished || '').startsWith(yr)).length;
+  const card = x => `<article class="pf-book" style="--c:${bookC(x.status)}">
+    <div class="pf-card-h"><span><b>${esc(x.title)}</b><small class="pf-kpi-note" style="display:block">${esc(x.author || 'Autor ?')}${x.finished ? ' · terminei ' + fmtShort(x.finished) : ''}</small></span><button class="pf-x" data-act="bookdel" data-id="${x.id}" aria-label="Apagar">×</button></div>
+    <div class="pf-picks">${BOOK_ST.map(([k, l, c]) => `<button class="pf-pick" style="--accent:${c}" data-act="bookst" data-id="${x.id}" data-v="${k}" aria-pressed="${x.status === k}">${l}</button>`).join('')}${x.status === 'quero' ? `<button class="pf-pick" data-act="bookbuy" data-id="${x.id}">+ Lista de compras</button>` : ''}</div>
+    ${x.status === 'lendo' ? `<form data-form="bookpg" data-id="${x.id}" style="display:grid;gap:8px;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto"><input name="page" class="pf-in" type="number" min="0" inputmode="numeric" placeholder="Página" value="${x.page || ''}"><input name="pages" class="pf-in" type="number" min="1" inputmode="numeric" placeholder="de quantas" value="${x.pages || ''}"><button class="pf-btn ghost small">Salvar</button></form>
+      ${x.pages ? `<div class="pf-track"><div class="pf-fill ok" style="width:${Math.min(100, (x.page || 0) / x.pages * 100)}%;background:var(--blue)"></div></div>` : ''}` : ''}
+  </article>`;
+  return `<form class="pf-card pf-glow" style="--glow:var(--blue)" data-form="book">
+      <div class="pf-grid2"><input name="title" class="pf-in" placeholder="Livro" autocomplete="off"><input name="author" class="pf-in" placeholder="Autor" autocomplete="off"></div>
+      <button class="pf-btn">Adicionar livro</button>
+    </form>
+    <div class="pf-kpis mini">${BOOK_ST.slice(1).map(([k, l, c]) => `<div class="pf-kpi" style="--glow:${c}"><div class="pf-kpi-top"><span class="pf-kpi-label">${l}</span></div><span class="pf-kpi-val">${b.filter(x => x.status === k).length}</span>${k === 'li' ? `<span class="pf-kpi-note">${liAno} em ${yr}</span>` : ''}</div>`).join('')}</div>
+    ${['lendo', 'comprei', 'quero', 'li'].map(st => { const l = b.filter(x => x.status === st); const n = BOOK_ST.find(s => s[0] === st)[1]; return l.length ? `<div class="pf-card"><div class="pf-card-h"><h2>${n}</h2><span class="pf-tag">${l.length}</span></div><div class="pf-books">${l.map(card).join('')}</div></div>` : ''; }).join('')}`;
+}
+function vFrases() {
+  const q = S.know.quotes, qd = quoteOfDay();
+  return `${qd ? `<div class="pf-kpi pf-hero"><span class="pf-kpi-label">Frase do dia</span><blockquote class="pf-quote">${esc(qd.t)}</blockquote>${qd.author ? `<span class="pf-kpi-note">— ${esc(qd.author)}</span>` : ''}</div>` : ''}
+    <form class="pf-card pf-glow" style="--glow:var(--purple)" data-form="quote">
+      <textarea name="t" class="pf-in" placeholder="Uma frase que te pegou ou que você escreveu"></textarea>
+      <div class="pf-inline"><input name="author" class="pf-in" placeholder="De quem (vazio = minha)" autocomplete="off"><button class="pf-btn">Guardar</button></div>
+      <span class="pf-kpi-note">Uma frase por dia aparece no topo do VIDA.</span>
+    </form>
+    ${q.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Minhas frases</h2><span class="pf-tag">${q.length}</span></div><div class="pf-list">${[...q].reverse().map(x => `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t" style="white-space:normal">“${esc(x.t)}”<small>${esc(x.author || 'Eu')}</small></span><span class="acts"><button class="pf-x" data-act="quotedel" data-id="${x.id}" aria-label="Apagar">×</button></span></div>`).join('')}</div></div>` : ''}`;
+}
+function vCursos() {
+  const cs = S.know.courses;
+  const card = c => { const p = coursePct(c), nx = nextLesson(c); return `<article class="pf-card pf-glow" style="--glow:var(--amber)">
+    <div class="pf-card-h"><h2>${esc(c.title)}</h2><span class="pf-tag ${p === 100 ? 'ok' : 'main'}">${p}%</span></div>
+    <div class="pf-track"><div class="pf-fill ok" style="width:${p}%;background:var(--amber)"></div></div>
+    <span class="pf-kpi-note">${nx ? 'Próxima aula: <b>' + esc(nx.t) + '</b>' : c.lessons.length ? 'Curso terminado 🎉' : 'Adicione as aulas.'}</span>
+    ${c.lessons.length ? `<ul class="pf-todo">${c.lessons.map(l => `<li><button class="pf-check ${l.done ? 'done' : ''}" data-act="lessontg" data-id="${c.id}" data-i="${l.id}" aria-label="Feita">${l.done ? IC.check : ''}</button><span class="${l.done ? 'done-t' : ''}">${esc(l.t)}${l.doneAt ? `<small>feita ${fmtShort(l.doneAt)}</small>` : ''}</span><button class="pf-x" data-act="lessondel" data-id="${c.id}" data-i="${l.id}" aria-label="Apagar">×</button></li>`).join('')}</ul>` : ''}
+    <form data-form="lesson" data-id="${c.id}" style="display:grid;gap:6px"><div class="pf-inline"><input name="t" class="pf-in" placeholder="Nova aula (ex: P02 · Cortes e timeline)" autocomplete="off"><button class="pf-btn ghost small">+</button></div></form>
+    <div class="pf-actions"><button class="pf-btn ghost small" data-act="coursedel" data-id="${c.id}">Apagar curso</button></div>
+  </article>`; };
+  return `<form class="pf-card" data-form="course"><div class="pf-inline"><input name="title" class="pf-in" placeholder="Novo curso (ex: Inglês, Figma)" autocomplete="off"><button class="pf-btn">Criar</button></div>
+    <span class="pf-kpi-note">A próxima aula de cada curso aparece no VIDA.</span></form>
+    ${cs.length ? `<div class="pf-goallist">${cs.map(card).join('')}</div>` : ''}`;
+}
+function vQuadros() {
+  const l = S.know.frames, pend = l.filter(x => !x.done), done = l.filter(x => x.done);
+  const li = x => `<li><button class="pf-check ${x.done ? 'done' : ''}" data-act="frametg" data-id="${x.id}" aria-label="Já tenho">${x.done ? IC.check : ''}</button><span class="${x.done ? 'done-t' : ''}">${esc(x.t)}<small>${esc(x.author || '')}</small></span><button class="pf-x" data-act="framedel" data-id="${x.id}" aria-label="Apagar">×</button></li>`;
+  return `<form class="pf-card pf-glow" style="--glow:var(--pink)" data-form="frame">
+      <div class="pf-grid2"><input name="t" class="pf-in" placeholder="Quadro / obra" autocomplete="off"><input name="author" class="pf-in" placeholder="Artista" autocomplete="off"></div>
+      <button class="pf-btn">Adicionar</button>
+      <span class="pf-kpi-note">Pra imprimir e emoldurar na casa nova.</span>
+    </form>
+    <div class="pf-card"><div class="pf-card-h"><h2>Pra imprimir</h2><span class="pf-tag main">${pend.length}</span></div>${pend.length ? `<ul class="pf-todo">${pend.map(li).join('')}</ul>` : '<span class="pf-kpi-note">Nada na lista.</span>'}</div>
+    ${done.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Já tenho</h2></div><ul class="pf-todo">${done.map(li).join('')}</ul></div>` : ''}`;
+}
+
+// ---------- Faixas de guardar (no Espalhar dinheiro) ----------
+// Do que entrar, guarda primeiro uma % que muda pela faixa de valor; o resto vai pra divisão.
+const tierPct = c => { let p = 0; for (const r of [...S.cfg.tiers.list].sort((a, b) => a.from - b.from)) if (c >= r.from) p = r.pct; return p; };
+function spPct(c) { const st = U.l.sp || {}; return st.pct != null && st.pct !== '' ? +st.pct : tierPct(c); }
+function tierBox() {
+  const tc = S.cfg.tiers, list = [...tc.list].sort((a, b) => a.from - b.from), goals = S.goals.filter(g => g.kind === 'money' && !g.done);
+  return `<div class="pf-card pf-glow" style="--glow:var(--blue)">
+    <div class="pf-card-h"><h2>Guardar primeiro (por faixa)</h2><span class="pf-ico">${IC.safe}</span></div>
+    <p class="pf-card-note" style="margin:0">Quando você espalha, o app tira essa % antes e guarda. O resto vai pra divisão.</p>
+    ${list.length ? `<div class="pf-list">${list.map(r => `<div class="pf-tx"><span class="t">A partir de ${brl(r.from)}</span><span class="v sav">${r.pct}%</span><span class="acts"><button class="pf-ed" data-act="tiered" data-id="${r.id}" aria-label="Mudar %">${IC.edit}</button><button class="pf-x" data-act="tierdel" data-id="${r.id}" aria-label="Apagar">×</button></span></div>`).join('')}</div>` : '<span class="pf-kpi-note">Sem faixas: nada é guardado antes.</span>'}
+    <form data-form="tier" class="pf-grid2"><input name="from" class="pf-in" inputmode="decimal" placeholder="A partir de R$"><div class="pf-inline"><input name="pct" class="pf-in" type="number" min="0" max="100" inputmode="numeric" placeholder="%"><button class="pf-btn ghost small">+</button></div></form>
+    <form data-form="tiercfg" style="display:grid;gap:10px">
+      <div class="pf-grid2"><label style="display:grid;gap:6px"><span class="pf-lbl">Guardar pra</span><select name="goal" class="pf-in" data-act="tiercfg"><option value="">Guardado (sem meta)</option>${goals.map(g => `<option value="${g.id}" ${g.id === tc.goal ? 'selected' : ''}>Meta ${esc(g.title)}</option>`).join('')}</select></label>
+      <label style="display:grid;gap:6px"><span class="pf-lbl">No banco</span><select name="bank" class="pf-in" data-act="tiercfg">${banksOrdered().map(b => `<option value="${b.id}" ${b.id === (tc.bank || S.cfg.main) ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></label></div>
+    </form>
+  </div>`;
+}
 // ---------- Central de avisos (sino) ----------
 function avisos() {
   const t = today(), out = [];
@@ -1507,6 +1934,13 @@ function avisos() {
     const y = addDays(t, -1);
     if (habOn(h, y) && h.start <= y && habState(h, y) !== 'ok') out.push({ k: `hab:${h.id}:${y}`, lvl: 'bad', go: 'vida', t: `${h.title}: ontem ficou ${habState(h, y) === 'part' ? 'pela metade' : 'sem fazer'}`, s: 'Hoje é dia de voltar pro sistema' });
     if (habOn(h, t) && habState(h, t) !== 'ok') out.push({ k: `hab:${h.id}:${t}`, lvl: 'info', go: 'vida', t: `Hoje: ${h.title}`, s: freqLabel(h) });
+  }
+  for (const d of openDays()) out.push({ k: `morte:${d}`, lvl: 'bad', go: 'hoje', t: `${fmtShort(d)} ficou sem MORTE`, s: 'Feche o dia no VIDA' });
+  { const a = advisor(); if (S.tx.length && (a.restaHoje < 0 || a.livre < 0)) out.push({ k: `adv:${t}:${a.livre < 0 ? 'mes' : 'dia'}`, lvl: 'bad', go: 'painel', t: a.msgs[0].t, s: a.msgs[0].s }); }
+  for (const x of S.tasks.filter(x => !x.done && x.date && x.date <= addDays(t, 1))) {
+    const dd = daysUntil(x.date), tipo = isDem(x) ? (x.kind || 'Trabalho') : 'Pendência';
+    out.push({ k: `task:${x.id}:${dd < 0 ? 'late' : x.date}`, lvl: dd < 0 ? 'bad' : dd === 0 ? 'warn' : 'info', go: isDem(x) ? 'trab' : 'pend', t: `${tipo}: ${x.t}`,
+      s: dd < 0 ? `Atrasada há ${plural(-dd, 'dia', 'dias')}` : (dd === 0 ? 'Hoje' : 'Amanhã') + (x.time ? ' às ' + x.time : '') });
   }
   for (const e of evOn(t).filter(e => !e.done)) out.push({ k: `ev:${e.id}:${t}`, lvl: 'info', go: 'agenda', t: `Hoje: ${e.title}`, s: e.time || 'dia todo' });
   for (const e of evOn(addDays(t, 1)).filter(e => !e.done)) out.push({ k: `ev:${e.id}:${addDays(t, 1)}:am`, lvl: 'info', go: 'agenda', t: `Amanhã: ${e.title}`, s: e.time || 'dia todo' });
@@ -1734,6 +2168,17 @@ function buildReminders() {
     out.push({ k: `ev:${e.id}:${e.date}`, at: e.time ? atTime(e.date, e.time) - 30 * 6e4 : atTime(e.date, '08:00'),
       title: e.title, body: (e.time ? `Às ${e.time}` : 'Hoje') + (e.notes ? ' · ' + e.notes : ''), go: 'agenda' });
   }
+  // pendências e demandas com data: avisa 30 min antes (ou 8h) e lembra as atrasadas
+  if (n.agenda) for (const x of S.tasks) {
+    if (x.done || !x.date) continue;
+    const tipo = isDem(x) ? (x.kind || 'Trabalho') : 'Pendência';
+    for (let d = x.date < t ? t : x.date; d <= end; d = addDays(d, 1)) {
+      const late = dayIdx(x.date, d);
+      if (late < 0) break;
+      out.push({ k: `task:${x.id}:${d}`, at: late === 0 && x.time ? atTime(d, x.time) - 30 * 6e4 : atTime(d, '08:00'), title: `${tipo}: ${x.t}`,
+        body: late > 0 ? `Atrasada há ${plural(late, 'dia', 'dias')}` : x.time ? `Às ${x.time}` : 'Pra hoje', go: isDem(x) ? 'trab' : 'pend' });
+    }
+  }
   if (n.vida) for (const h of S.habits) for (let d = t > h.start ? t : h.start; d <= end && (!h.until || d <= h.until); d = addDays(d, 1)) {
     if (!habOn(h, d) || habState(h, d) === 'ok') continue;
     const items = habItems(h, d).map(i => i.t);
@@ -1821,14 +2266,24 @@ function notifCard() {
 }
 
 // ---------- Desenhar ----------
-const VIEWS = { painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, vida: vVida, compras: vCompras, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, vida: vVida, compras: vCompras, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
 function navBtn(id, label, extra = '') { return `<button data-go="${id}" aria-selected="${U.view === id}">${IC[id]}${label}${extra}</button>`; }
 function render() {
   const late = billSummary().late.length, behind = S.goals.filter(goalBehind).length;
-  const badge = id => id === 'contas' && late ? `<span class="cnt">${late}</span>` : id === 'metas' && behind ? `<span class="cnt">${behind}</span>` : '';
-  $('#nav').innerHTML = TABS.filter(([id]) => !S.cfg.hiddenTabs.includes(id)).map(([id, l]) => navBtn(id, l, badge(id))).join('');
+  const lateT = S.tasks.filter(taskLate).length, cnt = { contas: late, metas: behind, pend: lateT };
+  const badge = id => cnt[id] ? `<span class="cnt">${cnt[id]}</span>` : '';
+  const vis = v => v === 'painel' || v === 'hoje' || v === 'trab' || v === 'livros' || !S.cfg.hiddenTabs.includes(v);
+  const sec = secOf(U.view);
+  $('#nav').innerHTML = SECTIONS.filter(s => s[2].some(vis)).map(([id, l, views]) => {
+    const n = views.filter(vis).reduce((t, v) => t + (cnt[v] || 0), 0);
+    return `<button data-go="${views.find(vis)}" aria-selected="${sec && sec[0] === id}">${IC[id]}${l}${n ? `<span class="cnt">${n}</span>` : ''}</button>`;
+  }).join('');
+  const subs = sec ? sec[2].filter(vis) : [];
+  $('#subnav').hidden = subs.length < 2;
+  $('#subnav').innerHTML = subs.length < 2 ? '' : subs.map(v => navBtn(v, SUB[v], badge(v))).join('');
   $('#nav-foot').innerHTML = navBtn('ajustes', 'Bancos e backup') + navBtn('config', 'Configurações');
-  $('#brand').setAttribute('aria-selected', U.view === 'painel');
+  $('#brand').setAttribute('aria-selected', U.view === 'geral');
+  $('#nav').insertAdjacentHTML('afterbegin', navBtn('geral', 'Painel geral'));
   document.body.classList.toggle('menu-on', U.menu);
   $('#dotsbtn').innerHTML = IC.dots;
   $('#dotsbtn').setAttribute('aria-expanded', U.menu);
@@ -1870,6 +2325,7 @@ document.addEventListener('click', e => {
       const st = U.l[el.dataset.k] || (U.l[el.dataset.k] = {}), f = el.dataset.f;
       st[f] = st[f] === v ? null : v;
       el.parentElement.querySelectorAll('[data-act=pick]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === st[f]));
+      if (el.dataset.k === 'sp' && f === 'pct') { if (st.pct === null) { st.pct = ''; el.parentElement.querySelector('[data-v=""]').setAttribute('aria-pressed', true); } $('#sp-prev').innerHTML = splitPrev(parseMoney($('[data-sp]').value)); }
       return 'keep';
     },
     eye() { S.cfg.hideVals = !S.cfg.hideVals; },
@@ -1891,6 +2347,32 @@ document.addEventListener('click', e => {
     ntg() { const n = devCfg(); setDev({ [v]: !n[v] }); scheduleSync(500); render(); return 'keep'; },
     sheetclose() { closeSheet(); return 'keep'; },
     txedit() { openSheet(txEditForm(find(S.tx, id))); return 'keep'; },
+    vidastart() { S.days[today()] = { start: new Date().toTimeString().slice(0, 5) }; toast('Bora! Dia começou'); },
+    morte() { if (!confirm('Fechar o dia agora?')) return 'keep'; closeDay(today()); window.scrollTo(0, 0); toast('Dia fechado. Boa noite 🌙'); },
+    morteundo() { const x = S.days[today()]; delete x.end; delete x.sum; delete x.done; delete x.missed; },
+    morteold() { for (const d of openDays()) closeDay(d); toast('Dias fechados'); },
+    vidareset() { if (!confirm('Recomeçar o dia? Volta pro botão VIDA.')) return 'keep'; delete S.days[today()]; },
+    tasktg() { const x = find(S.tasks, id); x.done = !x.done; x.doneAt = x.done ? today() : ''; if (x.done) toast('Feito ✓'); },
+    taskdel() { S.tasks = S.tasks.filter(x => x.id !== id); },
+    taskclear() { S.tasks = S.tasks.filter(x => !x.done); },
+    wf() { U.wf = v; render(); return 'keep'; },
+    bookst() { const x = find(S.know.books, id); x.status = v; x.finished = v === 'li' ? (x.finished || today()) : ''; if (v === 'li') toast('Mais um lido 📚'); },
+    bookbuy() { const x = find(S.know.books, id); S.shop.push({ id: uid(), name: 'Livro: ' + x.title, done: false }); toast('Foi pra Lista de compras'); },
+    bookdel() { if (!confirm('Apagar esse livro?')) return 'keep'; S.know.books = S.know.books.filter(x => x.id !== id); },
+    quotedel() { S.know.quotes = S.know.quotes.filter(x => x.id !== id); },
+    frametg() { const x = find(S.know.frames, id); x.done = !x.done; },
+    framedel() { S.know.frames = S.know.frames.filter(x => x.id !== id); },
+    lessontg() { const l = find(find(S.know.courses, id).lessons, el.dataset.i); l.done = !l.done; l.doneAt = l.done ? today() : ''; if (l.done) toast('Aula feita ✓'); },
+    lessondel() { const c = find(S.know.courses, id); c.lessons = c.lessons.filter(l => l.id !== el.dataset.i); },
+    coursedel() { if (!confirm('Apagar o curso inteiro?')) return 'keep'; S.know.courses = S.know.courses.filter(c => c.id !== id); },
+    kinddel() { if (!confirm(`Remover o tipo "${v}"? As demandas antigas continuam.`)) return 'keep'; S.cfg.workKinds = S.cfg.workKinds.filter(k => k !== v); },
+    tiered() {
+      const r = S.cfg.tiers.list.find(x => x.id === id), s = prompt(`Nova % a partir de ${brlRaw(r.from)}`, r.pct);
+      if (s === null) return 'keep';
+      const p = parseInt(s, 10); if (!(p >= 0 && p <= 100)) { toast('Escreva de 0 a 100'); return 'keep'; }
+      r.pct = p;
+    },
+    tierdel() { S.cfg.tiers.list = S.cfg.tiers.list.filter(x => x.id !== id); },
     habdone() {
       const h = find(S.habits, id), d = el.dataset.d, log = h.log || (h.log = {});
       const l = log[d] || (log[d] = { done: false, items: {} });
@@ -2151,6 +2633,7 @@ document.addEventListener('change', e => {
     for (const k in show) el.form.querySelector('.rep-' + k).hidden = !show[k];
     return;
   }
+  if (el.dataset.act === 'tiercfg') { S.cfg.tiers[el.name] = el.value; save(); render(); return; }
   if (el.dataset.act === 'hbank') { U.h.bank = el.value; render(); }
   if (el.dataset.act === 'hdate' && el.value) { U.h[el.dataset.f] = el.value; render(); }
 });
@@ -2243,7 +2726,14 @@ document.addEventListener('submit', e => {
       if (!(c > 0)) return toast('Escreva o valor');
       if (!(S.cfg.split || []).length || splitSum() !== 100) return toast('A divisão precisa somar 100%');
       const date = d.date || today(), base = d.desc.trim() || st.cat || 'Espalhado', grp = uid();
-      for (const { r, v } of splitParts(c)) {
+      const p = spPct(c), g = Math.round(c * p / 100), tc = S.cfg.tiers, tb = tc.bank || S.cfg.main;
+      if (g > 0) {
+        S.tx.push({ id: uid(), type: 'in', cents: g, bank: tb, cat: st.cat || '', desc: base + ' · guardar ' + p + '%', date, sp: grp });
+        const tx = { id: uid(), type: 'save', cents: g, bank: tb, desc: '', date, sp: grp };
+        if (find(S.goals, tc.goal)) tx.goal = tc.goal;
+        S.tx.push(tx);
+      }
+      for (const { r, v } of splitParts(c - g)) {
         if (!(v > 0)) continue;
         S.tx.push({ id: uid(), type: 'in', cents: v, bank: r.bank, cat: st.cat || '', desc: base + (r.for ? ' · ' + r.for : ''), date, sp: grp });
         if (r.dest !== 'conta') {
@@ -2252,8 +2742,8 @@ document.addEventListener('submit', e => {
           S.tx.push(tx);
         }
       }
-      st.cat = null;
-      toast(brlRaw(c) + ' espalhado em ' + plural(S.cfg.split.length, 'parte', 'partes'));
+      st.cat = null; st.pct = null;
+      toast(brlRaw(c) + ' espalhado' + (g > 0 ? ` · guardou ${brlRaw(g)} (${p}%)` : ''));
     },
     debt() {
       const c = parseMoney(d.v);
@@ -2289,6 +2779,35 @@ document.addEventListener('submit', e => {
       if ('from' in d) { t.from = d.from; t.to = d.to; }
       if ('goal' in d) { if (d.goal) t.goal = d.goal; else delete t.goal; }
       closeSheet(); toast('Lançamento atualizado');
+    },
+    dem() {
+      if (!d.t.trim()) return toast('Escreva a demanda');
+      const kind = d.nk.trim() || d.kind || 'Trabalho';
+      if (d.nk.trim() && !S.cfg.workKinds.includes(kind)) S.cfg.workKinds.push(kind);
+      S.tasks.push({ id: uid(), t: d.t.trim(), area: 'Trabalho', kind, date: d.date || '', time: d.time || '', done: false, doneAt: '' });
+      toast('Agendado' + (d.date ? ' pra ' + fmtShort(d.date) : ''));
+      setTimeout(() => $('[data-form=dem] input').focus());
+    },
+    book() { if (!d.title.trim()) return toast('Escreva o livro'); S.know.books.push({ id: uid(), title: d.title.trim(), author: d.author.trim(), status: 'quero', page: 0, pages: 0, finished: '' }); },
+    bookpg() { const x = find(S.know.books, f.dataset.id); x.page = +d.page || 0; x.pages = +d.pages || 0; if (x.pages && x.page >= x.pages) { x.status = 'li'; x.finished = today(); toast('Terminou o livro 📚'); } },
+    quote() { if (!d.t.trim()) return toast('Escreva a frase'); S.know.quotes.push({ id: uid(), t: d.t.trim(), author: d.author.trim() }); toast('Frase guardada'); },
+    frame() { if (!d.t.trim()) return toast('Escreva o quadro'); S.know.frames.push({ id: uid(), t: d.t.trim(), author: d.author.trim(), done: false }); },
+    course() { if (!d.title.trim()) return toast('Escreva o curso'); S.know.courses.push({ id: uid(), title: d.title.trim(), lessons: [] }); },
+    lesson() {
+      const c = find(S.know.courses, f.dataset.id), ls = d.t.split('\n').map(s => s.trim()).filter(Boolean);
+      if (!ls.length) return toast('Escreva a aula');
+      for (const t of ls) c.lessons.push({ id: uid(), t, done: false, doneAt: '' });
+      setTimeout(() => $(`[data-form=lesson][data-id="${c.id}"] input`).focus());
+    },
+    tier() {
+      const from = parseMoney(d.from), pct = parseInt(d.pct, 10);
+      if (!(from >= 0) || !(pct >= 0 && pct <= 100)) return toast('Escreva o valor e a %');
+      S.cfg.tiers.list = S.cfg.tiers.list.filter(x => x.from !== from).concat({ id: uid(), from, pct });
+    },
+    task() {
+      if (!d.t.trim()) return toast('Escreva a pendência');
+      S.tasks.push({ id: uid(), t: d.t.trim(), area: d.area || 'Trabalho', date: d.date || '', done: false, doneAt: '' });
+      setTimeout(() => $('[data-form=task] input').focus());
     },
     shop() { if (!d.name.trim()) return; S.shop.push({ id: uid(), name: d.name.trim(), done: false }); setTimeout(() => $('[data-form=shop] input').focus()); },
     ev() {
