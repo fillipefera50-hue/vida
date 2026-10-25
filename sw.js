@@ -1,5 +1,5 @@
 // Guarda os arquivos do app no aparelho para abrir sem internet, e mostra as notificações.
-const CACHE = 'vida-app-v3';
+const CACHE = 'vida-app-v4';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

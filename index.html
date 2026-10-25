@@ -255,7 +255,7 @@
   .pf-cal button.sel .pf-rib span { box-shadow: 0 0 0 1.5px #17151a; }
   .rep-x { display: grid; gap: 6px; }
   .rep-x.pf-picks { display: flex; }
-  .rep-x[hidden] { display: none !important; }
+  .rep-x[hidden], [data-form="bill"] [hidden] { display: none !important; }
   .pf-chk input { display: none; }
   .pf-chk:has(input:checked) { color: #17151a; background: var(--accent); border-color: transparent; font-weight: 600; }
   .pf-sws { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -410,7 +410,7 @@ const SEED = [['nu', 'Nubank Pessoal'], ['nupj', 'Nubank PJ'], ['infinite', 'Inf
 
 // ---------- Dados (ficam salvos no próprio aparelho) ----------
 const KEY = 'vida-app';
-const blank = () => ({ banks: [], tx: [], bills: [], shop: [], wishes: [], events: [], goals: [], habits: [] });
+const blank = () => ({ banks: [], tx: [], bills: [], debts: [], shop: [], wishes: [], events: [], goals: [], habits: [] });
 let S;
 try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { S = blank(); }
 function save() {
@@ -422,6 +422,7 @@ function fixData() {
   S.cfg = Object.assign({ name: 'Fillipe', accent: 'orange', main: 'nu', theme: 'dark', hideVals: false, limit: 0,
     hiddenBanks: [], hiddenTabs: [], catsOut: CAT_OUT.slice(), catsIn: CAT_IN.slice(), colorNames: { ...COLOR_NAMES }, lastBackup: '' }, S.cfg || {});
   if (!S.bills) S.bills = [];
+  if (!S.debts) S.debts = [];
   if (!S.habits) S.habits = [];
   // Primeira vez: já cadastra os bancos do Fillipe. Todo banco tem "em conta" e "guardado".
   if (!S.seeded) {
@@ -511,7 +512,7 @@ function toast(msg) {
 const empty = msg => `<div class="pf-empty">${msg}</div>`;
 
 // ---------- Contas a pagar ----------
-// Fixa: todo mês no mesmo dia, a partir do mês em que começou. Variável: uma data só.
+// Fixa: todo mês no mesmo dia, a partir do mês em que começou. 'var': uma data só (pagamento único, ou parcela quando tem group).
 function monthKeys(a, b) {
   const r = []; let [y, m] = a.split('-').map(Number); const [yb, mb] = b.split('-').map(Number);
   while (y < yb || (y === yb && m <= mb)) { r.push(y + '-' + pad(m)); if (++m > 12) { m = 1; y++; } }
@@ -550,7 +551,7 @@ function billTag(i) {
 }
 function billRow(i) {
   return `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto auto">
-    <span class="t">${esc(i.b.name)}<small>${fmtD(i.due)} · ${i.b.group ? 'parcela' : i.b.kind === 'fixa' ? 'fixa' : 'variável'}${i.b.bank ? ' · ' + esc(bankName(i.b.bank)) : ''} ${billTag(i)}</small></span>
+    <span class="t">${esc(i.b.name)}<small>${fmtD(i.due)} · ${i.b.group ? 'parcela' : i.b.kind === 'fixa' ? 'fixa' : 'pagamento único'}${i.b.bank ? ' · ' + esc(bankName(i.b.bank)) : ''} ${billTag(i)}</small></span>
     <span class="v ${i.paid ? '' : 'neg'}">${brl(i.b.cents)}</span>
     <span class="acts"><button class="pf-btn ${i.paid ? 'ghost' : ''} small" style="--glow:var(--red)" data-act="billpay" data-id="${i.b.id}" data-key="${i.key}">${i.paid ? 'Desfazer' : 'Paguei'}</button>${i.b.kind === 'var' ? `<button class="pf-x" data-act="billdelv" data-id="${i.b.id}" aria-label="Apagar">×</button>` : ''}</span>
   </div>`;
@@ -562,8 +563,11 @@ function billSummary() {
   const thisMonth = pend.filter(i => i.due.slice(0, 7) === cur || i.due < t);
   const nextM = billsInMonth(addDays(monthRange()[1], 1).slice(0, 7)).filter(i => !i.paid);
   const next = [...pend, ...nextM].filter(i => i.due >= t).sort((a, b) => a.due.localeCompare(b.due))[0];
-  return { pend, late, thisMonth, next, inst, total: thisMonth.reduce((s, i) => s + i.b.cents, 0), lateTotal: late.reduce((s, i) => s + i.b.cents, 0) };
+  const sum = a => a.reduce((s, i) => s + i.b.cents, 0);
+  // all: tudo que falta pagar (parcelas futuras inclusas, fixas até este mês). Dívidas ficam fora.
+  return { pend, late, thisMonth, next, inst, total: sum(thisMonth), lateTotal: sum(late), all: sum(pend) };
 }
+const debtLeft = d => d.cents - d.pays.reduce((s, p) => s + p.cents, 0);
 
 // ---------- Estado da tela ----------
 const U = {
@@ -572,7 +576,7 @@ const U = {
   h: { mode: 'mes', ref: today(), a: addDays(today(), -30), b: today(), bank: '' },
   ag: { month: today().slice(0, 7), sel: today() },
   wk: { ref: today(), sel: today() },
-  bt: 'fixa',
+  bt: 'contas',
   gm: {},
   hm: {},
   rel: today().slice(0, 7),
@@ -792,38 +796,113 @@ function vLanc() {
 
 // ---------- Contas a pagar (aba) ----------
 function vContas() {
-  const s = billSummary(), t = today(), cur = t.slice(0, 7), kind = U.bt;
-  const pend = s.pend.filter(i => i.b.kind === kind).sort((a, b) => a.due.localeCompare(b.due));
-  const paid = s.inst.filter(i => i.paid && i.b.kind === kind && i.due.slice(0, 7) === cur);
-  const fixas = S.bills.filter(b => b.kind === 'fixa').sort((a, b) => a.day - b.day);
+  const tabs = `<div class="pf-tabs" role="tablist">${[['contas', 'Contas'], ['div', 'Dívidas']].map(([k, l]) => `<button role="tab" data-act="bt" data-v="${k}" aria-selected="${U.bt === k}">${l}</button>`).join('')}</div>`;
+  if (U.bt === 'div') return tabs + vDividas();
+  const s = billSummary(), t = today(), cur = t.slice(0, 7);
+  const until = monthRange(pd(addDays(monthRange()[1], 1)))[1]; // lista até o fim do mês que vem
+  const pend = s.pend.filter(i => i.due <= until).sort((a, b) => a.due.localeCompare(b.due));
+  const later = s.pend.length - pend.length;
+  const paid = s.inst.filter(i => i.paid && i.due.slice(0, 7) === cur);
   const mesNome = MESES[new Date().getMonth()];
-  return `<div class="pf-kpis k3">
+  return `<div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Total a pagar</span><span class="pf-kpi-val neg">${brl(s.all)}</span><span class="pf-kpi-note">tudo que falta, parcelas futuras inclusas · sem dívidas</span></div>
     <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">A pagar em ${mesNome}</span><span class="pf-kpi-val neg">${brl(s.total)}</span><span class="pf-kpi-note">${plural(s.thisMonth.length, 'conta pendente', 'contas pendentes')}</span></div>
     <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Em atraso</span><span class="pf-kpi-val ${s.late.length ? 'neg' : ''}">${brl(s.lateTotal)}</span><span class="pf-kpi-note">${s.late.length ? plural(s.late.length, 'conta atrasada', 'contas atrasadas') : 'nenhuma atrasada'}</span></div>
     <div class="pf-kpi" style="--glow:var(--amber)"><span class="pf-kpi-label">Próximo vencimento</span><span class="pf-kpi-val">${s.next ? esc(s.next.b.name) : '—'}</span><span class="pf-kpi-note">${s.next ? fmtD(s.next.due) + ' · ' + brl(s.next.b.cents) : 'nada pra frente'}</span></div>
   </div>
-  <div class="pf-tabs" role="tablist">${[['fixa', 'Fixas'], ['var', 'Variáveis']].map(([k, l]) => `<button role="tab" data-act="bt" data-v="${k}" aria-selected="${kind === k}">${l}</button>`).join('')}</div>
+  ${tabs}
   <div class="pf-row">
     <div class="pf-card">
       <div class="pf-card-h"><h2>Pra pagar</h2><span class="pf-tag ${pend.length ? 'late' : 'ok'}">${pend.length}</span></div>
-      ${pend.length ? `<div class="pf-list">${pend.map(billRow).join('')}</div>` : '<span class="pf-kpi-note">Nada pendente aqui.</span>'}
+      ${pend.length ? `<div class="pf-list">${pend.map(billRow).join('')}</div>` : '<span class="pf-kpi-note">Nada pendente até o fim do mês que vem.</span>'}
+      ${later ? `<span class="pf-kpi-note">+ ${plural(later, 'parcela', 'parcelas')} mais pra frente (contam no total).</span>` : ''}
       ${paid.length ? `<span class="pf-subh">Pagas em ${mesNome}</span><div class="pf-list">${paid.map(billRow).join('')}</div>` : ''}
     </div>
     <div style="display:grid;gap:14px;align-content:start">
       <form class="pf-card pf-glow" style="--glow:var(--red)" data-form="bill">
-        <div class="pf-card-h"><h2>Nova conta ${kind === 'fixa' ? 'fixa' : 'variável'}</h2><span class="pf-ico">${IC.contas}</span></div>
-        <p class="pf-card-note" style="margin:0">${kind === 'fixa' ? 'Repete todo mês no mesmo dia (luz, internet, aluguel…).' : 'Acontece uma vez só (parcela, boleto, empréstimo…).'}</p>
+        <div class="pf-card-h"><h2>Nova conta</h2><span class="pf-ico">${IC.contas}</span></div>
+        <select name="tipo" class="pf-in" data-btype><option value="fixa">Conta fixa (todo mês)</option><option value="parc">Conta parcelada</option><option value="unica">Pagamento único</option></select>
         <input name="name" class="pf-in" placeholder="Nome da conta" autocomplete="off">
-        <input name="v" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off">
-        ${kind === 'fixa'
-          ? `<div class="pf-grid2"><input name="day" class="pf-in" type="number" min="1" max="31" inputmode="numeric" placeholder="Vence dia"><input name="start" class="pf-in" type="month" value="${cur}" title="Começa em"></div>`
-          : `<input name="date" class="pf-in" type="date" value="${t}">`}
+        <div class="b-fixa" style="display:grid;gap:10px">
+          <span class="pf-kpi-note">Repete todo mês no mesmo dia (luz, internet, aluguel…).</span>
+          <input name="vf" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off">
+          <div class="pf-grid2"><input name="day" class="pf-in" type="number" min="1" max="31" inputmode="numeric" placeholder="Vence dia"><input name="start" class="pf-in" type="month" value="${cur}" title="Começa em"></div>
+        </div>
+        <div class="b-parc" style="display:grid;gap:10px" hidden>
+          <span class="pf-kpi-note">Uma parcela por mês, a partir da primeira.</span>
+          <div class="pf-grid2">
+            <select name="n" class="pf-in" data-bn>${[...Array(47)].map((_, i) => `<option value="${i + 2}">${i + 2} parcelas</option>`).join('')}</select>
+            <select name="modo" class="pf-in" data-bmode><option value="igual">Mesmo valor</option><option value="dif">Valores diferentes</option></select>
+          </div>
+          <input name="vp" class="pf-in b-igual" inputmode="decimal" placeholder="Valor de cada parcela R$" autocomplete="off">
+          <div class="b-dif pf-grid2" hidden></div>
+          <span class="pf-lbl">Primeira parcela vence em</span><input name="first" type="date" class="pf-in" value="${t}">
+        </div>
+        <div class="b-unica" style="display:grid;gap:10px" hidden>
+          <span class="pf-kpi-note">Acontece uma vez só (boleto, taxa…).</span>
+          <input name="vu" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off">
+          <input name="date" class="pf-in" type="date" value="${t}">
+        </div>
         <button class="pf-btn">Adicionar conta</button>
       </form>
-      ${kind === 'fixa' && fixas.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Minhas contas fixas</h2></div><div class="pf-list">${fixas.map(b => `<div class="pf-tx"><span class="t">${esc(b.name)}<small>todo dia ${b.day}</small></span><span class="v">${brl(b.cents)}</span><button class="pf-x" data-act="billdel" data-id="${b.id}" aria-label="Apagar">×</button></div>`).join('')}</div></div>` : ''}
+      ${minhasContas()}
     </div>
   </div>
   <p class="pf-card-note" style="margin:0">Ao tocar em "Paguei", o app pergunta se já quer registrar como gasto no banco principal. As contas pendentes aparecem em vermelho na Agenda.</p>`;
+}
+
+const groupName = n => n.replace(/\s*\(\d+\/\d+\)$/, '');
+function minhasContas() {
+  const fixas = S.bills.filter(b => b.kind === 'fixa').sort((a, b) => a.day - b.day);
+  const groups = {};
+  for (const b of S.bills) if (b.group) (groups[b.group] || (groups[b.group] = [])).push(b);
+  const parc = Object.values(groups).map(g => g.sort((a, b) => a.date.localeCompare(b.date)));
+  const unicas = S.bills.filter(b => b.kind === 'var' && !b.group && !b.paid).sort((a, b) => a.date.localeCompare(b.date));
+  if (!fixas.length && !parc.length && !unicas.length) return '';
+  const row = (t, sm, v, act, id) => `<div class="pf-tx"><span class="t">${esc(t)}<small>${sm}</small></span><span class="v">${v}</span><button class="pf-x" data-act="${act}" data-id="${id}" aria-label="Apagar">×</button></div>`;
+  return `<div class="pf-card"><div class="pf-card-h"><h2>Minhas contas</h2></div>
+    ${fixas.length ? `<span class="pf-subh">Fixas</span><div class="pf-list">${fixas.map(b => row(b.name, `todo dia ${b.day}`, brl(b.cents), 'billdel', b.id)).join('')}</div>` : ''}
+    ${parc.length ? `<span class="pf-subh">Parceladas</span><div class="pf-list">${parc.map(g => {
+      const pg = g.filter(b => b.paid).length, falta = g.filter(b => !b.paid).reduce((s, b) => s + b.cents, 0);
+      return row(groupName(g[0].name), `${pg} de ${g.length} pagas · até ${fmtD(g[g.length - 1].date)}`, falta ? 'falta ' + brl(falta) : '<span class="pf-tag ok">quitada</span>', 'billgdel', g[0].group);
+    }).join('')}</div>` : ''}
+    ${unicas.length ? `<span class="pf-subh">Pagamento único</span><div class="pf-list">${unicas.map(b => row(b.name, fmtD(b.date), brl(b.cents), 'billdelv', b.id)).join('')}</div>` : ''}
+  </div>`;
+}
+
+// ---------- Dívidas (fora do total de contas) ----------
+function vDividas() {
+  const ds = [...S.debts].sort((a, b) => (debtLeft(a) <= 0) - (debtLeft(b) <= 0));
+  const open = ds.filter(d => debtLeft(d) > 0), left = open.reduce((s, d) => s + debtLeft(d), 0);
+  return `<div class="pf-kpis k3">
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Total em dívidas</span><span class="pf-kpi-val ${left ? 'neg' : ''}">${brl(left)}</span><span class="pf-kpi-note">${plural(open.length, 'dívida aberta', 'dívidas abertas')} · fora do total de contas</span></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Minhas dívidas</h2><span class="pf-tag ${open.length ? 'late' : 'ok'}">${open.length}</span></div>
+      ${ds.length ? `<div class="pf-list">${ds.map(d => {
+        const l = debtLeft(d), pago = d.cents - l, pct = Math.min(100, Math.round(pago / d.cents * 100));
+        return `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto auto">
+          <span class="t">${esc(d.name)}<small>${d.to ? 'pra ' + esc(d.to) + ' · ' : ''}pago ${brl(pago)} de ${brl(d.cents)} (${pct}%)${l <= 0 ? ' <span class="pf-tag ok">quitada</span>' : ''}</small></span>
+          <span class="v ${l > 0 ? 'neg' : ''}">${brl(Math.max(l, 0))}</span>
+          <span class="acts">${l > 0 ? `<button class="pf-btn small" style="--glow:var(--red)" data-act="debtpay" data-id="${d.id}">Abater</button>` : ''}${d.pays.length ? `<button class="pf-btn ghost small" data-act="debtundo" data-id="${d.id}">Desfazer</button>` : ''}<button class="pf-x" data-act="debtdel" data-id="${d.id}" aria-label="Apagar">×</button></span>
+        </div>`;
+      }).join('')}</div>` : '<span class="pf-kpi-note">Nenhuma dívida registrada.</span>'}
+    </div>
+    <form class="pf-card pf-glow" style="--glow:var(--red);align-content:start" data-form="debt">
+      <div class="pf-card-h"><h2>Nova dívida</h2><span class="pf-ico">${IC.contas}</span></div>
+      <p class="pf-card-note" style="margin:0">Dinheiro que você deve (empréstimo, alguém, cartão atrasado…). Vai abatendo conforme paga. Não entra no total de contas a pagar.</p>
+      <input name="name" class="pf-in" placeholder="O que é" autocomplete="off">
+      <input name="to" class="pf-in" placeholder="Pra quem (opcional)" autocomplete="off">
+      <input name="v" class="pf-in" inputmode="decimal" placeholder="Valor total R$" autocomplete="off">
+      <button class="pf-btn">Adicionar dívida</button>
+    </form>
+  </div>`;
+}
+function billParcVals(form) {
+  const box = form.querySelector('.b-dif'), n = +form.querySelector('[data-bn]').value;
+  const old = [...box.querySelectorAll('input')].map(i => i.value);
+  box.innerHTML = [...Array(n)].map((_, i) => `<input name="p${i + 1}" class="pf-in" inputmode="decimal" placeholder="Parcela ${i + 1} R$" autocomplete="off" value="${esc(old[i] || '')}">`).join('');
 }
 
 // ---------- Histórico ----------
@@ -1828,6 +1907,29 @@ document.addEventListener('click', e => {
       }
     },
     billdel() { if (confirm('Apagar essa conta fixa? Ela some de todos os meses.')) S.bills = S.bills.filter(b => b.id !== id); },
+    billgdel() { if (confirm('Apagar TODAS as parcelas dessa conta?')) S.bills = S.bills.filter(b => b.group !== id); else return 'keep'; },
+    debtpay() {
+      const dv = find(S.debts, id), l = debtLeft(dv);
+      const s = prompt(`Quanto você pagou de "${dv.name}"? (falta ${brlRaw(l)})`, '');
+      if (s === null) return 'keep';
+      const c = Math.min(parseMoney(s), l);
+      if (!(c > 0)) { toast('Escreva o valor'); return 'keep'; }
+      const p = { cents: c, date: today() };
+      const mb = find(S.banks, S.cfg.main);
+      if (mb && confirm(`Registrar ${brlRaw(c)} como gasto no ${mb.name}?\n\nOK = sim · Cancelar = só abater`)) {
+        p.tx = uid();
+        S.tx.push({ id: p.tx, type: 'out', cents: c, bank: mb.id, cat: '', desc: 'Dívida: ' + dv.name, date: today() });
+      }
+      dv.pays.push(p);
+      toast(debtLeft(dv) <= 0 ? dv.name + ' quitada!' : 'Abatido ' + brlRaw(c));
+    },
+    debtundo() {
+      const dv = find(S.debts, id), p = dv.pays[dv.pays.length - 1];
+      if (!confirm(`Desfazer o último pagamento (${brlRaw(p.cents)} em ${fmtD(p.date)})?${p.tx ? ' O gasto registrado também vai ser apagado.' : ''}`)) return 'keep';
+      if (p.tx) S.tx = S.tx.filter(t => t.id !== p.tx);
+      dv.pays.pop();
+    },
+    debtdel() { if (confirm('Apagar essa dívida? Os gastos já registrados continuam.')) S.debts = S.debts.filter(x => x.id !== id); else return 'keep'; },
     shoptg() { const i = find(S.shop, id); i.done = !i.done; },
     shopdel() { S.shop = S.shop.filter(i => i.id !== id); },
     shopclear() { S.shop = S.shop.filter(i => !i.done); },
@@ -1935,6 +2037,12 @@ document.addEventListener('click', e => {
 });
 
 document.addEventListener('input', e => {
+  // Campos de valor tipo maquininha: os números entram pela direita, os dois últimos são centavos (1700 → 17,00)
+  if (e.target.matches('input[inputmode="decimal"]')) {
+    const el = e.target, dg = el.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 13);
+    el.value = dg ? (+dg / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+    return;
+  }
   if (e.target.dataset.act === 'hq') { U.h.q = e.target.value; $('#hist-res').innerHTML = histResults(); }
 });
 document.addEventListener('change', e => {
@@ -1953,6 +2061,17 @@ document.addEventListener('change', e => {
     el.form.querySelector('.rep-every').hidden = el.value !== 'every';
     return;
   }
+  if (el.matches('[data-btype]')) {
+    for (const k of ['fixa', 'parc', 'unica']) el.form.querySelector('.b-' + k).hidden = el.value !== k;
+    return;
+  }
+  if (el.matches('[data-bmode]')) {
+    const dif = el.value === 'dif';
+    el.form.querySelector('.b-igual').hidden = dif; el.form.querySelector('.b-dif').hidden = !dif;
+    if (dif) billParcVals(el.form);
+    return;
+  }
+  if (el.matches('[data-bn]')) { if (el.form.querySelector('[data-bmode]').value === 'dif') billParcVals(el.form); return; }
   if (el.matches('[data-parc]')) { el.form.querySelector('.parc-x').hidden = !(+el.value > 1); return; }
   if (el.matches('[data-rep]')) {
     const show = { every: el.value === 'every', weekly: el.value === 'weekly', until: el.value !== 'none' };
@@ -2014,18 +2133,36 @@ document.addEventListener('submit', e => {
       toast('Movido ' + brlRaw(c));
     },
     bill() {
-      const c = parseMoney(d.v);
-      if (!d.name.trim()) return toast('Escreva o nome da conta');
-      if (!(c > 0)) return toast('Escreva o valor');
-      if (U.bt === 'fixa') {
-        const day = parseInt(d.day, 10);
+      const name = d.name.trim();
+      if (!name) return toast('Escreva o nome da conta');
+      if (d.tipo === 'fixa') {
+        const c = parseMoney(d.vf), day = parseInt(d.day, 10);
+        if (!(c > 0)) return toast('Escreva o valor');
         if (!(day >= 1 && day <= 31)) return toast('Escreva o dia do vencimento (1 a 31)');
-        S.bills.push({ id: uid(), kind: 'fixa', name: d.name.trim(), cents: c, day, start: d.start || today().slice(0, 7), paid: {} });
+        S.bills.push({ id: uid(), kind: 'fixa', name, cents: c, day, start: d.start || today().slice(0, 7), paid: {} });
+      } else if (d.tipo === 'parc') {
+        const n = parseInt(d.n, 10);
+        const vals = d.modo === 'dif' ? [...Array(n)].map((_, i) => parseMoney(d['p' + (i + 1)])) : Array(n).fill(parseMoney(d.vp));
+        const bad = vals.findIndex(c => !(c > 0));
+        if (bad >= 0) return toast(d.modo === 'dif' ? `Escreva o valor da parcela ${bad + 1}` : 'Escreva o valor de cada parcela');
+        if (!d.first) return toast('Escolha quando vence a primeira parcela');
+        const group = uid();
+        vals.forEach((c, i) => S.bills.push({ id: uid(), kind: 'var', name: `${name} (${i + 1}/${n})`, cents: c, date: addMonths(d.first, i), paid: false, group }));
+        return toast(`${n} parcelas adicionadas, total ${brlRaw(vals.reduce((s, c) => s + c, 0))}`);
       } else {
+        const c = parseMoney(d.vu);
+        if (!(c > 0)) return toast('Escreva o valor');
         if (!d.date) return toast('Escolha a data');
-        S.bills.push({ id: uid(), kind: 'var', name: d.name.trim(), cents: c, date: d.date, paid: false });
+        S.bills.push({ id: uid(), kind: 'var', name, cents: c, date: d.date, paid: false });
       }
       toast('Conta adicionada');
+    },
+    debt() {
+      const c = parseMoney(d.v);
+      if (!d.name.trim()) return toast('Escreva o que é a dívida');
+      if (!(c > 0)) return toast('Escreva o valor total');
+      S.debts.push({ id: uid(), name: d.name.trim(), to: d.to.trim(), cents: c, start: today(), pays: [] });
+      toast('Dívida adicionada');
     },
     nhours() { setDev({ hContas: d.hContas || '09:00', hMetas: d.hMetas || '20:00' }); scheduleSync(500); toast('Horários salvos'); },
     habit() {
