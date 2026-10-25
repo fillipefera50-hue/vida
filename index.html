@@ -443,6 +443,9 @@ IC.conhecimento = IC.livros = sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5
 IC.cursos = sv('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6"/>');
 IC.frases = sv('<path d="M7 7H4v6h3l-1 4M17 7h-3v6h3l-1 4"/>');
 IC.quadros = sv('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>');
+IC.recap = sv('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>');
+IC.rsem = sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 14h10"/>');
+IC.rmes = sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 13h2M14 13h2M8 17h2M14 17h2"/>');
 IC.pend = sv('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>');
 
 const TABS = [
@@ -456,10 +459,11 @@ const SECTIONS = [
   ['trabalho', 'Trabalho', ['trab']],
   ['conhecimento', 'Conhecimento', ['livros', 'cursos', 'frases', 'quadros']],
   ['agenda', 'Agenda', ['agenda']],
+  ['recap', 'Recap', ['rsem', 'rmes']],
 ];
-const SUB = { hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
+const SUB = { rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
 const secOf = v => SECTIONS.find(s => s[2].includes(v));
-const TITLES = { ...Object.fromEntries(TABS), geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', ajustes: 'Bancos e backup', config: 'Configurações' };
+const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', ajustes: 'Bancos e backup', config: 'Configurações' };
 const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
 const CAT_IN = ['Salário', 'Freela', 'Venda', 'Presente', 'Outros'];
 const AREAS = ['Dinheiro', 'Carreira', 'Estudos', 'Saúde', 'Casa', 'Pessoal'];
@@ -671,6 +675,7 @@ const U = {
   gm: {},
   hm: {},
   rel: today().slice(0, 7),
+  rc: { w: '', m: '' }, // recap aberto ('' = o mais recente)
   bell: false,
   menu: false,
 };
@@ -1198,14 +1203,7 @@ function vRel() {
     return { g, c, s: goalSys(g) };
   }).filter(o => o.c || !o.g.done);
   // vida: cumprimento de cada sistema no mês
-  const habs = S.habits.map(h => {
-    let sched = 0, ok = 0;
-    for (let d = a > h.start ? a : h.start; d <= end && (!h.until || d <= h.until); d = addDays(d, 1)) {
-      if (d === t && habState(h, d) !== 'ok') continue; // hoje ainda não acabou
-      if (habOn(h, d)) { sched++; if (habState(h, d) === 'ok') ok++; }
-    }
-    return { h, sched, ok, pct: sched ? Math.round(ok / sched * 100) : null };
-  }).filter(o => o.sched);
+  const habs = habRange(a, end);
   const patr = totalAt(end), patrPrev = totalAt(pb);
   const lim = S.cfg.limit;
   return `<div class="pf-card"><div class="pf-navd"><button class="pf-arrow" data-act="relshift" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${nome} de ${y}</b><button class="pf-arrow" data-act="relshift" data-v="1" aria-label="Próximo mês">${IC.right}</button></div>
@@ -1243,6 +1241,115 @@ function vRel() {
     <div class="pf-card"><div class="pf-card-h"><h2>Vida</h2></div>
       ${habs.length ? `<div class="pf-cats">${habs.map(o => `<div class="pf-cat"><div class="n"><span>${esc(o.h.title)}</span><span>${o.ok} de ${o.sched} dias · ${o.pct}%</span></div><div class="pf-track"><div class="pf-fill ${o.pct >= 80 ? 'ok' : o.pct >= 50 ? 'warn' : 'bad'}" style="width:${o.pct}%"></div></div></div>`).join('')}</div>` : '<span class="pf-kpi-note">Nenhum sistema nesse mês.</span>'}</div>
   </div>`;
+}
+
+// ---------- Recap: semana e mês fechados, com histórico ----------
+// cumprimento de cada sistema entre a e end (hoje só conta se já fez)
+function habRange(a, end) {
+  const t = today();
+  return S.habits.map(h => {
+    let sched = 0, ok = 0;
+    for (let d = a > h.start ? a : h.start; d <= end && (!h.until || d <= h.until); d = addDays(d, 1)) {
+      if (d === t && habState(h, d) !== 'ok') continue;
+      if (habOn(h, d)) { sched++; if (habState(h, d) === 'ok') ok++; }
+    }
+    return { h, sched, ok, pct: sched ? Math.round(ok / sched * 100) : null };
+  }).filter(o => o.sched);
+}
+// primeiro dia com alguma coisa registrada no app
+function recapStart() {
+  const t = today();
+  return [...S.tx.map(x => x.date), ...Object.keys(S.days), ...S.habits.map(h => h.start), ...S.tasks.map(x => x.doneAt)].filter(d => d && d <= t).sort()[0] || t;
+}
+function recapData(a, b) {
+  const inR = d => d && d >= a && d <= b, t = today();
+  const s = sums(a, b), habs = habRange(a, b);
+  const sched = habs.reduce((n, o) => n + o.sched, 0), ok = habs.reduce((n, o) => n + o.ok, 0);
+  const days = Object.keys(S.days).filter(inR), closed = days.filter(d => S.days[d].end);
+  const tasks = S.tasks.filter(x => x.done && inR(x.doneAt));
+  const evs = evBetween(a, b < t ? b : t);
+  const books = S.know.books.filter(x => x.status === 'li' && inR(x.finished));
+  const lessons = S.know.courses.flatMap(c => c.lessons.filter(l => l.done && inR(l.doneAt)));
+  const unpaid = billsBetween(a, b).filter(i => !i.paid && i.due < t);
+  const goals = S.goals.filter(g => g.kind === 'money').map(g => {
+    let c = 0;
+    for (const x of S.tx) if (x.goal === g.id && inR(x.date)) c += x.type === 'save' ? x.cents : x.type === 'unsave' ? -x.cents : 0;
+    return { g, c };
+  }).filter(o => o.c);
+  const biggest = S.tx.filter(x => x.type === 'out' && inR(x.date)).sort((u, v) => v.cents - u.cents).slice(0, 5);
+  const has = s.nIn + s.nOut + days.length + tasks.length + ok + books.length + lessons.length > 0;
+  return { s, habs, sched, ok, pct: sched ? Math.round(ok / sched * 100) : null, days, closed, tasks, evs, books, lessons, unpaid, goals, biggest, has };
+}
+function recapBody(a, b, wk) {
+  const r = recapData(a, b), p = sums(wk ? addDays(a, -7) : addMonths(a, -1), wk ? addDays(a, -1) : addDays(a, -1));
+  const res = r.s.in - r.s.out, nDays = dayIdx(a, b) + 1, t = today();
+  const ant = wk ? 'a semana anterior' : 'o mês anterior';
+  const vs = (now, before) => { if (!before) return ''; const q = Math.round((now - before) / before * 100); return q === 0 ? 'igual ' + (wk ? 'à semana anterior' : 'ao mês anterior') : `${Math.abs(q)}% ${q > 0 ? 'a mais' : 'a menos'} que ${ant}`; };
+  const dem = r.tasks.filter(isDem), pend = r.tasks.filter(x => !isDem(x));
+  const evOk = r.evs.filter(e => e.done), evMiss = r.evs.filter(e => !e.done);
+  const weak = r.habs.filter(o => o.pct < 70);
+  // dias: verde = fechou no MORTE, vermelho = ficou aberto, cinza = nem abriu
+  let strip = '';
+  for (let i = 0; i < (pd(a).getDay() + 6) % 7; i++) strip += '<span style="visibility:hidden"></span>';
+  for (let d = a; d <= b; d = addDays(d, 1)) { const x = S.days[d]; strip += `<span class="${x && x.end ? 'ok' : x ? (d === t ? 'now' : 'bad') : 'off'}" title="${fmtShort(d)}">${pd(d).getDate()}</span>`; }
+  const fix = [
+    ...weak.map(o => `<li class="ev" style="--c:var(--red)"><span>${esc(o.h.title)}<small>${o.ok} de ${o.sched} dias · ${o.pct}%</small></span></li>`),
+    ...evMiss.slice(0, 6).map(e => `<li class="ev" style="--c:${evColor(e)}"><span>${esc(e.title)}<small>não marcou como feito · ${fmtShort(e.date)}</small></span></li>`),
+    ...r.unpaid.map(i => `<li class="ev" style="--c:var(--red)"><span>${esc(i.b.name)}<small>ficou sem pagar · venceu ${fmtShort(i.due)}</small></span></li>`),
+  ];
+  return `<div class="pf-card"><p style="margin:0;font-size:15px;line-height:1.5">${wk ? 'Nessa semana' : 'Em ' + MESES[pd(a).getMonth()]} você ganhou <b class="pos">${brl(r.s.in)}</b>, gastou <b class="neg">${brl(r.s.out)}</b> e guardou <b class="sav">${brl(r.s.sv)}</b>. ${res >= 0 ? `Sobraram <b class="pos">${brl(res)}</b>.` : `Gastou <b class="neg">${brl(-res)}</b> a mais do que ganhou.`}
+    ${r.pct !== null ? ` Cumpriu <b class="${r.pct >= 80 ? 'pos' : r.pct >= 50 ? '' : 'neg'}">${r.pct}%</b> dos sistemas e fechou` : ' Fechou'} <b>${r.closed.length} de ${nDays}</b> dias no MORTE.</p></div>
+  <div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--green)"><span class="pf-kpi-label">Ganhos</span><span class="pf-kpi-val pos">${brl(r.s.in)}</span><span class="pf-kpi-note">${vs(r.s.in, p.in) || plural(r.s.nIn, 'ganho', 'ganhos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Gastos</span><span class="pf-kpi-val neg">${brl(r.s.out)}</span><span class="pf-kpi-note">${vs(r.s.out, p.out) || plural(r.s.nOut, 'gasto', 'gastos')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--blue)"><span class="pf-kpi-label">Guardado</span><span class="pf-kpi-val sav">${brl(r.s.sv)}</span><span class="pf-kpi-note">${vs(r.s.sv, p.sv) || 'guardado menos tirado'}</span></div>
+    <div class="pf-kpi" style="--glow:var(--accent)"><span class="pf-kpi-label">Sistemas</span><span class="pf-kpi-val">${r.pct === null ? '—' : r.pct + '%'}</span><span class="pf-kpi-note">${r.sched ? `${r.ok} de ${r.sched} feitos` : 'nenhum programado'}</span></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Sistemas</h2></div>
+      ${r.habs.length ? `<div class="pf-cats">${r.habs.map(o => `<div class="pf-cat"><div class="n"><span>${esc(o.h.title)}</span><span>${o.ok} de ${o.sched} · ${o.pct}%</span></div><div class="pf-track"><div class="pf-fill ${o.pct >= 80 ? 'ok' : o.pct >= 50 ? 'warn' : 'bad'}" style="width:${o.pct}%"></div></div></div>`).join('')}</div>` : '<span class="pf-kpi-note">Nenhum sistema nesse período.</span>'}</div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Dias</h2><span class="pf-tag ${r.closed.length === nDays ? 'ok' : 'main'}">${r.closed.length}/${nDays} fechados</span></div>
+      <div class="pf-dstrip" style="grid-template-columns:repeat(7,minmax(0,1fr))">${strip}</div>
+      <div class="pf-legend"><span><i style="background:var(--green)"></i>fechou no MORTE</span><span><i style="background:var(--red)"></i>ficou aberto</span><span><i style="background:var(--dim)"></i>não abriu</span></div></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>O que fiz</h2></div>
+      <dl class="pf-stats">
+        <div><dt>Demandas do trabalho</dt><dd>${dem.length}</dd></div>
+        <div><dt>Pendências resolvidas</dt><dd>${pend.length}</dd></div>
+        <div><dt>Compromissos cumpridos</dt><dd>${evOk.length} de ${r.evs.length}</dd></div>
+        <div><dt>Aulas feitas</dt><dd>${r.lessons.length}</dd></div>
+        <div><dt>Livros terminados</dt><dd>${r.books.length ? r.books.map(x => esc(x.title)).join(', ') : 0}</dd></div>
+      </dl></div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Pra onde foi o dinheiro</h2></div>${catBars(a, b)}</div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card"><div class="pf-card-h"><h2>Maiores gastos</h2></div>
+      ${r.biggest.length ? `<div class="pf-list">${r.biggest.map(txRow).join('')}</div>` : '<span class="pf-kpi-note">Nenhum gasto.</span>'}</div>
+    <div class="pf-card"><div class="pf-card-h"><h2>Metas</h2></div>
+      ${r.goals.length ? `<div class="pf-list">${r.goals.map(o => `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t">${esc(o.g.title)}</span><span class="v sav">${o.c >= 0 ? '+ ' : '− '}${brl(Math.abs(o.c))}</span></div>`).join('')}</div>` : '<span class="pf-kpi-note">Nada guardado pra metas.</span>'}</div>
+  </div>
+  <div class="pf-card pf-glow" style="--glow:var(--red)"><div class="pf-card-h"><h2>Pra melhorar</h2></div>
+    ${fix.length ? `<ul class="pf-todo">${fix.join('')}</ul>` : `<span class="pf-kpi-note">Nada pra melhorar. ${wk ? 'Semana redonda' : 'Mês redondo'} 🔥</span>`}</div>`;
+}
+function vRecap(wk) {
+  const t = today(), k = wk ? 'w' : 'm';
+  const endOf = x => wk ? addDays(x, 6) : monthRange(pd(x))[1];
+  const step = (x, n) => wk ? addDays(x, 7 * n) : addMonths(x, n);
+  const label = x => wk ? `${fmtShort(x)} a ${fmtShort(endOf(x))}` : `${MESES[pd(x).getMonth()].replace(/^./, c => c.toUpperCase())} de ${x.slice(0, 4)}`;
+  const last = step(wk ? weekStart(t) : t.slice(0, 7) + '-01', -1); // último período já fechado
+  const sel = U.rc[k] || last, first = recapStart();
+  const hist = [];
+  for (let x = step(last, -1); endOf(x) >= first && hist.length < (wk ? 104 : 36); x = step(x, -1)) {
+    const r = recapData(x, endOf(x));
+    if (r.has) hist.push([x, r]);
+  }
+  const fim = wk ? `domingo, ${fmtShort(addDays(weekStart(t), 6))}` : fmtShort(monthRange(pd(t))[1]);
+  return `<div class="pf-card"><div class="pf-card-h"><h2>${label(sel)}</h2>${sel === last ? '<span class="pf-tag main">mais recente</span>' : `<button class="pf-btn ghost small" data-act="rcopen" data-k="${k}" data-v="">Ver o mais recente</button>`}</div>
+    <p class="pf-kpi-note" style="margin:0">${wk ? 'A semana' : 'O mês'} atual fecha ${fim}; o recap ${wk ? 'dela' : 'dele'} aparece aqui depois.</p></div>
+  ${recapBody(sel, endOf(sel), wk)}
+  <div class="pf-card"><div class="pf-card-h"><h2>Histórico</h2><span class="pf-tag">${hist.length}</span></div>
+    ${hist.length ? `<div class="pf-list">${hist.map(([x, r]) => `<div class="pf-tx" data-act="rcopen" data-k="${k}" data-v="${x}" style="grid-template-columns:minmax(0,1fr) auto auto;cursor:pointer${x === sel ? ';color:var(--accent)' : ''}"><span class="t">${label(x)}<small>${r.pct === null ? 'sem sistemas' : 'sistemas ' + r.pct + '%'} · ${r.closed.length} dias fechados</small></span><span class="v neg">${brl(r.s.out)}</span><span class="v pos">${brl(r.s.in)}</span></div>`).join('')}</div>` : `<span class="pf-kpi-note">Os ${wk ? 'recaps das semanas' : 'recaps dos meses'} anteriores vão ficando guardados aqui.</span>`}</div>`;
 }
 
 // ---------- Lista de compras ----------
@@ -2266,7 +2373,7 @@ function notifCard() {
 }
 
 // ---------- Desenhar ----------
-const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, vida: vVida, compras: vCompras, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
 function navBtn(id, label, extra = '') { return `<button data-go="${id}" aria-selected="${U.view === id}">${IC[id]}${label}${extra}</button>`; }
 function render() {
   const late = billSummary().late.length, behind = S.goals.filter(goalBehind).length;
@@ -2430,6 +2537,7 @@ document.addEventListener('click', e => {
       U.wk.sel = t >= a && t <= addDays(a, 6) ? t : a;
     },
     wkday() { U.wk.sel = v; },
+    rcopen() { U.rc[el.dataset.k] = v; window.scrollTo(0, 0); },
     relshift() { const [y, m] = U.rel.split('-').map(Number); U.rel = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
     bt() { U.bt = v; },
     cmshift() { const [y, m] = (U.cm || today().slice(0, 7)).split('-').map(Number); U.cm = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
