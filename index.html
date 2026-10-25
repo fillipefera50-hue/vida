@@ -799,23 +799,26 @@ function vContas() {
   const tabs = `<div class="pf-tabs" role="tablist">${[['contas', 'Contas'], ['div', 'Dívidas']].map(([k, l]) => `<button role="tab" data-act="bt" data-v="${k}" aria-selected="${U.bt === k}">${l}</button>`).join('')}</div>`;
   if (U.bt === 'div') return tabs + vDividas();
   const s = billSummary(), t = today(), cur = t.slice(0, 7);
-  const until = monthRange(pd(addDays(monthRange()[1], 1)))[1]; // lista até o fim do mês que vem
-  const pend = s.pend.filter(i => i.due <= until).sort((a, b) => a.due.localeCompare(b.due));
-  const later = s.pend.length - pend.length;
-  const paid = s.inst.filter(i => i.paid && i.due.slice(0, 7) === cur);
-  const mesNome = MESES[new Date().getMonth()];
+  // Mês escolhido nas setas: lista e "A pagar em" mostram só as contas dele (o mês atual puxa também as atrasadas)
+  const cm = U.cm || cur, [cy, cmm] = cm.split('-').map(Number), mesNome = MESES[cmm - 1] + (cy !== new Date().getFullYear() ? ' ' + cy : '');
+  const mon = billsInMonth(cm);
+  const pend = (cm === cur ? s.thisMonth : mon.filter(i => !i.paid)).sort((a, b) => a.due.localeCompare(b.due));
+  const paid = mon.filter(i => i.paid);
+  const later = s.pend.filter(i => i.due.slice(0, 7) > cm).length;
+  const mTotal = pend.reduce((t, i) => t + i.b.cents, 0);
+  const nav = `<button class="pf-arrow" data-act="cmshift" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${mesNome}</b><button class="pf-arrow" data-act="cmshift" data-v="1" aria-label="Próximo mês">${IC.right}</button>`;
   return `<div class="pf-kpis">
     <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Total a pagar</span><span class="pf-kpi-val neg">${brl(s.all)}</span><span class="pf-kpi-note">tudo que falta, parcelas futuras inclusas · sem dívidas</span></div>
-    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">A pagar em ${mesNome}</span><span class="pf-kpi-val neg">${brl(s.total)}</span><span class="pf-kpi-note">${plural(s.thisMonth.length, 'conta pendente', 'contas pendentes')}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">A pagar em ${mesNome}</span><span class="pf-kpi-val neg">${brl(mTotal)}</span><span class="pf-kpi-note">${plural(pend.length, 'conta pendente', 'contas pendentes')}</span><div class="pf-navd">${nav}</div></div>
     <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Em atraso</span><span class="pf-kpi-val ${s.late.length ? 'neg' : ''}">${brl(s.lateTotal)}</span><span class="pf-kpi-note">${s.late.length ? plural(s.late.length, 'conta atrasada', 'contas atrasadas') : 'nenhuma atrasada'}</span></div>
     <div class="pf-kpi" style="--glow:var(--amber)"><span class="pf-kpi-label">Próximo vencimento</span><span class="pf-kpi-val">${s.next ? esc(s.next.b.name) : '—'}</span><span class="pf-kpi-note">${s.next ? fmtD(s.next.due) + ' · ' + brl(s.next.b.cents) : 'nada pra frente'}</span></div>
   </div>
   ${tabs}
   <div class="pf-row">
     <div class="pf-card">
-      <div class="pf-card-h"><h2>Pra pagar</h2><span class="pf-tag ${pend.length ? 'late' : 'ok'}">${pend.length}</span></div>
-      ${pend.length ? `<div class="pf-list">${pend.map(billRow).join('')}</div>` : '<span class="pf-kpi-note">Nada pendente até o fim do mês que vem.</span>'}
-      ${later ? `<span class="pf-kpi-note">+ ${plural(later, 'parcela', 'parcelas')} mais pra frente (contam no total).</span>` : ''}
+      <div class="pf-card-h"><h2>Pra pagar em ${mesNome}</h2><span class="pf-tag ${pend.length ? 'late' : 'ok'}">${pend.length}</span></div>
+      ${pend.length ? `<div class="pf-list">${pend.map(billRow).join('')}</div>` : `<span class="pf-kpi-note">Nada pendente em ${mesNome}.</span>`}
+      ${later ? `<span class="pf-kpi-note">+ ${plural(later, 'conta', 'contas')} nos meses seguintes.</span>` : ''}
       ${paid.length ? `<span class="pf-subh">Pagas em ${mesNome}</span><div class="pf-list">${paid.map(billRow).join('')}</div>` : ''}
     </div>
     <div style="display:grid;gap:14px;align-content:start">
@@ -1888,6 +1891,7 @@ document.addEventListener('click', e => {
     wkday() { U.wk.sel = v; },
     relshift() { const [y, m] = U.rel.split('-').map(Number); U.rel = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
     bt() { U.bt = v; },
+    cmshift() { const [y, m] = (U.cm || today().slice(0, 7)).split('-').map(Number); U.cm = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
     billpay() {
       const b = find(S.bills, id), key = el.dataset.key;
       if (isPaid(b, key)) {
