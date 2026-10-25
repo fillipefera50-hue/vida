@@ -3,30 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#17151a">
+<meta name="theme-color" content="#000000">
 <title>Minha Vida</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <style>
   :root {
-    /* Mesmo visual do Painel do Fillipe */
-    --bg: #17151a; --side: #1d1b21; --card: #232127; --card-2: #2a272f; --line: #34313a;
-    --fg: #f3efe9; --muted: #a39d97; --dim: #6f6a66;
-    --accent: #e8875a; --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-    --green: #4fd18b; --purple: #a98bff; --pink: #ff6fa8; --amber: #f5b544; --blue: #6c8cff; --red: #ff5a6e;
-    --r: 18px;
+    /* Preto puro, cinzas neutros, cores vivas só onde têm significado */
+    --bg: #000000; --side: #000000; --card: #0e0e10; --card-2: #17171a; --line: #222226;
+    --fg: #f4f4f5; --muted: #9b9ba1; --dim: #5d5d63;
+    --accent: #ff7a1a; --accent-soft: color-mix(in srgb, var(--accent) 15%, transparent);
+    --green: #1ee07f; --purple: #9d5cff; --pink: #ff3d9a; --amber: #ffc21a; --blue: #2f7bff; --red: #ff2d55;
+    --on: #000; --r: 14px;
     color-scheme: dark;
   }
   :root[data-theme="light"] {
-    --bg: #f6f3ee; --side: #efebe5; --card: #ffffff; --card-2: #f2eee8; --line: #e2dcd3;
-    --fg: #1f1c1a; --muted: #6d6660; --dim: #a29a92;
-    --green: #1f9e5c; --purple: #7d5ff0; --pink: #e14b88; --amber: #d18f12; --blue: #4466ee; --red: #dd3f55;
+    --bg: #f4f4f5; --side: #ffffff; --card: #ffffff; --card-2: #f1f1f3; --line: #e4e4e7;
+    --fg: #0a0a0b; --muted: #66666d; --dim: #a1a1a8;
+    --green: #00b860; --purple: #7b3dff; --pink: #e8177f; --amber: #e0a000; --blue: #1662ff; --red: #f0143c;
     color-scheme: light;
   }
-  :root[data-theme="light"] .pf-kpi, :root[data-theme="light"] .pf-card, :root[data-theme="light"] .pf-area, :root[data-theme="light"] .pf-bk { box-shadow: 0 1px 3px rgba(60,40,20,.06); }
+  :root[data-theme="light"] .pf-kpi, :root[data-theme="light"] .pf-card, :root[data-theme="light"] .pf-area, :root[data-theme="light"] .pf-bk { box-shadow: 0 1px 2px rgba(0,0,0,.04); }
   :root[data-theme="light"] .pf-nav button:hover { background: rgba(0,0,0,.04); }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Segoe UI", Roboto, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.005em; -webkit-tap-highlight-color: transparent; }
   button, input, select, textarea { font: inherit; color: inherit; }
 
   .pf { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100vh; align-content: start; }
@@ -43,7 +43,7 @@
   body.menu-on { overflow: hidden; }
   .pf-brand { all: unset; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 12px; }
   .pf-brand[aria-selected="true"] { background: var(--accent-soft); }
-  .pf-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: #1b1310; display: grid; place-items: center; font-family: Georgia, serif; font-size: 20px; flex: none; }
+  .pf-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: var(--on); display: grid; place-items: center; font-size: 18px; font-weight: 700; letter-spacing: -.02em; flex: none; }
   .pf-brand strong { display: block; font-size: 15px; font-weight: 600; }
   .pf-brand span { font-size: 12px; color: var(--muted); }
   .pf-nav { display: flex; flex-direction: column; gap: 4px; }
@@ -56,7 +56,7 @@
 
   .pf-main { padding: 28px clamp(16px, 3vw, 32px) 60px; display: grid; gap: 22px; align-content: start; min-width: 0; }
   .pf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .pf-h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -.01em; }
+  .pf-h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.025em; }
   .pf-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
   .pf-eye { all: unset; cursor: pointer; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--card); border: 1px solid var(--line); color: var(--muted); flex: none; }
   .pf-eye svg { width: 19px; height: 19px; }
@@ -66,7 +66,7 @@
   .pf-kpis { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .pf-kpis.k3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pf-kpi, .pf-card, .pf-area { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; overflow: hidden; }
-  .pf-kpi::before, .pf-glow::before, .pf-area::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 0% 0%, var(--glow, transparent), transparent 60%); opacity: .14; pointer-events: none; }
+  .pf-kpi::before, .pf-glow::before, .pf-area::before { content: ""; position: absolute; inset: 0; display: none; pointer-events: none; }
   .pf-kpi > *, .pf-glow > *, .pf-area > * { position: relative; }
   .pf-kpi { min-height: 130px; gap: 6px; }
   .pf-kpi-top, .pf-card-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -111,7 +111,7 @@
 
   /* Barras */
   .pf-track { height: 10px; border-radius: 999px; background: var(--card-2); overflow: hidden; }
-  .pf-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--amber)); transition: width .5s; }
+  .pf-fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width .5s; }
   .pf-fill.ok { background: var(--green); }
   .pf-fill.warn { background: var(--amber); }
   .pf-fill.bad { background: var(--red); }
@@ -135,13 +135,13 @@
   .pf-money input { all: unset; flex: 1; min-width: 0; font-size: 32px; font-weight: 650; font-variant-numeric: tabular-nums; }
   .pf-picks { display: flex; flex-wrap: wrap; gap: 8px; }
   .pf-pick { all: unset; cursor: pointer; padding: 8px 14px; border-radius: 999px; background: var(--card-2); border: 1px solid var(--line); font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
-  .pf-pick[aria-pressed="true"] { color: #17151a; background: var(--glow, var(--accent)); border-color: transparent; font-weight: 600; }
+  .pf-pick[aria-pressed="true"] { color: var(--on); background: var(--glow, var(--accent)); border-color: transparent; font-weight: 600; }
   .pf-pick.bk { padding: 5px 12px 5px 5px; }
   .pf-pick .x { color: var(--dim); font-size: 15px; line-height: 1; padding: 0 2px; }
   .pf-pick .x:hover { color: var(--red); }
   .pf-inline { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; }
   .pf-grid2 { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pf-btn { all: unset; cursor: pointer; text-align: center; padding: 13px 18px; border-radius: 12px; background: var(--glow, var(--accent)); color: #17151a; font-weight: 650; font-size: 15px; }
+  .pf-btn { all: unset; cursor: pointer; text-align: center; padding: 13px 18px; border-radius: 12px; background: var(--glow, var(--accent)); color: var(--on); font-weight: 650; font-size: 15px; }
   .pf-btn:active { transform: scale(.98); }
   .pf-btn.ghost { background: var(--card-2); color: var(--fg); border: 1px solid var(--line); font-weight: 500; }
   .pf-btn.small { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
@@ -248,16 +248,16 @@
   .pf-cal button { all: unset; cursor: pointer; aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center; font-size: 14px; font-variant-numeric: tabular-nums; position: relative; }
   .pf-cal button:hover { background: var(--card-2); }
   .pf-cal button.today { outline: 1.5px solid var(--accent); }
-  .pf-cal button.sel { background: var(--accent); color: #17151a; font-weight: 650; }
+  .pf-cal button.sel { background: var(--accent); color: var(--on); font-weight: 650; }
   .pf-cal button.blank { visibility: hidden; }
   .pf-rib { position: absolute; left: 5px; right: 5px; bottom: 5px; display: flex; gap: 2px; }
   .pf-rib span { flex: 1; height: 5px; border-radius: 3px; }
-  .pf-cal button.sel .pf-rib span { box-shadow: 0 0 0 1.5px #17151a; }
+  .pf-cal button.sel .pf-rib span { box-shadow: 0 0 0 1.5px var(--bg); }
   .rep-x { display: grid; gap: 6px; }
   .rep-x.pf-picks { display: flex; }
   .rep-x[hidden], [data-form="bill"] [hidden] { display: none !important; }
   .pf-chk input { display: none; }
-  .pf-chk:has(input:checked) { color: #17151a; background: var(--accent); border-color: transparent; font-weight: 600; }
+  .pf-chk:has(input:checked) { color: var(--on); background: var(--accent); border-color: transparent; font-weight: 600; }
   .pf-sws { display: flex; flex-wrap: wrap; gap: 10px; }
   .pf-sw { all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 2px rgba(0,0,0,.15); }
   .pf-sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--c); }
@@ -303,10 +303,10 @@
   .pf-vida-start { min-height: 62vh; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; }
   .pf-vida-start p { margin: 6px 0 0; color: var(--fg); font-size: 15px; }
   .pf-vida-btn { all: unset; cursor: pointer; width: 190px; height: 190px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; font-weight: 800; letter-spacing: .14em; color: #fff;
-    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 60%, #000));
-    box-shadow: 0 0 0 10px var(--accent-soft), 0 18px 60px color-mix(in srgb, var(--accent) 45%, transparent); animation: vidaPulse 2.4s ease-in-out infinite; transition: transform .15s; }
+    background: var(--accent); color: var(--on);
+    box-shadow: 0 0 0 10px var(--accent-soft); animation: vidaPulse 2.4s ease-in-out infinite; transition: transform .15s; }
   .pf-vida-btn:active { transform: scale(.94); }
-  @keyframes vidaPulse { 50% { box-shadow: 0 0 0 22px transparent, 0 18px 70px color-mix(in srgb, var(--accent) 55%, transparent); } }
+  @keyframes vidaPulse { 50% { box-shadow: 0 0 0 18px transparent; } }
   .pf-kpis.mini { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   @media (max-width: 760px) { .pf-kpis.mini { gap: 8px; } .pf-kpis.mini .pf-kpi { padding: 12px; } .pf-kpis.mini .pf-ico { display: none; } .pf-kpis.mini .pf-kpi-val { font-size: 17px; } .pf-kpis.mini .pf-kpi-label { font-size: 10px; } .pf-kpis.mini .pf-kpi-note { font-size: 11px; } }
   .pf-wstrip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
@@ -324,9 +324,9 @@
   .pf-quote { margin: 6px 0 0; font-size: 19px; line-height: 1.45; font-style: italic; color: var(--fg); }
   .pf-quote.small { font-size: 15px; margin: 0; }
   .pf-vida-start.small { min-height: 0; padding: 26px 0 10px; }
-  .pf-vida-btn.morte { width: 130px; height: 130px; font-size: 21px; color: #e9e6ee; animation: none;
-    background: radial-gradient(circle at 35% 30%, #4a4652, #26232b 60%, #121015); box-shadow: 0 0 0 8px rgba(255,255,255,.04), 0 14px 40px rgba(0,0,0,.5); }
-  :root[data-theme="light"] .pf-vida-btn.morte { color: #fff; }
+  .pf-vida-btn.morte { width: 130px; height: 130px; font-size: 21px; color: var(--fg); animation: none;
+    background: var(--card-2); border: 1px solid var(--line); box-shadow: 0 0 0 8px var(--card); }
+  :root[data-theme="light"] .pf-vida-btn.morte { background: #0a0a0b; color: #fff; border-color: transparent; }
   .pf-dstrip { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; }
   .pf-dstrip span { aspect-ratio: 1; display: grid; place-items: center; border-radius: 7px; font-size: 10.5px; background: var(--card-2); color: var(--dim); border: 1px solid var(--line); }
   .pf-dstrip .ok { background: color-mix(in srgb, var(--green) 30%, var(--card-2)); color: var(--fg); border-color: transparent; }
@@ -348,7 +348,6 @@
   @media (max-width: 1100px) { .pf-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-row { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 760px) {
     .pf { grid-template-columns: minmax(0, 1fr); }
-    :root:not([data-theme="light"]) { --bg: #08070a; --side: #0e0d11; --card: #141317; --card-2: #1b1a1f; --line: #26242b; }
     .pf-main { padding: 18px 16px 60px; }
     .pf-kpis.k3 { grid-template-columns: minmax(0, 1fr); }
     .pf-kpi { min-height: 0; padding: 16px; }
@@ -371,7 +370,7 @@
   <main class="pf-main">
     <header class="pf-head">
       <div><h1 class="pf-h1" id="titulo"></h1><p class="pf-sub" id="resumo"></p></div>
-      <div class="pf-head-btns"><button class="pf-eye" id="eye" data-act="eye" aria-label="Esconder valores"></button><button class="pf-eye pf-bell" id="bell" data-act="bell" aria-label="Avisos"></button></div>
+      <div class="pf-head-btns"><button class="pf-eye" id="themebtn" data-act="themetg" aria-label="Modo claro / escuro"></button><button class="pf-eye" id="eye" data-act="eye" aria-label="Esconder valores"></button><button class="pf-eye pf-bell" id="bell" data-act="bell" aria-label="Avisos"></button></div>
       <div class="pf-pop" id="pop" hidden></div>
     </header>
     <nav class="pf-subnav" id="subnav" hidden></nav>
@@ -427,6 +426,8 @@ const IC = {
   check: sv('<path d="M5 12l5 5L20 7"/>'),
   left: sv('<path d="M15 18l-6-6 6-6"/>'),
   right: sv('<path d="M9 18l6-6-6-6"/>'),
+  sun: sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  moon: sv('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
   eye: sv('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   eyeOff: sv('<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
   lock: sv('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
@@ -470,7 +471,7 @@ const AREAS = ['Dinheiro', 'Carreira', 'Estudos', 'Saúde', 'Casa', 'Pessoal'];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const SEM = ['seg','ter','qua','qui','sex','sáb','dom']; // semana começa na segunda
 const SEM_L = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-const COLORS = { red: '#ff5a6e', green: '#4fd18b', blue: '#6c8cff', orange: '#e8875a', amber: '#f5b544', purple: '#a98bff', pink: '#ff6fa8' };
+const COLORS = { red: '#ff2d55', green: '#1ee07f', blue: '#2f7bff', orange: '#ff7a1a', amber: '#ffc21a', purple: '#9d5cff', pink: '#ff3d9a' };
 const COLOR_NAMES = { red: 'Conta a pagar / gasto', green: 'Ganho', blue: 'Guardado / investido', orange: '', amber: '', purple: '', pink: '' };
 const evColor = e => COLORS[e.color] || COLORS.purple;
 
@@ -1582,7 +1583,7 @@ function vMetas() {
 
 // ---------- Vida (sistemas de hábitos) ----------
 // Mesma regra das metas: o sistema diz o que fazer em cada dia; dia feito = verde, dia perdido = vermelho.
-const VAREAS = { Corpo: '#e8875a', Mente: '#a98bff', Estudo: '#f5b544', Trabalho: '#ff6fa8', Casa: '#6c8cff', Outros: '#4fd18b' };
+const VAREAS = { Corpo: '#ff7a1a', Mente: '#9d5cff', Estudo: '#ffc21a', Trabalho: '#ff3d9a', Casa: '#2f7bff', Outros: '#1ee07f' };
 const FREQ = [['daily', 'Todo dia'], ['weekly', 'Em dias da semana'], ['every', 'A cada X dias']];
 const habOn = (h, d) => occursOn({ date: h.start, rep: { type: h.freq.type, days: h.freq.days, n: h.freq.n, until: h.until } }, d);
 const habItems = (h, d) => { const wd = (pd(d).getDay() + 6) % 7; return h.items.filter(i => !i.days || !i.days.length || i.days.includes(wd)); };
@@ -1699,7 +1700,7 @@ function vVida() {
 }
 
 // ---------- Pendências (trabalhos e coisas pra resolver) ----------
-const PAREAS = { Trabalho: '#ff6fa8', Estudo: '#f5b544', Dinheiro: '#ff5a6e', Saúde: '#4fd18b', Casa: '#6c8cff', Pessoal: '#a98bff' };
+const PAREAS = { Trabalho: '#ff3d9a', Estudo: '#ffc21a', Dinheiro: '#ff2d55', Saúde: '#1ee07f', Casa: '#2f7bff', Pessoal: '#9d5cff' };
 const taskLate = x => !x.done && x.date && x.date < today();
 function taskTag(x) {
   if (!x.date || x.done) return '';
@@ -1908,7 +1909,7 @@ function vHoje() {
 }
 
 // ---------- Trabalho: demandas agendadas (aparecem na Agenda e no VIDA) ----------
-const KIND_C = ['#e8875a', '#ff6fa8', '#a98bff', '#6c8cff', '#4fd18b', '#f5b544'];
+const KIND_C = ['#ff7a1a', '#ff3d9a', '#9d5cff', '#2f7bff', '#1ee07f', '#ffc21a'];
 const kindColor = k => KIND_C[Math.max(0, S.cfg.workKinds.indexOf(k)) % KIND_C.length];
 const isDem = x => x.area === 'Trabalho';
 function demLi(x, showDate) {
@@ -1949,7 +1950,7 @@ function vTrab() {
 }
 
 // ---------- Conhecimento: livros, frases, cursos e quadros ----------
-const BOOK_ST = [['quero', 'Quero ler', '#8a8590'], ['comprei', 'Comprei', '#f5b544'], ['lendo', 'Lendo', '#6c8cff'], ['li', 'Li', '#4fd18b']];
+const BOOK_ST = [['quero', 'Quero ler', '#8a8590'], ['comprei', 'Comprei', '#ffc21a'], ['lendo', 'Lendo', '#2f7bff'], ['li', 'Li', '#1ee07f']];
 const bookC = s => (BOOK_ST.find(b => b[0] === s) || BOOK_ST[0])[2];
 // frase do dia: muda todo dia, sempre a mesma no mesmo dia
 const quoteOfDay = () => { const q = S.know.quotes; return q.length ? q[dayIdx('2026-01-01', today()) % q.length] : null; };
@@ -2397,9 +2398,10 @@ function render() {
   document.documentElement.style.setProperty('--accent', COLORS[S.cfg.accent] || COLORS.orange);
   const theme = S.cfg.theme === 'light' ? 'light' : 'dark';
   document.documentElement.dataset.theme = theme;
-  document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#efebe5' : (matchMedia('(max-width: 760px)').matches ? '#0e0d11' : '#17151a');
+  document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#ffffff' : '#000000';
   $('#brand .pf-logo').textContent = S.cfg.name.charAt(0).toUpperCase();
   $('#brand strong').textContent = S.cfg.name;
+  $('#themebtn').innerHTML = theme === 'light' ? IC.moon : IC.sun;
   $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
   $('#eye').setAttribute('aria-pressed', S.cfg.hideVals);
   const nAv = avisos().filter(a => a.lvl !== 'info' && !S.av.seen.includes(a.k)).length;
@@ -2647,6 +2649,7 @@ document.addEventListener('click', e => {
     },
     accent() { S.cfg.accent = v; },
     theme() { S.cfg.theme = v; },
+    themetg() { S.cfg.theme = S.cfg.theme === 'light' ? 'dark' : 'light'; },
     tabtg() { const h = S.cfg.hiddenTabs; S.cfg.hiddenTabs = h.includes(v) ? h.filter(x => x !== v) : [...h, v]; },
     banktg() {
       if (v === S.cfg.main) { alert('O banco principal não pode ser escondido.'); return 'keep'; }
