@@ -1574,7 +1574,7 @@ function vAjustes() {
     <div class="pf-card-h"><h2>Backup</h2>${S.cfg.lastBackup ? `<span class="pf-tag">último: ${fmtD(S.cfg.lastBackup)}</span>` : ''}</div>
     <p class="pf-card-note" style="margin:0">Seus dados ficam só neste aparelho. Salve um backup de vez em quando, e use ele pra passar os dados do celular pro PC (ou o contrário).</p>
     <div class="pf-actions"><button class="pf-btn small" data-act="export">Salvar backup</button><button class="pf-btn small" data-act="share">Compartilhar backup</button><button class="pf-btn ghost small" data-act="import">Carregar backup</button></div>
-    <input type="file" id="importfile" accept=".json,application/json" hidden>
+    <input type="file" id="importfile" accept=".json,.txt,application/json,text/plain" hidden>
   </div>`;
 }
 
@@ -2093,7 +2093,8 @@ document.addEventListener('click', e => {
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     },
     share() {
-      const file = new File([JSON.stringify(S, null, 2)], `backup-vida-${today()}.json`, { type: 'application/json' });
+      // .txt porque o Android não deixa compartilhar .json; o "Carregar backup" aceita os dois
+      const file = new File([JSON.stringify(S, null, 2)], `backup-vida-${today()}.txt`, { type: 'text/plain' });
       if (!navigator.canShare || !navigator.canShare({ files: [file] })) { toast('Este aparelho não compartilha arquivo. Salvei o backup.'); return A.export(); }
       navigator.share({ files: [file], title: 'Backup Vida' })
         .then(() => { S.cfg.lastBackup = today(); save(); render(); toast('Backup compartilhado'); })
