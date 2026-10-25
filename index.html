@@ -423,6 +423,7 @@ function fixData() {
     hiddenBanks: [], hiddenTabs: [], catsOut: CAT_OUT.slice(), catsIn: CAT_IN.slice(), colorNames: { ...COLOR_NAMES }, lastBackup: '' }, S.cfg || {});
   if (!S.bills) S.bills = [];
   if (!S.debts) S.debts = [];
+  if (!S.av) S.av = { seen: [], hid: [] }; // avisos já vistos (sininho apaga) e limpos no ×
   if (!S.habits) S.habits = [];
   // Primeira vez: já cadastra os bancos do Fillipe. Todo banco tem "em conta" e "guardado".
   if (!S.seeded) {
@@ -781,10 +782,56 @@ function txList(list, emptyMsg = 'Nada lançado ainda.') {
   }
   return `<div class="pf-list">${html}</div>`;
 }
+// ---------- Espalhar: divide um ganho entre bancos pelas % da divisão ----------
+const SPLIT_FOR = ['Gastar', 'Contas', 'Material', 'Reserva', 'Investir', 'Metas'];
+const splitSum = () => (S.cfg.split || []).reduce((s, r) => s + r.pct, 0);
+function splitParts(c) {
+  const rs = S.cfg.split || [];
+  let rest = c;
+  return rs.map((r, i) => { const v = i === rs.length - 1 ? rest : Math.floor(c * r.pct / 100); rest -= v; return { r, v }; });
+}
+const splitWhere = r => r.dest === 'goal' ? 'meta ' + ((find(S.goals, r.goal) || {}).title || '?') : r.dest === 'guard' ? 'guardado' : 'em conta';
+function splitPrev(c) {
+  if (!(S.cfg.split || []).length) return '<span class="pf-kpi-note">Monte a divisão no quadro "Divisão do dinheiro".</span>';
+  if (splitSum() !== 100) return `<span class="pf-kpi-note neg">A divisão soma ${splitSum()}%. Precisa dar 100%.</span>`;
+  return `<div class="pf-list">${splitParts(c > 0 ? c : 0).map(({ r, v }) => `<div class="pf-tx"><span class="t">${esc(r.for || bankName(r.bank))}<small>${r.pct}% · ${esc(bankName(r.bank))} · ${splitWhere(r)}</small></span><span class="v ${r.dest === 'conta' ? 'pos' : 'sav'}">${brl(v)}</span></div>`).join('')}</div>`;
+}
+function spreadBox() {
+  const st = U.l.sp || (U.l.sp = {});
+  return `<form class="pf-card pf-glow" style="--glow:var(--purple)" data-form="sp">
+    <div class="pf-card-h"><h2>Espalhar dinheiro</h2><span class="pf-ico">${IC.swap}</span></div>
+    <p class="pf-card-note" style="margin:0">Lance o que entrou e o app já divide pra cada banco e cada função. Pra só guardar sem dividir, use o Guardar.</p>
+    <span class="pf-lbl">Quanto entrou</span>
+    <div class="pf-money"><span>R$</span><input name="v" inputmode="decimal" placeholder="0,00" autocomplete="off" data-sp></div>
+    <span class="pf-lbl">Categoria</span>
+    ${picks('sp', 'cat', S.cfg.catsIn.map(c => [c, c]), st.cat)}
+    <div class="pf-grid2"><input name="desc" class="pf-in" placeholder="Descrição (opcional)" autocomplete="off"><input name="date" type="date" class="pf-in" value="${today()}"></div>
+    <span class="pf-lbl">Vai ficar assim</span>
+    <div id="sp-prev">${splitPrev(0)}</div>
+    <button class="pf-btn">Espalhar</button>
+  </form>`;
+}
+function splitBox() {
+  const rs = S.cfg.split || [], sum = splitSum(), goals = S.goals.filter(g => g.kind === 'money' && !g.done);
+  return `<div class="pf-card">
+    <div class="pf-card-h"><h2>Divisão do dinheiro</h2><span class="pf-tag ${sum === 100 ? 'ok' : 'late'}">${sum}%</span></div>
+    ${rs.length ? `<div class="pf-list">${rs.map(r => `<div class="pf-tx"><span class="t">${esc(r.for || '—')}<small>${esc(bankName(r.bank))} · ${splitWhere(r)}</small></span><span class="v">${r.pct}%</span><span class="acts"><button class="pf-ed" data-act="splited" data-id="${r.id}" aria-label="Mudar %">${IC.edit}</button><button class="pf-x" data-act="splitdel" data-id="${r.id}" aria-label="Apagar">×</button></span></div>`).join('')}</div>`
+      : '<span class="pf-kpi-note">Ex: 20% Nubank em conta pra gastar, 30% Itaú em conta pras contas, 50% guardado pra meta.</span>'}
+    ${sum !== 100 && rs.length ? `<span class="pf-kpi-note">${sum < 100 ? `Faltam ${100 - sum}%` : `Passou ${sum - 100}%`} pra fechar 100%.</span>` : ''}
+    <form data-form="split" style="display:grid;gap:10px">
+      <span class="pf-subh">Adicionar parte</span>
+      <div class="pf-grid2"><input name="pct" class="pf-in" type="number" min="1" max="100" inputmode="numeric" placeholder="%" value="${sum < 100 ? 100 - sum : ''}"><select name="bank" class="pf-in">${banksOrdered().map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('')}</select></div>
+      <select name="dest" class="pf-in"><option value="conta">Fica em conta</option><option value="guard">Vai pro guardado</option>${goals.map(g => `<option value="goal:${g.id}">Guardado pra meta ${esc(g.title)}</option>`).join('')}</select>
+      <input name="for" class="pf-in" list="split-for" placeholder="Pra quê (gastar, contas, material…)" autocomplete="off"><datalist id="split-for">${SPLIT_FOR.map(f => `<option value="${f}">`).join('')}</datalist>
+      <button class="pf-btn ghost">Adicionar</button>
+    </form>
+  </div>`;
+}
 function vLanc() {
   const opts = banksOrdered().map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   const recent = [...S.tx].sort(byDateDesc).slice(0, 15);
   return `<div class="pf-three">${lancBox('out')}${lancBox('in')}${saveBox()}</div>
+  <div class="pf-row">${spreadBox()}${splitBox()}</div>
   ${S.banks.length > 1 ? `<form class="pf-card pf-glow" style="--glow:var(--purple)" data-form="tr">
     <div class="pf-card-h"><h2>Mover entre bancos</h2><span class="pf-ico">${IC.swap}</span></div>
     <p class="pf-card-note">Passa dinheiro em conta de um banco pro outro. Não conta como gasto nem ganho.</p>
@@ -1448,33 +1495,35 @@ function avisos() {
   const bs = billSummary();
   for (const i of bs.pend.filter(i => i.due <= addDays(t, 3)).sort((a, b) => a.due.localeCompare(b.due))) {
     const d = daysUntil(i.due);
-    out.push({ lvl: d < 0 ? 'bad' : d === 0 ? 'bad' : 'warn', go: 'contas', t: `${i.b.name} · ${brl(i.b.cents)}`,
+    out.push({ k: `bill:${i.b.id}:${i.key}:${d < 0 ? 'late' : d === 0 ? 'hoje' : 'perto'}`, lvl: d < 0 ? 'bad' : d === 0 ? 'bad' : 'warn', go: 'contas', t: `${i.b.name} · ${brl(i.b.cents)}`,
       s: d < 0 ? `Conta atrasada há ${plural(-d, 'dia', 'dias')}` : d === 0 ? 'Conta vence hoje' : `Conta vence em ${plural(d, 'dia', 'dias')} (${fmtShort(i.due)})` });
   }
   for (const g of S.goals.filter(goalBehind)) {
     const s = goalSys(g);
-    out.push({ lvl: 'bad', go: 'metas', t: `Meta ${g.title}: devendo ${brl(-s.diff)}`, s: `Guarde ${brl(-s.diff)} hoje pra ficar em dia, ou ${brl(s.rate)} por dia até ${fmtD(g.deadline)}` });
+    out.push({ k: `goal:${g.id}:${t}`, lvl: 'bad', go: 'metas', t: `Meta ${g.title}: devendo ${brl(-s.diff)}`, s: `Guarde ${brl(-s.diff)} hoje pra ficar em dia, ou ${brl(s.rate)} por dia até ${fmtD(g.deadline)}` });
   }
   for (const h of S.habits) {
     if (h.start > t) continue;
     const y = addDays(t, -1);
-    if (habOn(h, y) && h.start <= y && habState(h, y) !== 'ok') out.push({ lvl: 'bad', go: 'vida', t: `${h.title}: ontem ficou ${habState(h, y) === 'part' ? 'pela metade' : 'sem fazer'}`, s: 'Hoje é dia de voltar pro sistema' });
-    if (habOn(h, t) && habState(h, t) !== 'ok') out.push({ lvl: 'info', go: 'vida', t: `Hoje: ${h.title}`, s: freqLabel(h) });
+    if (habOn(h, y) && h.start <= y && habState(h, y) !== 'ok') out.push({ k: `hab:${h.id}:${y}`, lvl: 'bad', go: 'vida', t: `${h.title}: ontem ficou ${habState(h, y) === 'part' ? 'pela metade' : 'sem fazer'}`, s: 'Hoje é dia de voltar pro sistema' });
+    if (habOn(h, t) && habState(h, t) !== 'ok') out.push({ k: `hab:${h.id}:${t}`, lvl: 'info', go: 'vida', t: `Hoje: ${h.title}`, s: freqLabel(h) });
   }
-  for (const e of evOn(t).filter(e => !e.done)) out.push({ lvl: 'info', go: 'agenda', t: `Hoje: ${e.title}`, s: e.time || 'dia todo' });
-  for (const e of evOn(addDays(t, 1)).filter(e => !e.done)) out.push({ lvl: 'info', go: 'agenda', t: `Amanhã: ${e.title}`, s: e.time || 'dia todo' });
+  for (const e of evOn(t).filter(e => !e.done)) out.push({ k: `ev:${e.id}:${t}`, lvl: 'info', go: 'agenda', t: `Hoje: ${e.title}`, s: e.time || 'dia todo' });
+  for (const e of evOn(addDays(t, 1)).filter(e => !e.done)) out.push({ k: `ev:${e.id}:${addDays(t, 1)}:am`, lvl: 'info', go: 'agenda', t: `Amanhã: ${e.title}`, s: e.time || 'dia todo' });
   if (S.cfg.limit) {
     const [a, b] = monthRange(), o = sums(a, b).out, p = o / S.cfg.limit * 100;
-    if (p >= 90) out.push({ lvl: p >= 100 ? 'bad' : 'warn', go: 'painel', t: p >= 100 ? 'Passou do limite de gasto do mês' : `Já usou ${Math.round(p)}% do limite do mês`, s: `${brl(o)} de ${brl(S.cfg.limit)}` });
+    if (p >= 90) out.push({ k: `lim:${a}:${p >= 100 ? 100 : 90}`, lvl: p >= 100 ? 'bad' : 'warn', go: 'painel', t: p >= 100 ? 'Passou do limite de gasto do mês' : `Já usou ${Math.round(p)}% do limite do mês`, s: `${brl(o)} de ${brl(S.cfg.limit)}` });
   }
   const lb = S.cfg.lastBackup ? -daysUntil(S.cfg.lastBackup) : null;
-  if ((S.tx.length || S.bills.length) && (lb === null || lb >= 7)) out.push({ lvl: 'warn', go: 'ajustes', t: 'Salve um backup', s: lb === null ? 'Você nunca salvou um backup' : `Último backup há ${lb} dias` });
-  return out;
+  if ((S.tx.length || S.bills.length) && (lb === null || lb >= 7)) out.push({ k: `bkp:${t}`, lvl: 'warn', go: 'ajustes', t: 'Salve um backup', s: lb === null ? 'Você nunca salvou um backup' : `Último backup há ${lb} dias` });
+  S.av.hid = S.av.hid.filter(k => out.some(a => a.k === k)); // esquece os limpos que já sumiram sozinhos
+  return out.filter(a => !S.av.hid.includes(a.k));
 }
+function avSeen() { S.av.seen = avisos().map(a => a.k); save(); }
 function bellPop() {
   const list = avisos(), ico = { bad: 'var(--red)', warn: 'var(--amber)', info: 'var(--blue)' };
   return `<div class="pf-pop-h"><b>Avisos</b><button class="pf-x" data-act="bell" aria-label="Fechar">×</button></div>
-    ${list.length ? `<div class="pf-pop-list">${list.map(a => `<button class="pf-aviso" data-go="${a.go}" style="--c:${ico[a.lvl]}"><span class="pf-dot"></span><span>${esc(a.t)}<small>${esc(a.s)}</small></span></button>`).join('')}</div>` : '<p class="pf-kpi-note" style="margin:0">Tudo em dia. Nenhum aviso agora.</p>'}`;
+    ${list.length ? `<div class="pf-pop-list">${list.map(a => `<div style="display:flex;align-items:center;gap:4px"><button class="pf-aviso" style="flex:1;--c:${ico[a.lvl]}" data-go="${a.go}"><span class="pf-dot"></span><span>${esc(a.t)}<small>${esc(a.s)}</small></span></button><button class="pf-x" data-act="avdel" data-k="${esc(a.k)}" aria-label="Limpar aviso">×</button></div>`).join('')}</div>` : '<p class="pf-kpi-note" style="margin:0">Tudo em dia. Nenhum aviso agora.</p>'}`;
 }
 
 // ---------- Editar lançamento ----------
@@ -1791,7 +1840,7 @@ function render() {
   $('#brand strong').textContent = S.cfg.name;
   $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
   $('#eye').setAttribute('aria-pressed', S.cfg.hideVals);
-  const nAv = avisos().filter(a => a.lvl !== 'info').length;
+  const nAv = avisos().filter(a => a.lvl !== 'info' && !S.av.seen.includes(a.k)).length;
   $('#bell').innerHTML = IC.bell + (nAv ? `<span class="n">${nAv}</span>` : '');
   $('#bell').dataset.on = nAv > 0;
   $('#pop').hidden = !U.bell;
@@ -1801,7 +1850,7 @@ function render() {
   $('#resumo').textContent = hoje.charAt(0).toUpperCase() + hoje.slice(1);
   $('#view').innerHTML = VIEWS[U.view]();
 }
-function go(v) { U.view = v; U.bell = false; U.menu = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
+function go(v) { if (U.bell) avSeen(); U.view = v; U.bell = false; U.menu = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
 
 // ---------- Cliques ----------
 document.addEventListener('click', e => {
@@ -1809,7 +1858,7 @@ document.addEventListener('click', e => {
   if (k) { pinKey(k.dataset.pin); return; }
   if (!unlocked) return;
   // fecha o sino / a janela ao tocar fora
-  if (U.bell && !e.target.closest('#pop, #bell')) { U.bell = false; $('#pop').hidden = true; }
+  if (U.bell && !e.target.closest('#pop, #bell')) { U.bell = false; $('#pop').hidden = true; avSeen(); render(); }
   if (e.target.id === 'sheet') { closeSheet(); return; }
   const g = e.target.closest('[data-go]');
   if (g) { go(g.dataset.go); return; }
@@ -1824,7 +1873,17 @@ document.addEventListener('click', e => {
       return 'keep';
     },
     eye() { S.cfg.hideVals = !S.cfg.hideVals; },
-    bell() { U.bell = !U.bell; render(); return 'keep'; },
+    bell() { U.bell = !U.bell; if (!U.bell) avSeen(); render(); return 'keep'; },
+    avdel() { S.av.hid.push(el.dataset.k); },
+    splitdel() { S.cfg.split = S.cfg.split.filter(r => r.id !== id); },
+    splited() {
+      const r = find(S.cfg.split, id), max = 100 - splitSum() + r.pct;
+      const s = prompt(`Nova % pra "${r.for || bankName(r.bank)}" (até ${max})`, r.pct);
+      if (s === null) return 'keep';
+      const p = parseInt(s, 10);
+      if (!(p >= 1 && p <= max)) { toast(`Escreva de 1 a ${max}`); return 'keep'; }
+      r.pct = p;
+    },
     menu() { U.menu = !U.menu; render(); return 'keep'; },
     non() { enableNotif(); return 'keep'; },
     noff() { disableNotif(); return 'keep'; },
@@ -2045,6 +2104,7 @@ document.addEventListener('input', e => {
   if (e.target.matches('input[inputmode="decimal"]')) {
     const el = e.target, dg = el.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 13);
     el.value = dg ? (+dg / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+    if (el.matches('[data-sp]')) $('#sp-prev').innerHTML = splitPrev(parseMoney(el.value));
     return;
   }
   if (e.target.dataset.act === 'hq') { U.h.q = e.target.value; $('#hist-res').innerHTML = histResults(); }
@@ -2160,6 +2220,31 @@ document.addEventListener('submit', e => {
         S.bills.push({ id: uid(), kind: 'var', name, cents: c, date: d.date, paid: false });
       }
       toast('Conta adicionada');
+    },
+    split() {
+      const pct = parseInt(d.pct, 10);
+      if (!(pct >= 1 && pct <= 100)) return toast('Escreva a % (1 a 100)');
+      if (splitSum() + pct > 100) return toast(`Só cabem mais ${100 - splitSum()}%`);
+      const [dest, goal] = d.dest.split(':');
+      (S.cfg.split || (S.cfg.split = [])).push({ id: uid(), pct, bank: d.bank, dest, goal: goal || '', for: d.for.trim() });
+      toast('Parte adicionada');
+    },
+    sp() {
+      const c = parseMoney(d.v), st = U.l.sp || {};
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (!(S.cfg.split || []).length || splitSum() !== 100) return toast('A divisão precisa somar 100%');
+      const date = d.date || today(), base = d.desc.trim() || st.cat || 'Espalhado', grp = uid();
+      for (const { r, v } of splitParts(c)) {
+        if (!(v > 0)) continue;
+        S.tx.push({ id: uid(), type: 'in', cents: v, bank: r.bank, cat: st.cat || '', desc: base + (r.for ? ' · ' + r.for : ''), date, sp: grp });
+        if (r.dest !== 'conta') {
+          const tx = { id: uid(), type: 'save', cents: v, bank: r.bank, desc: '', date, sp: grp };
+          if (r.dest === 'goal' && find(S.goals, r.goal)) tx.goal = r.goal;
+          S.tx.push(tx);
+        }
+      }
+      st.cat = null;
+      toast(brlRaw(c) + ' espalhado em ' + plural(S.cfg.split.length, 'parte', 'partes'));
     },
     debt() {
       const c = parseMoney(d.v);
