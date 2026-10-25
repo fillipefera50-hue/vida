@@ -29,8 +29,18 @@
   html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Segoe UI", Roboto, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
   button, input, select, textarea { font: inherit; color: inherit; }
 
-  .pf { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
-  .pf-side { background: var(--side); border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 22px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .pf { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100vh; align-content: start; }
+  .pf-side { background: var(--side); border-bottom: 1px solid var(--line); padding: 12px clamp(12px, 3vw, 32px); padding-top: max(12px, env(safe-area-inset-top)); display: flex; flex-direction: column; gap: 10px; position: sticky; top: 0; z-index: 5; max-height: 100vh; overflow-y: auto; }
+  .pf-topbar { display: flex; align-items: center; gap: 10px; }
+  .pf-dotsbtn { all: unset; cursor: pointer; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--card); border: 1px solid var(--line); color: var(--muted); flex: none; }
+  .pf-dotsbtn svg { width: 20px; height: 20px; }
+  .pf-dotsbtn[aria-expanded="true"] { color: var(--accent); }
+  /* Abas laterais (gaveta que entra pela esquerda) */
+  .pf-menu { position: fixed; top: 0; left: 0; bottom: 0; z-index: 14; width: min(280px, 82vw); background: var(--side); border-right: 1px solid var(--line); padding: 16px 12px; padding-top: max(16px, env(safe-area-inset-top)); display: flex; flex-direction: column; gap: 10px; overflow-y: auto; transform: translateX(-100%); transition: transform .25s ease; }
+  .pf-scrim { position: fixed; inset: 0; z-index: 13; background: rgba(0,0,0,.55); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  body.menu-on .pf-menu { transform: none; box-shadow: 8px 0 30px rgba(0,0,0,.4); }
+  body.menu-on .pf-scrim { opacity: 1; pointer-events: auto; }
+  body.menu-on { overflow: hidden; }
   .pf-brand { all: unset; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 12px; }
   .pf-brand[aria-selected="true"] { background: var(--accent-soft); }
   .pf-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: #1b1310; display: grid; place-items: center; font-family: Georgia, serif; font-size: 20px; flex: none; }
@@ -70,6 +80,17 @@
   .pf-card-h h2, .pf-area h2 { margin: 0; font-size: 15px; font-weight: 600; }
   .pf-card-note { font-size: 12px; color: var(--muted); margin: -6px 0 0; }
   .pf-row { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+  .pf-kpi, .pf-card, .pf-area { grid-template-columns: minmax(0, 1fr); }
+  /* Caixas de lançamento compactas */
+  .pf-lanc { padding: 14px; gap: 8px; }
+  .pf-lanc .pf-money { padding: 6px 12px; border-radius: 12px; }
+  .pf-lanc .pf-money span { font-size: 16px; }
+  .pf-lanc .pf-money input { font-size: 22px; }
+  .pf-lanc .pf-in { padding: 9px 12px; font-size: 14px; border-radius: 10px; }
+  .pf-lanc .pf-pick { padding: 6px 11px; font-size: 12px; }
+  .pf-lanc .pf-pick.bk { padding: 4px 10px 4px 4px; }
+  .pf-lanc .pf-btn { padding: 10px 14px; font-size: 14px; }
+  .pf-lanc .pf-picks { gap: 6px; }
   .pf-three { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
   .pf-areas { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
   .pf-area-h { display: flex; align-items: center; gap: 10px; }
@@ -277,11 +298,7 @@
   @media (max-width: 1100px) { .pf-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pf-row { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 760px) {
     .pf { grid-template-columns: minmax(0, 1fr); }
-    .pf-side { position: sticky; height: auto; z-index: 5; border-right: 0; border-bottom: 1px solid var(--line); padding: 12px 12px 10px; gap: 10px; padding-top: max(12px, env(safe-area-inset-top)); overflow: visible; }
-    .pf-nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
-    .pf-nav::-webkit-scrollbar { display: none; }
-    .pf-side { flex-direction: column; }
-    .pf-foot { margin-top: 0; }
+    :root:not([data-theme="light"]) { --bg: #08070a; --side: #0e0d11; --card: #141317; --card-2: #1b1a1f; --line: #26242b; }
     .pf-main { padding: 18px 16px 60px; }
     .pf-kpis.k3 { grid-template-columns: minmax(0, 1fr); }
     .pf-kpi { min-height: 0; padding: 16px; }
@@ -293,12 +310,13 @@
 <body>
 <div class="pf">
   <aside class="pf-side">
-    <button class="pf-brand" data-go="painel" id="brand">
-      <div class="pf-logo">F</div>
-      <div><strong>Fillipe</strong><span>Painel geral</span></div>
-    </button>
-    <nav class="pf-nav" id="nav"></nav>
-    <nav class="pf-nav pf-foot" id="nav-foot"></nav>
+    <div class="pf-topbar">
+      <button class="pf-brand" data-go="painel" id="brand">
+        <div class="pf-logo">F</div>
+        <div><strong>Fillipe</strong><span>Painel geral</span></div>
+      </button>
+      <button class="pf-dotsbtn" id="dotsbtn" data-act="menu" aria-label="Abas" aria-expanded="false"></button>
+    </div>
   </aside>
   <main class="pf-main">
     <header class="pf-head">
@@ -309,6 +327,11 @@
     <section class="pf-page" id="view"></section>
   </main>
 </div>
+<div class="pf-scrim" id="scrim" data-act="menu"></div>
+<aside class="pf-menu" id="menu">
+  <nav class="pf-nav" id="nav"></nav>
+  <nav class="pf-nav pf-foot" id="nav-foot"></nav>
+</aside>
 <div class="pf-lock" id="lock" hidden>
   <div class="pf-lock-box">
     <div class="pf-logo" id="lock-logo">F</div>
@@ -340,6 +363,7 @@ const IC = {
   metas: sv('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),
   vida: sv('<path d="M3 12h4l3-8 4 16 3-8h4"/>'),
   rel: sv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 17v-3M12 17v-6M16 17v-4"/>'),
+  dots: sv('<circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/>'),
   bell: sv('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>'),
   edit: sv('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
   config: sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
@@ -553,6 +577,7 @@ const U = {
   hm: {},
   rel: today().slice(0, 7),
   bell: false,
+  menu: false,
 };
 
 // ---------- Painel geral ----------
@@ -699,7 +724,7 @@ function bankPicks(kind, sel) {
 }
 function saveBox() {
   const st = U.l.sv, goals = S.goals.filter(g => g.kind === 'money' && !g.done);
-  return `<form class="pf-card pf-glow" style="--glow:var(--blue)" data-form="sv">
+  return `<form class="pf-card pf-glow pf-lanc" style="--glow:var(--blue)" data-form="sv">
     <div class="pf-card-h"><h2>Guardar</h2><span class="pf-ico">${IC.safe}</span></div>
     ${picks('sv', 'dir', [['save', 'Guardei'], ['unsave', 'Tirei do guardado']], st.dir)}
     <span class="pf-lbl">Quanto</span>
@@ -713,7 +738,7 @@ function saveBox() {
 }
 function lancBox(kind) {
   const out = kind === 'out', st = U.l[kind];
-  return `<form class="pf-card pf-glow" style="--glow:var(${out ? '--red' : '--green'})" data-form="tx" data-kind="${kind}">
+  return `<form class="pf-card pf-glow pf-lanc" style="--glow:var(${out ? '--red' : '--green'})" data-form="tx" data-kind="${kind}">
     <div class="pf-card-h"><h2>${out ? 'Gastos' : 'Ganhos'}</h2><span class="pf-ico">${out ? IC.down : IC.up}</span></div>
     <span class="pf-lbl">Quanto ${out ? 'gastei' : 'ganhei'}</span>
     <div class="pf-money"><span>R$</span><input name="v" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
@@ -1673,10 +1698,13 @@ function render() {
   $('#nav').innerHTML = TABS.filter(([id]) => !S.cfg.hiddenTabs.includes(id)).map(([id, l]) => navBtn(id, l, badge(id))).join('');
   $('#nav-foot').innerHTML = navBtn('ajustes', 'Bancos e backup') + navBtn('config', 'Configurações');
   $('#brand').setAttribute('aria-selected', U.view === 'painel');
+  document.body.classList.toggle('menu-on', U.menu);
+  $('#dotsbtn').innerHTML = IC.dots;
+  $('#dotsbtn').setAttribute('aria-expanded', U.menu);
   document.documentElement.style.setProperty('--accent', COLORS[S.cfg.accent] || COLORS.orange);
   const theme = S.cfg.theme === 'light' ? 'light' : 'dark';
   document.documentElement.dataset.theme = theme;
-  document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#efebe5' : '#17151a';
+  document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#efebe5' : (matchMedia('(max-width: 760px)').matches ? '#0e0d11' : '#17151a');
   $('#brand .pf-logo').textContent = S.cfg.name.charAt(0).toUpperCase();
   $('#brand strong').textContent = S.cfg.name;
   $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
@@ -1691,7 +1719,7 @@ function render() {
   $('#resumo').textContent = hoje.charAt(0).toUpperCase() + hoje.slice(1);
   $('#view').innerHTML = VIEWS[U.view]();
 }
-function go(v) { U.view = v; U.bell = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
+function go(v) { U.view = v; U.bell = false; U.menu = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
 
 // ---------- Cliques ----------
 document.addEventListener('click', e => {
@@ -1715,6 +1743,7 @@ document.addEventListener('click', e => {
     },
     eye() { S.cfg.hideVals = !S.cfg.hideVals; },
     bell() { U.bell = !U.bell; render(); return 'keep'; },
+    menu() { U.menu = !U.menu; render(); return 'keep'; },
     non() { enableNotif(); return 'keep'; },
     noff() { disableNotif(); return 'keep'; },
     ntest() { testNotif(); return 'keep'; },
