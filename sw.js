@@ -1,5 +1,5 @@
 // Guarda os arquivos do app no aparelho para abrir sem internet, e mostra as notificações.
-const CACHE = 'vida-app-v11';
+const CACHE = 'vida-app-v12';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || !e.request.url.startsWith(self.location.origin)) return;
   e.respondWith(
     fetch(e.request)
-      .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
+      .then(r => { if (r.ok) { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); } return r; })
       .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
   );
 });
@@ -32,7 +32,7 @@ async function showPending() {
   const opts = { icon: 'icon-192.png', badge: 'icon-192.png' };
   try {
     const cfg = await readCfg();
-    const r = await fetch(`${cfg.server}/outbox?id=${cfg.id}&token=${cfg.token}`);
+    const r = await fetch(cfg.server + '/outbox', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: cfg.id, token: cfg.token }) });
     const { msgs } = await r.json();
     if (msgs && msgs.length) {
       for (const m of msgs) await self.registration.showNotification(m.title, { ...opts, body: m.body, tag: m.k, data: { go: m.go } });

@@ -66,8 +66,6 @@
   .pf-kpis { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .pf-kpis.k3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pf-kpi, .pf-card, .pf-area { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; overflow: hidden; }
-  .pf-kpi::before, .pf-glow::before, .pf-area::before { content: ""; position: absolute; inset: 0; display: none; pointer-events: none; }
-  .pf-kpi > *, .pf-glow > *, .pf-area > * { position: relative; }
   .pf-kpi { min-height: 130px; gap: 6px; }
   .pf-kpi-top, .pf-card-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
   .pf-kpi-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -178,7 +176,6 @@
   .pf-arrow { all: unset; cursor: pointer; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--card-2); border: 1px solid var(--line); flex: none; }
   .pf-arrow svg { width: 18px; height: 18px; }
 
-  .pf-goals { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
   .pf-goal-nums { display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .pf-goal-nums b { color: var(--fg); font-weight: 600; }
   .pf-tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; background: var(--card-2); color: var(--muted); white-space: nowrap; }
@@ -309,13 +306,6 @@
   @keyframes vidaPulse { 50% { box-shadow: 0 0 0 18px transparent; } }
   .pf-kpis.mini { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   @media (max-width: 760px) { .pf-kpis.mini { gap: 8px; } .pf-kpis.mini .pf-kpi { padding: 12px; } .pf-kpis.mini .pf-ico { display: none; } .pf-kpis.mini .pf-kpi-val { font-size: 17px; } .pf-kpis.mini .pf-kpi-label { font-size: 10px; } .pf-kpis.mini .pf-kpi-note { font-size: 11px; } }
-  .pf-wstrip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-  .pf-wstrip div { display: grid; gap: 3px; justify-items: center; padding: 9px 2px; border-radius: 11px; background: var(--card-2); border: 1px solid var(--line); font-size: 11px; color: var(--muted); }
-  .pf-wstrip b { font-size: 12px; color: var(--fg); font-variant-numeric: tabular-nums; }
-  .pf-wstrip small { font-size: 9.5px; color: var(--dim); }
-  .pf-wstrip .ok { background: color-mix(in srgb, var(--green) 18%, var(--card-2)); border-color: color-mix(in srgb, var(--green) 45%, transparent); }
-  .pf-wstrip .bad { background: color-mix(in srgb, var(--red) 15%, var(--card-2)); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
-  .pf-wstrip .today { outline: 2px solid var(--accent); outline-offset: 1px; }
   .pf-kind { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
   .pf-pick button.x { all: unset; cursor: pointer; color: var(--dim); font-size: 15px; line-height: 1; padding: 0 2px; }
   .pf-books { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
@@ -408,7 +398,6 @@ const IC = {
   hist: sv('<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/>'),
   semana: sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 13v4M12 12v5M16 14v3"/>'),
   compras: sv('<path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/>'),
-  desejos: sv('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'),
   agenda: sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'),
   metas: sv('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),
   vida: sv('<path d="M3 12h4l3-8 4 16 3-8h4"/>'),
@@ -437,9 +426,6 @@ IC.dinheiro = IC.money;
 IC.geral = IC.painel;
 IC.hoje = sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
 IC.trabalho = IC.trab = sv('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>');
-IC.entregas = sv('<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h6l3-6h3M9 8h4l2 3"/>');
-IC.tattoo = sv('<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>');
-IC.demandas = sv('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 13l2 2 4-4"/>');
 IC.conhecimento = IC.livros = sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>');
 IC.cursos = sv('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6"/>');
 IC.frases = sv('<path d="M7 7H4v6h3l-1 4M17 7h-3v6h3l-1 4"/>');
@@ -467,7 +453,6 @@ const secOf = v => SECTIONS.find(s => s[2].includes(v));
 const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', ajustes: 'Bancos e backup', config: 'Configurações' };
 const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
 const CAT_IN = ['Salário', 'Freela', 'Venda', 'Presente', 'Outros'];
-const AREAS = ['Dinheiro', 'Carreira', 'Estudos', 'Saúde', 'Casa', 'Pessoal'];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const SEM = ['seg','ter','qua','qui','sex','sáb','dom']; // semana começa na segunda
 const SEM_L = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
@@ -488,7 +473,7 @@ const SEED = [['nu', 'Nubank Pessoal'], ['nupj', 'Nubank PJ'], ['infinite', 'Inf
 
 // ---------- Dados (ficam salvos no próprio aparelho) ----------
 const KEY = 'vida-app';
-const blank = () => ({ banks: [], tx: [], bills: [], debts: [], shop: [], wishes: [], events: [], goals: [], habits: [], tasks: [], days: {} });
+const blank = () => ({ banks: [], tx: [], bills: [], debts: [], shop: [], events: [], goals: [], habits: [], tasks: [], days: {} });
 let S;
 try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { S = blank(); }
 function save() {
@@ -496,7 +481,21 @@ function save() {
   catch (e) { alert('Não consegui salvar no aparelho. Faça um backup em Bancos e backup.'); }
   if (typeof scheduleSync === 'function') scheduleSync(); // atualiza os avisos no servidor
 }
+// Backup pode vir de fora: ids, datas e horários só com caracteres seguros, números como número
+const SAFE_STR = /^(id|group|goal|bank|from|to|tx|main|date|start|deadline|until|due|doneAt|finished|time|timeEnd|end|logo|color|accent|theme|lastBackup|pin)$/;
+const NUM = /^(cents|pct|day|page|pages|initConta|initGuard|initial|n|limit|pinLen)$/;
+function sanitize(o) {
+  if (Array.isArray(o)) { o.forEach(sanitize); return; }
+  if (!o || typeof o !== 'object') return;
+  for (const k of Object.keys(o)) {
+    const v = o[k];
+    if (typeof v === 'string' && SAFE_STR.test(k)) o[k] = v.replace(/[^\w:.\-—]/g, ''); // — = dia fechado depois
+    else if (NUM.test(k) && typeof v !== 'number' && v !== undefined) o[k] = Number(v) || 0;
+    else sanitize(v);
+  }
+}
 function fixData() {
+  sanitize(S);
   S.cfg = Object.assign({ name: 'Fillipe', accent: 'orange', main: 'nu', theme: 'dark', hideVals: false, limit: 0,
     hiddenBanks: [], hiddenTabs: [], catsOut: CAT_OUT.slice(), catsIn: CAT_IN.slice(), colorNames: { ...COLOR_NAMES }, lastBackup: '' }, S.cfg || {});
   if (!S.bills) S.bills = [];
@@ -519,21 +518,15 @@ function fixData() {
   // faixas do "guardar primeiro": a regra de Morar sozinho
   if (!S.cfg.tiers) S.cfg.tiers = { goal: (S.goals.find(g => /morar/i.test(g.title)) || {}).id || '', bank: '',
     list: [[5000, 25], [10000, 35], [20000, 40], [50000, 50]].map(([from, pct], i) => ({ id: 'r' + i, from, pct })) };
-  for (const c of ['Entregas', 'Tatuagem']) if (!S.cfg.catsIn.includes(c)) S.cfg.catsIn.unshift(c);
   // Primeira vez: já cadastra os bancos do Fillipe. Todo banco tem "em conta" e "guardado".
   if (!S.seeded) {
-    if (!S.tx.length) S.banks = [];
-    S.banks = S.banks.map(b => ({ id: b.id, name: b.name, logo: b.logo || null,
-      initConta: b.initConta ?? (b.type === 'guardado' ? 0 : (b.initial || 0)), initGuard: b.initGuard ?? (b.type === 'guardado' ? (b.initial || 0) : 0) }));
     for (const [id, name] of SEED) if (!S.banks.some(b => b.id === id)) S.banks.push({ id, name, logo: id, initConta: 0, initGuard: 0 });
     S.seeded = true;
   }
   if (!S.banks.some(b => b.id === S.cfg.main) && S.banks[0]) S.cfg.main = S.banks[0].id;
-  // Metas antigas (com etapas) continuam funcionando; "Quero comprar" vira meta de dinheiro.
+  // Metas antigas (com etapas) continuam aparecendo
   for (const g of S.goals) if (!g.kind) g.kind = 'steps';
-  for (const w of S.wishes || []) S.goals.push({ id: w.id, kind: 'money', title: w.name, cents: w.cents, initial: w.saved || 0,
-    start: today(), deadline: w.deadline && w.deadline >= today() ? w.deadline : '', done: !!w.bought });
-  S.wishes = [];
+  delete S.wishes;
 }
 fixData(); save();
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
@@ -1080,7 +1073,7 @@ function histResults() {
 function vHist() {
   const h = U.h, [a, b, label] = histRange();
   const s = sums(a, b, h.bank), res = s.in - s.out;
-  const days = Math.round((pd(b) - pd(a)) / 864e5) + 1;
+  const days = Math.max(1, dayIdx(a, b < today() ? b : today()) + 1); // média só dos dias que já passaram
   const modes = [['dia', 'Dia'], ['semana', 'Semana'], ['mes', 'Mês'], ['ano', 'Ano'], ['custom', 'Personalizado']];
   return `<div class="pf-card">
     <div class="pf-seg">${modes.map(([m, l]) => `<button class="pf-pick" data-act="hmode" data-v="${m}" aria-pressed="${h.mode === m}">${l}</button>`).join('')}</div>
@@ -1471,7 +1464,7 @@ function goalSaved(g, upTo) {
 function goalSys(g) {
   const t = today(), saved = goalSaved(g);
   if (!g.deadline) return { saved, noDate: true, falta: Math.max(0, g.cents - saved), complete: saved >= g.cents };
-  const ini = g.initial || 0, N = Math.max(1, dayIdx(g.start, g.deadline) + 1), need = Math.max(0, g.cents - ini);
+  const ini = goalSaved(g, addDays(g.start, -1)), N = Math.max(1, dayIdx(g.start, g.deadline) + 1), need = Math.max(0, g.cents - ini);
   // quanto deveria ter guardado no fim de um dia
   const expAt = d => { const i = dayIdx(g.start, d); return i < 0 ? ini : i >= N - 1 ? g.cents : Math.round(ini + need * (i + 1) / N); };
   const expected = t < g.start ? ini : expAt(t > g.deadline ? g.deadline : t);
@@ -1839,7 +1832,7 @@ function vHoje() {
   }
   if (day.end) {
     const s = day.sum || { in: 0, out: 0, sv: 0 }, a = advisor();
-    return `<div class="pf-kpi pf-hero pf-morte-hero">
+    return `<div class="pf-kpi pf-hero">
         <div class="pf-kpi-top"><span class="pf-kpi-label">Dia fechado</span><button class="pf-x" data-act="morteundo" aria-label="Reabrir o dia" title="Reabrir">↺</button></div>
         <span class="pf-kpi-val">${day.start || '?'} → ${day.end}</span>
         <span class="pf-kpi-note">${plural(day.done.length, 'coisa feita', 'coisas feitas')}${day.missed.length ? ' · ' + day.missed.length + ' ficou pra trás' : ''}</span>
@@ -1883,7 +1876,7 @@ function vHoje() {
     </div>
     ${pendDia}${advisorCard(false)}
     ${quoteOfDay() ? `<div class="pf-card" style="gap:6px"><blockquote class="pf-quote small">${esc(quoteOfDay().t)}</blockquote><span class="pf-kpi-note">— ${esc(quoteOfDay().author || 'eu')} · <button class="pf-open" data-go="frases">frases →</button></span></div>` : ''}
-    ${b.pagar.length ? card('var(--red)', 'Pagar hoje', `<span class="pf-tag late">${brl(totPagar)}</span>`, `<div class="pf-txs">${b.pagar.map(billRow).join('')}</div>`) : ''}
+    ${b.pagar.length ? card('var(--red)', 'Pagar hoje', `<span class="pf-tag late">${brl(totPagar)}</span>`, `<div class="pf-list">${b.pagar.map(billRow).join('')}</div>`) : ''}
     ${b.guardar.length ? card('var(--blue)', 'Guardar hoje', '<button class="pf-open" data-go="metas">metas →</button>', `<ul class="pf-todo">${b.guardar.map(x => `<li class="ev" style="grid-template-columns:minmax(0,1fr) auto;--c:var(--blue)"><span>${esc(x.title)}<small>${esc(x.sub)}</small></span><b class="sav">${brl(x.c)}</b></li>`).join('')}</ul>`) : ''}
     <div class="pf-row">
       ${card('var(--purple)', 'Agenda de hoje', `<button class="pf-open" data-go="agenda">agenda →</button>`, b.ev.length ? `<ul class="pf-todo">${b.ev.map(e => `<li class="ev" style="grid-template-columns:auto minmax(0,1fr);--c:${evColor(e)}"><button class="pf-check ${e.done ? 'done' : ''}" data-act="evtg" data-id="${e.id}" data-d="${t}" aria-label="Feito">${e.done ? IC.check : ''}</button><span class="${e.done ? 'done-t' : ''}">${esc(e.title)}<small>${e.time || 'dia todo'}</small></span></li>`).join('')}</ul>` : '<span class="pf-kpi-note">Nada marcado pra hoje.</span>')}
@@ -1953,7 +1946,7 @@ function vTrab() {
 const BOOK_ST = [['quero', 'Quero ler', '#8a8590'], ['comprei', 'Comprei', '#ffc21a'], ['lendo', 'Lendo', '#2f7bff'], ['li', 'Li', '#1ee07f']];
 const bookC = s => (BOOK_ST.find(b => b[0] === s) || BOOK_ST[0])[2];
 // frase do dia: muda todo dia, sempre a mesma no mesmo dia
-const quoteOfDay = () => { const q = S.know.quotes; return q.length ? q[dayIdx('2026-01-01', today()) % q.length] : null; };
+const quoteOfDay = () => { const q = S.know.quotes; return q.length ? q[((dayIdx('2026-01-01', today()) % q.length) + q.length) % q.length] : null; };
 const nextLesson = c => c.lessons.find(l => !l.done);
 const coursePct = c => c.lessons.length ? Math.round(c.lessons.filter(l => l.done).length / c.lessons.length * 100) : 0;
 function vLivros() {
@@ -2251,7 +2244,7 @@ function devCfg() {
   return Object.assign({ ...NOTIF_DEF }, d);
 }
 function setDev(patch) { const d = Object.assign(devCfg(), patch); try { localStorage.setItem(DEV_KEY, JSON.stringify(d)); } catch (e) {} return d; }
-const notifReady = () => 'serviceWorker' in navigator && 'PushManager' in window && location.protocol === 'https:' && !PUSH_SERVER.startsWith('PREENCHER');
+const notifReady = () => 'serviceWorker' in navigator && 'PushManager' in window && location.protocol === 'https:';
 const atTime = (d, hm) => { const [h, m] = (hm || '09:00').split(':').map(Number); const x = pd(d); x.setHours(h, m, 0, 0); return x.getTime(); };
 
 function buildReminders() {
@@ -2341,11 +2334,14 @@ async function enableNotif() {
     toast('Notificações ligadas'); render();
   } catch (e) { alert('Não consegui ligar as notificações: ' + e.message); }
 }
-async function disableNotif() {
-  setDev({ on: false });
+// Desliga neste aparelho e apaga do servidor os avisos guardados lá
+async function stopNotif() {
+  const n = setDev({ on: false });
+  lastSync = '';
   try { const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch (e) {}
-  toast('Notificações desligadas'); render();
+  try { await fetch(PUSH_SERVER + '/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: n.id, token: n.token }) }); } catch (e) {}
 }
+async function disableNotif() { await stopNotif(); toast('Notificações desligadas'); render(); }
 async function testNotif() {
   const n = devCfg();
   try {
@@ -2645,7 +2641,10 @@ document.addEventListener('click', e => {
     bdel() {
       if (id === S.cfg.main) { alert('Esse é o banco principal. Escolha outro principal em Configurações antes.'); return 'keep'; }
       if (S.tx.some(t => t.bank === id || t.from === id || t.to === id)) { alert('Esse banco tem lançamentos. Apague os lançamentos dele antes.'); return 'keep'; }
-      if (confirm('Apagar esse banco?')) S.banks = S.banks.filter(b => b.id !== id);
+      if ((S.cfg.split || []).some(r => r.bank === id) || S.cfg.tiers.bank === id) { alert('Esse banco está na divisão do dinheiro ou no "guardar primeiro". Tire ele de lá antes.'); return 'keep'; }
+      if (!confirm('Apagar esse banco?')) return 'keep';
+      S.banks = S.banks.filter(b => b.id !== id);
+      for (const b of S.bills) if (b.bank === id) delete b.bank;
     },
     accent() { S.cfg.accent = v; },
     theme() { S.cfg.theme = v; },
@@ -2676,7 +2675,8 @@ document.addEventListener('click', e => {
     wipe() {
       if (!confirm('Tem certeza? Isso apaga TUDO deste aparelho.')) return 'keep';
       if ((prompt('Pra confirmar, escreva APAGAR') || '').trim().toUpperCase() !== 'APAGAR') return 'keep';
-      localStorage.removeItem(KEY); sessionStorage.clear(); location.reload(); return 'keep';
+      (devCfg().on ? stopNotif() : Promise.resolve()).then(() => { localStorage.removeItem(KEY); localStorage.removeItem(DEV_KEY); sessionStorage.clear(); location.reload(); });
+      return 'keep';
     },
     export() {
       S.cfg.lastBackup = today(); save();
@@ -2790,7 +2790,7 @@ document.addEventListener('submit', e => {
     },
     gdate() {
       if (!d.deadline || d.deadline < today()) return toast('Escolha uma data a partir de hoje');
-      const g = find(S.goals, f.dataset.g); g.deadline = d.deadline; if (g.start > d.deadline) g.start = today();
+      const g = find(S.goals, f.dataset.g); g.deadline = d.deadline; g.start = today(); // o sistema começa hoje, com o que já tem guardado
     },
     tr() {
       const c = parseMoney(d.v);
@@ -2937,7 +2937,6 @@ document.addEventListener('submit', e => {
       S.goals.push({ id: uid(), kind: 'money', title: d.title.trim(), cents: c, initial: ini > 0 ? ini : 0, start: today(), deadline: d.deadline || '', done: false });
       toast('Meta criada');
     },
-    step() { if (!d.t.trim()) return; find(S.goals, f.dataset.g).steps.push({ id: uid(), t: d.t.trim(), done: false }); },
     bank() {
       if (!d.name.trim()) return toast('Escreva o nome do banco');
       const c = parseMoney(d.conta), g = parseMoney(d.guard);
