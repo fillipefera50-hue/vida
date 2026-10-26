@@ -500,6 +500,7 @@ function save() {
   try { localStorage.setItem(KEY, JSON.stringify(S)); }
   catch (e) { alert('Não consegui salvar no aparelho. Faça um backup em Bancos e backup.'); }
   if (typeof scheduleSync === 'function') scheduleSync(); // atualiza os avisos no servidor
+  try { syncTrack(); } catch (e) {} // só faz algo com a sincronização ligada
 }
 // Backup pode vir de fora: ids, datas e horários só com caracteres seguros, números como número
 const SAFE_STR = /^(id|group|goal|bank|from|to|tx|main|date|start|deadline|until|due|doneAt|finished|time|timeEnd|end|logo|color|accent|theme|lastBackup|pin)$/;
@@ -2262,7 +2263,8 @@ function vAjustes() {
     <p class="pf-card-note" style="margin:0">Seus dados ficam só neste aparelho. Salve um backup de vez em quando, e use ele pra passar os dados do celular pro PC (ou o contrário).</p>
     <div class="pf-actions"><button class="pf-btn small" data-act="export">Salvar backup</button><button class="pf-btn small" data-act="share">Compartilhar backup</button><button class="pf-btn ghost small" data-act="import">Carregar backup</button></div>
     <input type="file" id="importfile" accept=".json,.txt,application/json,text/plain" hidden>
-  </div>`;
+  </div>
+  ${vSyncCard()}`;
 }
 
 // ---------- Configurações ----------
@@ -2860,7 +2862,11 @@ document.addEventListener('click', e => {
     wipe() {
       if (!confirm('Tem certeza? Isso apaga TUDO deste aparelho.')) return 'keep';
       if ((prompt('Pra confirmar, escreva APAGAR') || '').trim().toUpperCase() !== 'APAGAR') return 'keep';
-      (devCfg().on ? stopNotif() : Promise.resolve()).then(() => { localStorage.removeItem(KEY); localStorage.removeItem(DEV_KEY); sessionStorage.clear(); location.reload(); });
+      (devCfg().on ? stopNotif() : Promise.resolve()).then(() => {
+        localStorage.removeItem(KEY); localStorage.removeItem(DEV_KEY); localStorage.removeItem(SYNC_KEY); localStorage.removeItem(SYNC_META);
+        try { indexedDB.deleteDatabase('vida'); } catch (e) {}
+        sessionStorage.clear(); location.reload();
+      });
       return 'keep';
     },
     export() {
@@ -2880,6 +2886,25 @@ document.addEventListener('click', e => {
       return 'keep';
     },
     import() { $('#importfile').click(); return 'keep'; },
+    syncnew() { openSheet(syncPassForm('syncnew', 'Ligar sincronização', 'Crie uma senha. Ela tranca seus dados antes de saírem do aparelho: sem ela ninguém lê, nem o servidor. Se esquecer, não tem como recuperar.', true)); return 'keep'; },
+    syncjoin() { openSheet(syncPassForm('syncjoin', 'Já tenho uma chave', 'Digite a chave e a senha que você criou no outro aparelho.', false, true)); return 'keep'; },
+    syncpass() { openSheet(syncPassForm('syncpass', 'Digite a senha', 'Este aparelho esqueceu a senha da sincronização. Digite de novo pra continuar.')); return 'keep'; },
+    syncpick() {
+      if (v === 'cloud' && !confirm('Os dados deste aparelho vão ficar iguais aos da nuvem. A cópia de agora fica guardada em "Cópias de segurança". Continuar?')) return 'keep';
+      if (v === 'local' && !confirm('A nuvem vai ficar igual a este aparelho (o que só existe no outro aparelho some). Continuar?')) return 'keep';
+      closeSheet(); syncFinish(v).then(() => toast('Sincronização ligada')).catch(syncFail); return 'keep';
+    },
+    syncnow() { setSync({ dirty: true }); syncRun(); toast('Sincronizando…'); return 'keep'; },
+    syncshow() { openSheet(syncCodeSheet(syncCfg().code)); return 'keep'; },
+    synccopy() { navigator.clipboard.writeText(syncCfg().code || syncPendCode).then(() => toast('Chave copiada')).catch(() => {}); return 'keep'; },
+    syncoff() {
+      if (!confirm('Desligar a sincronização neste aparelho? Os dados daqui continuam aqui.')) return 'keep';
+      const del = confirm('Apagar também a cópia da nuvem? Os outros aparelhos param de sincronizar (os dados deles continuam neles).\n\nOK = apagar da nuvem · Cancelar = deixar lá');
+      syncOff(del).then(() => { render(); toast('Sincronização desligada'); }).catch(syncFail);
+      return 'keep';
+    },
+    bakopen() { bakSheet(); return 'keep'; },
+    bakrestore() { bakRestore(+el.dataset.i); return 'keep'; },
   };
   if (!A[act]) return;
   if (A[act]() === 'keep') return;
@@ -2951,6 +2976,17 @@ document.addEventListener('submit', e => {
   if (!unlocked) return;
   const d = Object.fromEntries(new FormData(f));
   const F = {
+    syncnew() {
+      if ((d.p1 || '').length < 8) return alert('A senha precisa ter pelo menos 8 caracteres.');
+      if (d.p1 !== d.p2) return alert('As senhas não são iguais.');
+      syncWait(f); syncCreate(d.p1).catch(e => { syncFail(e); syncWait(f, true); });
+    },
+    syncjoin() {
+      const code = normCode(d.code);
+      if (!code) return alert('Chave incompleta. Ela tem 20 letras/números (ex: ABCD-EFGH-…).');
+      syncWait(f); syncJoin(code, d.p1 || '').catch(e => { syncFail(e); syncWait(f, true); });
+    },
+    syncpass() { syncWait(f); syncRepass(d.p1 || '').catch(e => { syncFail(e); syncWait(f, true); }); },
     tx() {
       const kind = f.dataset.kind, st = U.l[kind], c = parseMoney(d.v);
       if (!(c > 0)) return toast('Escreva o valor');
@@ -3188,6 +3224,344 @@ document.addEventListener('submit', e => {
   if (JSON.stringify(S) !== before) { save(); render(); }
 });
 
+// ---------- Sincronizar aparelhos ----------
+// Desligada por padrão: sem ligar, nada daqui roda e os dados ficam só neste aparelho.
+// Cada pessoa tem a sua chave (código de 20 letras) e a sua senha. Tudo é cifrado aqui com a senha antes de
+// sair; o servidor guarda só o bloco cifrado. A data de cada alteração e a marca de apagado ficam em
+// 'vida-sync-meta' (fora dos dados, que não mudam de formato). Os aparelhos juntam registro por registro:
+// vale a alteração mais nova, e apagar também é alteração (não volta do outro aparelho).
+// var: save() chama syncTrack antes destas linhas rodarem
+var SYNC_KEY = 'vida-sync', SYNC_META = 'vida-sync-meta';
+var SYNC_LISTS = ['banks', 'tx', 'bills', 'debts', 'shop', 'events', 'goals', 'habits', 'tasks', 'sal'];
+var SYNC_KNOW = ['books', 'quotes', 'frames', 'courses', 'niches'];
+var SYNC_WAIT = 60000; // junta as alterações e grava no máximo 1 vez por minuto (limite grátis do Cloudflare)
+var SYNC_SERVER = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8787' : PUSH_SERVER; // teste local: wrangler dev
+var syncTimer2 = null, syncBusy = false, syncKeyMem = null, syncPend = null, syncPendCode = '';
+
+function syncCfg() { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || {}; } catch (e) { return {}; } }
+function setSync(p) { const c = Object.assign(syncCfg(), p); try { localStorage.setItem(SYNC_KEY, JSON.stringify(c)); } catch (e) {} return c; }
+function syncMetaGet() { try { return JSON.parse(localStorage.getItem(SYNC_META)) || { h: {}, m: {} }; } catch (e) { return { h: {}, m: {} }; } }
+function syncMetaSet(x) { try { localStorage.setItem(SYNC_META, JSON.stringify(x)); } catch (e) {} }
+
+// texto -> código curto, só pra saber se um registro mudou
+function hashStr(s) {
+  let a = 0xdeadbeef, b = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a = Math.imul(a ^ c, 2654435761); b = Math.imul(b ^ c, 1597334677); }
+  a = Math.imul(a ^ (a >>> 16), 2246822507) ^ Math.imul(b ^ (b >>> 13), 3266489909);
+  b = Math.imul(b ^ (b >>> 16), 2246822507) ^ Math.imul(a ^ (a >>> 13), 3266489909);
+  return (b >>> 0).toString(36) + (a >>> 0).toString(36);
+}
+
+// Divide o estado em registros: 'tx:<id>', 'know.books:<id>', 'days:<data>' e '$cfg', '$av'… (objetos inteiros)
+function syncUnits(s) {
+  const u = new Map();
+  const list = (p, arr) => { if (Array.isArray(arr)) for (const x of arr) if (x && typeof x === 'object') u.set(p + ':' + (x.id || '#' + hashStr(JSON.stringify(x))), x); };
+  for (const k of SYNC_LISTS) list(k, s[k]);
+  for (const k of SYNC_KNOW) list('know.' + k, s.know && s.know[k]);
+  for (const [d, x] of Object.entries(s.days || {})) u.set('days:' + d, x);
+  for (const k of Object.keys(s)) if (!SYNC_LISTS.includes(k) && k !== 'days' && k !== 'know') u.set('$' + k, s[k]);
+  for (const k of Object.keys(s.know || {})) if (!SYNC_KNOW.includes(k)) u.set('$know.' + k, s.know[k]);
+  return u;
+}
+// Monta o estado de volta; as listas seguem a ordem dos estados passados em 'orders'
+function syncBuild(win, ...orders) {
+  const s = { know: {}, days: {} }, seen = new Set();
+  for (const k of SYNC_LISTS) s[k] = [];
+  for (const k of SYNC_KNOW) s.know[k] = [];
+  const put = p => {
+    if (seen.has(p) || !win.has(p)) return;
+    seen.add(p);
+    const x = win.get(p), i = p.indexOf(':');
+    if (p[0] === '$') { const k = p.slice(1); if (k.startsWith('know.')) s.know[k.slice(5)] = x; else s[k] = x; return; }
+    const g = p.slice(0, i);
+    if (g === 'days') s.days[p.slice(i + 1)] = x;
+    else if (g.startsWith('know.')) s.know[g.slice(5)].push(x);
+    else s[g].push(x);
+  };
+  for (const o of orders) for (const p of syncUnits(o).keys()) put(p);
+  for (const p of win.keys()) put(p);
+  return JSON.parse(JSON.stringify(s));
+}
+// Junta os dois lados. Lm/Rm: { registro: { u: data da alteração, d: 1 se apagado } }; sem data = 0 (dados antigos)
+function syncMerge(L, Lm, R, Rm) {
+  const win = new Map(), m = {};
+  let push = false, pull = false;
+  for (const p of new Set([...L.keys(), ...R.keys(), ...Object.keys(Lm), ...Object.keys(Rm)])) {
+    const a = Lm[p] || { u: 0 }, b = Rm[p] || { u: 0 };
+    const va = L.has(p) ? JSON.stringify(L.get(p)) : '', vb = R.has(p) ? JSON.stringify(R.get(p)) : '';
+    // empate (os dois sem data): fica o que existe; se os dois existem, os dois aparelhos escolhem o mesmo
+    const local = a.u !== b.u ? a.u > b.u : va >= vb;
+    const v = local ? va : vb, x = local ? a : b;
+    if (v) win.set(p, local ? L.get(p) : R.get(p));
+    if (x.u) m[p] = v ? { u: x.u } : { u: x.u, d: 1 };
+    if (va !== vb || a.u !== b.u || !!a.d !== !!b.d) { if (local) push = true; else pull = true; }
+  }
+  return { win, m, push, pull };
+}
+// marcas de apagado com mais de 120 dias já chegaram em todos os aparelhos
+function syncPrune(m) {
+  const old = Date.now() - 120 * DAY_MS, o = {};
+  for (const [p, x] of Object.entries(m)) if (!(x.d && x.u < old)) o[p] = x;
+  return o;
+}
+var DAY_MS = 864e5;
+function syncBaseline(m) {
+  const h = {};
+  for (const [p, x] of syncUnits(S)) h[p] = hashStr(JSON.stringify(x));
+  syncMetaSet({ h, m });
+}
+// A cada save(): o que mudou ganha a data de agora; o que sumiu vira apagado. Grava na nuvem depois de 1 minuto.
+function syncTrack() {
+  if (!SYNC_LISTS || !syncCfg().on) return;
+  const meta = syncMetaGet(), now = Date.now(), h = {};
+  let changed = false;
+  for (const [p, x] of syncUnits(S)) { h[p] = hashStr(JSON.stringify(x)); if (meta.h[p] !== h[p]) { meta.m[p] = { u: now }; changed = true; } }
+  for (const p of Object.keys(meta.h)) if (!(p in h)) { meta.m[p] = { u: now, d: 1 }; changed = true; }
+  if (!changed) return;
+  meta.h = h; syncMetaSet(meta); setSync({ dirty: true }); syncLater();
+}
+// grava o estado que veio da junção sem contar como alteração deste aparelho
+function syncSetLocal(s, m) {
+  S = Object.assign(blank(), s); fixData();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { alert('Não consegui salvar no aparelho. Faça um backup em Bancos e backup.'); }
+  syncBaseline(m);
+}
+// tem algo além do que o app já traz na 1ª vez?
+function syncHasData(s) {
+  return SYNC_LISTS.some(k => k !== 'banks' && (s[k] || []).length) || Object.keys(s.days || {}).length > 0 || ((s.know && s.know.niches) || []).length > 0
+    || (s.banks || []).some(b => !SEED.some(([id]) => id === b.id) || b.initConta || b.initGuard);
+}
+
+// ---- guardado no navegador (IndexedDB): senha já transformada em chave e as cópias de segurança ----
+function idb(fn) {
+  return new Promise((ok, no) => {
+    const r = indexedDB.open('vida', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onerror = () => no(r.error);
+    r.onsuccess = () => {
+      const db = r.result, t = db.transaction('kv', 'readwrite'), q = fn(t.objectStore('kv'));
+      t.oncomplete = () => { db.close(); ok(q && q.result); };
+      t.onerror = () => { db.close(); no(t.error); };
+    };
+  });
+}
+const idbGet = k => idb(s => s.get(k)), idbSet = (k, v) => idb(s => s.put(v, k)), idbDel = k => idb(s => s.delete(k));
+// Cópia de segurança local antes de qualquer mudança vinda da sincronização (guarda as 10 últimas)
+async function syncBackup(why) {
+  const data = JSON.stringify(S);
+  const list = (await idbGet('bak')) || [];
+  if (list[0] && list[0].data === data) return;
+  list.unshift({ at: Date.now(), why, data });
+  await idbSet('bak', list.slice(0, 10));
+}
+async function bakSheet() {
+  let list = [];
+  try { list = (await idbGet('bak')) || []; } catch (e) {}
+  const when = t => new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  openSheet(`<div style="display:grid;gap:12px">
+    <div class="pf-card-h"><h2>Cópias de segurança</h2><button type="button" class="pf-x" data-act="sheetclose" aria-label="Fechar">×</button></div>
+    <p class="pf-card-note" style="margin:0">O app guarda uma cópia deste aparelho antes de cada sincronização (as 10 últimas).</p>
+    ${list.length ? `<div class="pf-list">${list.map((b, i) => `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t">${when(b.at)}<small>${esc(b.why)} · ${Math.ceil(b.data.length / 1024)} KB</small></span><button class="pf-btn ghost small" data-act="bakrestore" data-i="${i}">Restaurar</button></div>`).join('')}</div>`
+      : '<span class="pf-kpi-note">Nenhuma cópia ainda.</span>'}
+  </div>`);
+}
+async function bakRestore(i) {
+  const list = (await idbGet('bak')) || [], b = list[i];
+  if (!b || !confirm('Voltar os dados deste aparelho pra cópia de ' + new Date(b.at).toLocaleString('pt-BR') + '?')) return;
+  await syncBackup('antes de restaurar uma cópia');
+  S = Object.assign(blank(), JSON.parse(b.data)); fixData(); save(); closeSheet(); render(); toast('Cópia restaurada');
+}
+
+// ---- cifra: senha -> chave AES (PBKDF2); o bloco vai comprimido e cifrado ----
+const te = new TextEncoder();
+async function sha256hex(s) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', te.encode(s)))].map(x => x.toString(16).padStart(2, '0')).join(''); }
+const bytesToB64 = u => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+async function gz(bytes, open) {
+  const cs = open ? new DecompressionStream('gzip') : new CompressionStream('gzip');
+  return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer());
+}
+async function syncDerive(code, pass) {
+  const base = await crypto.subtle.importKey('raw', te.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: te.encode('vida-sync:salt:' + code), iterations: 310000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function seal(key, obj) {
+  let data = te.encode(JSON.stringify(obj)), tag = 'p1';
+  if (typeof CompressionStream === 'function') { data = await gz(data); tag = 'g1'; }
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data));
+  const out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12);
+  return tag + '.' + bytesToB64(out);
+}
+async function unseal(key, blob) {
+  const [tag, b] = blob.split('.'), u = b64ToBytes(b);
+  let data = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.slice(0, 12) }, key, u.slice(12)));
+  if (tag === 'g1') data = await gz(data, true);
+  return JSON.parse(new TextDecoder().decode(data));
+}
+
+// ---- chave da pessoa: 20 letras/números, mostrada em grupos de 4 ----
+const CODE_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function newCode() { return [...crypto.getRandomValues(new Uint8Array(20))].map(x => CODE_ABC[x % CODE_ABC.length]).join('').match(/.{4}/g).join('-'); }
+function normCode(s) {
+  const c = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return c.length === 20 && [...c].every(x => CODE_ABC.includes(x)) ? c.match(/.{4}/g).join('-') : '';
+}
+// no servidor a pessoa é só um hash da chave; pra gravar precisa de outro hash dela
+async function syncIds(code) { return { k: await sha256hex('vida-sync:id:' + code), auth: await sha256hex('vida-sync:auth:' + code) }; }
+async function syncApi(path, body) {
+  const r = await fetch(SYNC_SERVER + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return { status: r.status, ...(await r.json().catch(() => ({}))) };
+}
+async function syncKey() { if (!syncKeyMem) try { syncKeyMem = await idbGet('synckey'); } catch (e) {} return syncKeyMem; }
+
+function syncLater(ms = SYNC_WAIT) { clearTimeout(syncTimer2); syncTimer2 = setTimeout(syncRun, ms); }
+// Busca a nuvem, junta com este aparelho (com cópia antes) e manda o resultado se precisar
+async function syncRun() {
+  const c = syncCfg();
+  if (!c.on || syncBusy || !navigator.onLine) return;
+  syncBusy = true;
+  try {
+    const key = await syncKey();
+    if (!key) { setSync({ err: 'senha' }); return; }
+    const ids = await syncIds(c.code);
+    const r = await syncApi('/state/get', ids);
+    if (r.status !== 200) throw new Error(r.status === 403 ? 'chave' : 'servidor');
+    if (!r.v && c.v) { await syncOff(false); render(); alert('A cópia da nuvem foi apagada em outro aparelho. A sincronização foi desligada aqui; seus dados continuam neste aparelho.'); return; }
+    if (r.v && r.v !== c.v) {
+      const snap = JSON.stringify(S), rem = await unseal(key, r.blob);
+      if (JSON.stringify(S) !== snap) { syncLater(3000); return; } // mexeu no app enquanto buscava: tenta de novo
+      const meta = syncMetaGet(), res = syncMerge(syncUnits(S), meta.m, syncUnits(rem.s), rem.m || {});
+      if (res.pull) { await syncBackup('antes de sincronizar'); syncSetLocal(syncBuild(res.win, S, rem.s), res.m); render(); }
+      else syncMetaSet({ h: meta.h, m: res.m });
+      setSync({ v: r.v, dirty: syncCfg().dirty || res.push });
+    }
+    if (syncCfg().dirty) {
+      const blob = await seal(key, { s: S, m: syncPrune(syncMetaGet().m), at: Date.now() });
+      const p = await syncApi('/state/put', { ...ids, v: syncCfg().v || 0, blob, dev: devCfg().id });
+      if (p.status === 200) setSync({ v: p.v, dirty: false, at: Date.now(), err: '' });
+      else if (p.status === 409) syncLater(2000); // outro aparelho gravou antes: busca, junta e manda de novo
+      else if (p.status === 429) syncLater((p.wait || 15000) + 500);
+      else throw new Error(p.status === 413 ? 'grande' : 'servidor');
+    } else setSync({ at: Date.now(), err: '' });
+  } catch (e) {
+    setSync({ err: e.message === 'grande' ? 'grande' : e.message === 'chave' ? 'chave' : 'rede' });
+  } finally {
+    syncBusy = false;
+    const st = document.getElementById('sync-st');
+    if (st) st.innerHTML = syncStatus();
+  }
+}
+
+// Ligar: confere a chave e a senha na nuvem e guarda uma cópia antes de mexer em qualquer coisa
+async function syncStart(code, pass, fresh) {
+  const key = await syncDerive(code, pass), r = await syncApi('/state/get', await syncIds(code));
+  if (r.status === 403) throw new Error('chave');
+  if (r.status !== 200) throw new Error('rede');
+  if (fresh && r.v) throw new Error('rede'); // chave já usada (praticamente impossível): tenta de novo
+  if (!fresh && !r.v) throw new Error('naoachei');
+  let rem = null;
+  if (r.v) { try { rem = await unseal(key, r.blob); } catch (e) { throw new Error('senha'); } }
+  await syncBackup('antes de ligar a sincronização');
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  syncPend = { r, rem, code, key }; syncPendCode = code;
+}
+async function syncCreate(pass) {
+  await syncStart(newCode(), pass, true);
+  const code = syncPend.code;
+  await syncFinish('new');
+  openSheet(syncCodeSheet(code, true));
+}
+async function syncJoin(code, pass) {
+  await syncStart(code, pass, false);
+  if (!syncHasData(S)) return syncFinish('cloud').then(() => { closeSheet(); toast('Pronto: dados da nuvem neste aparelho'); });
+  if (!syncHasData(syncPend.rem.s)) return syncFinish('merge').then(() => { closeSheet(); toast('Sincronização ligada'); });
+  openSheet(`<div style="display:grid;gap:12px">
+    <div class="pf-card-h"><h2>Os dois lados têm dados</h2><button type="button" class="pf-x" data-act="sheetclose" aria-label="Fechar">×</button></div>
+    <p class="pf-card-note" style="margin:0">Este aparelho e a nuvem já têm dados. Nada muda até você escolher. Já guardei uma cópia deste aparelho em "Cópias de segurança".</p>
+    <button class="pf-btn" data-act="syncpick" data-v="merge">Juntar os dois</button><span class="pf-kpi-note">fica tudo o que existe nos dois lados</span>
+    <button class="pf-btn ghost" data-act="syncpick" data-v="cloud">Usar os da nuvem</button><span class="pf-kpi-note">este aparelho fica igual ao outro</span>
+    <button class="pf-btn ghost" data-act="syncpick" data-v="local">Usar os deste aparelho</button><span class="pf-kpi-note">a nuvem fica igual a este aparelho</span>
+    <button type="button" class="pf-btn ghost" data-act="sheetclose">Cancelar</button>
+  </div>`);
+}
+async function syncFinish(choice) {
+  if (!syncPend) return;
+  const { r, rem, code, key } = syncPend;
+  syncPend = null;
+  let dirty = true;
+  if (choice === 'new') syncBaseline({});
+  else if (choice === 'cloud') { syncSetLocal(rem.s, rem.m || {}); dirty = false; }
+  else if (choice === 'local') {
+    const L = syncUnits(S), now = Date.now(), m = {};
+    for (const p of L.keys()) m[p] = { u: now };
+    for (const p of new Set([...syncUnits(rem.s).keys(), ...Object.keys(rem.m || {})])) if (!L.has(p)) m[p] = { u: now, d: 1 };
+    syncBaseline(m);
+  } else {
+    const res = syncMerge(syncUnits(S), {}, syncUnits(rem.s), rem.m || {});
+    syncSetLocal(syncBuild(res.win, S, rem.s), res.m); dirty = res.push;
+  }
+  await idbSet('synckey', key); syncKeyMem = key;
+  setSync({ on: true, code, v: r.v || 0, dirty, err: '', at: 0 });
+  render(); syncRun();
+}
+async function syncRepass(pass) {
+  const c = syncCfg(), key = await syncDerive(c.code, pass), r = await syncApi('/state/get', await syncIds(c.code));
+  if (r.status !== 200) throw new Error(r.status === 403 ? 'chave' : 'rede');
+  if (r.v) { try { await unseal(key, r.blob); } catch (e) { throw new Error('senha'); } }
+  await idbSet('synckey', key); syncKeyMem = key;
+  setSync({ err: '' }); closeSheet(); render(); syncRun(); toast('Senha certa');
+}
+async function syncOff(delCloud) {
+  const c = syncCfg();
+  if (delCloud && c.code) { const r = await syncApi('/state/delete', await syncIds(c.code)); if (r.status !== 200) throw new Error('rede'); }
+  clearTimeout(syncTimer2);
+  localStorage.removeItem(SYNC_KEY); localStorage.removeItem(SYNC_META); syncKeyMem = null;
+  try { await idbDel('synckey'); } catch (e) {}
+}
+function syncFail(e) {
+  const msg = { naoachei: 'Não achei essa chave na nuvem. Confira as letras.', senha: 'Senha errada pra essa chave.', chave: 'Essa chave não confere.' }[e && e.message];
+  alert(msg || 'Não consegui falar com o servidor. Tem internet?');
+}
+function syncWait(f, back) { const b = f.querySelector('button:not([type])'); if (b) { b.disabled = !back; b.textContent = back ? 'Tentar de novo' : 'Aguarde…'; } }
+
+// ---- telas ----
+function syncStatus() {
+  const c = syncCfg();
+  if (c.err === 'senha') return 'Precisa digitar a senha de novo. <button class="pf-btn small" data-act="syncpass">Digitar senha</button>';
+  if (c.err === 'grande') return 'Os dados passaram do tamanho da nuvem (muitas fotos?). Não sincronizou.';
+  if (c.err === 'chave') return 'A chave não confere mais na nuvem.';
+  const last = c.at ? 'Última vez: ' + new Date(c.at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Ainda não sincronizou.';
+  return last + (c.err ? ' Sem conexão agora, tenta de novo sozinho.' : '') + (c.dirty ? ' Tem alteração esperando pra enviar.' : '');
+}
+function vSyncCard() {
+  const c = syncCfg();
+  const body = c.on
+    ? `<p class="pf-card-note" style="margin:0">Ligada neste aparelho. <span id="sync-st">${syncStatus()}</span></p>
+      <div class="pf-actions"><button class="pf-btn small" data-act="syncnow">Sincronizar agora</button><button class="pf-btn ghost small" data-act="syncshow">Ver chave</button><button class="pf-btn ghost small" data-act="bakopen">Cópias de segurança</button><button class="pf-btn ghost small" data-act="syncoff">Desligar</button></div>`
+    : `<p class="pf-card-note" style="margin:0">Desligada: seus dados ficam só neste aparelho. Ligue pra deixar celular e PC com os mesmos dados. Vai tudo trancado com uma senha sua.</p>
+      <div class="pf-actions"><button class="pf-btn small" data-act="syncnew">Ligar (chave nova)</button><button class="pf-btn ghost small" data-act="syncjoin">Já tenho uma chave</button><button class="pf-btn ghost small" data-act="bakopen">Cópias de segurança</button></div>`;
+  return `<div class="pf-card pf-glow" style="--glow:var(--purple)"><div class="pf-card-h"><h2>Sincronizar aparelhos</h2>${c.on ? '<span class="pf-tag main">ligada</span>' : ''}</div>${body}</div>`;
+}
+function syncPassForm(form, title, note, twice, withCode) {
+  return `<form data-form="${form}" style="display:grid;gap:12px">
+    <div class="pf-card-h"><h2>${title}</h2><button type="button" class="pf-x" data-act="sheetclose" aria-label="Fechar">×</button></div>
+    <p class="pf-card-note" style="margin:0">${note}</p>
+    ${withCode ? '<input name="code" class="pf-in" placeholder="Chave (ABCD-EFGH-…)" autocomplete="off" autocapitalize="characters" spellcheck="false">' : ''}
+    <input name="p1" type="password" class="pf-in" placeholder="Senha${twice ? ' (mínimo 8)' : ''}" autocomplete="${twice ? 'new-password' : 'current-password'}">
+    ${twice ? '<input name="p2" type="password" class="pf-in" placeholder="Repita a senha" autocomplete="new-password">' : ''}
+    <div class="pf-actions"><button class="pf-btn">${twice ? 'Ligar' : 'Continuar'}</button><button type="button" class="pf-btn ghost" data-act="sheetclose">Cancelar</button></div>
+  </form>`;
+}
+function syncCodeSheet(code, fresh) {
+  return `<div style="display:grid;gap:12px">
+    <div class="pf-card-h"><h2>${fresh ? 'Sincronização ligada' : 'Sua chave'}</h2><button type="button" class="pf-x" data-act="sheetclose" aria-label="Fechar">×</button></div>
+    <div class="pf-kpi" style="font:700 20px/1.3 ui-monospace,monospace;letter-spacing:1px;text-align:center;user-select:all">${esc(code)}</div>
+    <p class="pf-card-note" style="margin:0">No outro aparelho: Bancos e backup → Sincronizar aparelhos → "Já tenho uma chave", e digite esta chave e a mesma senha. Guarde a chave e a senha num lugar seguro.</p>
+    <div class="pf-actions"><button class="pf-btn" data-act="synccopy">Copiar chave</button><button type="button" class="pf-btn ghost" data-act="sheetclose">Fechar</button></div>
+  </div>`;
+}
+
 // ---------- Início ----------
 try { const v = sessionStorage.getItem('vida-view'); if (v && VIEWS[v]) U.view = v; } catch (e) {}
 // abriu por uma notificação: vai direto pra aba do aviso
@@ -3196,6 +3570,13 @@ if (goParam && VIEWS[goParam]) { U.view = goParam; history.replaceState(null, ''
 render();
 scheduleSync(1500);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleSync(1000); });
+if (syncCfg().on) syncLater(2000);
+document.addEventListener('visibilitychange', () => {
+  const c = syncCfg();
+  if (!c.on) return;
+  if (document.hidden) { if (c.dirty) syncRun(); } // saiu do app: manda o que estava esperando
+  else if (Date.now() - (c.at || 0) > 30000) syncLater(1000);
+});
 if (S.cfg.pin) lock();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
 </script>
