@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>Minha Vida</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" id="mf" href="manifest.json">
+<link rel="icon" href="icons/orange-192.png">
+<link rel="apple-touch-icon" href="icons/orange-192.png">
 <style>
   :root {
     /* Preto puro, cinzas neutros, cores vivas só onde têm significado */
@@ -2549,7 +2549,7 @@ function render() {
   const theme = S.cfg.theme === 'light' ? 'light' : 'dark';
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#ffffff' : '#000000';
-  tintIcon(COLORS[S.cfg.accent] || COLORS.orange);
+  tintIcon(S.cfg.accent);
   $('#brand strong').textContent = S.cfg.name;
   $('#themebtn').innerHTML = theme === 'light' ? IC.moon : IC.sun;
   $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
@@ -2564,19 +2564,13 @@ function render() {
   $('#resumo').textContent = hoje.charAt(0).toUpperCase() + hoje.slice(1);
   $('#view').innerHTML = (KNOW_FIX.includes(U.view) ? `<div style="display:flex;justify-content:flex-end"><button class="pf-btn ghost small" data-act="tabhide" data-v="${U.view}">Esconder aba ${SUB[U.view]}</button></div>` : '') + VIEWS[U.view]();
 }
-// Ícone da aba/atalho na cor principal: fundo cheio na cor + logo preto
+// Ícone na cor principal: aba do navegador, atalho do iPhone e o manifest (Android usa ele pra instalar/atualizar o ícone)
 let iconColor = '';
 function tintIcon(c) {
+  if (!COLORS[c]) c = 'orange';
   if (c === iconColor) return; iconColor = c;
-  const img = new Image();
-  img.onload = () => {
-    const cv = document.createElement('canvas'); cv.width = cv.height = 192;
-    const x = cv.getContext('2d'); x.fillStyle = c; x.fillRect(0, 0, 192, 192);
-    x.drawImage(img, 42, 42, 108, 108);
-    const url = cv.toDataURL('image/png');
-    document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.href = url);
-  };
-  img.src = 'logo.png';
+  document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.href = `icons/${c}-192.png`);
+  $('#mf').href = c === 'orange' ? 'manifest.json' : `manifest-${c}.json`;
 }
 function go(v) { if (U.bell) avSeen(); U.view = v; U.bell = false; U.menu = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
 
