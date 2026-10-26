@@ -7,6 +7,7 @@
 <title>Minha Vida</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root {
     /* Preto puro, cinzas neutros, cores vivas só onde têm significado */
@@ -43,6 +44,7 @@
   body.menu-on { overflow: hidden; }
   .pf-brand { all: unset; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 12px; }
   .pf-brand[aria-selected="true"] { background: var(--accent-soft); }
+  .pf-logo .mk { width: 72%; height: 72%; background: var(--on); -webkit-mask: url(logo.png) center / contain no-repeat; mask: url(logo.png) center / contain no-repeat; }
   .pf-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: var(--on); display: grid; place-items: center; font-size: 18px; font-weight: 700; letter-spacing: -.02em; flex: none; }
   .pf-brand strong { display: block; font-size: 15px; font-weight: 600; }
   .pf-brand span { font-size: 12px; color: var(--muted); }
@@ -311,6 +313,17 @@
   .pf-books { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
   .pf-book { display: grid; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--card-2); border: 1px solid var(--line); border-left: 3px solid var(--c); min-width: 0; }
   .pf-book .pf-pick { padding: 6px 11px; font-size: 12px; }
+  .pf-stars { display: flex; flex-wrap: wrap; align-items: center; gap: 1px; }
+  .pf-star { all: unset; cursor: pointer; font-size: 19px; line-height: 1; padding: 2px 1px; color: var(--dim); }
+  .pf-star.on { color: var(--amber); }
+  .pf-star.zero { font-size: 12px; padding: 3px 7px; margin-right: 4px; border-radius: 999px; border: 1px solid var(--line); }
+  .pf-star.zero.on { background: var(--amber); color: var(--on); border-color: transparent; }
+  .pf-cover { width: 54px; height: 72px; border-radius: 8px; object-fit: cover; flex: none; background: var(--card); }
+  .pf-thumb { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex: none; }
+  .pf-photo { position: relative; overflow: hidden; }
+  .pf-photo input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .pf-rank { color: var(--amber); font-weight: 700; margin-right: 6px; }
+  .pf-nota { color: var(--amber); font-weight: 700; white-space: nowrap; }
   .pf-quote { margin: 6px 0 0; font-size: 19px; line-height: 1.45; font-style: italic; color: var(--fg); }
   .pf-quote.small { font-size: 15px; margin: 0; }
   .pf-vida-start.small { min-height: 0; padding: 26px 0 10px; }
@@ -351,7 +364,7 @@
   <aside class="pf-side">
     <div class="pf-topbar">
       <button class="pf-brand" data-go="geral" id="brand">
-        <div class="pf-logo">F</div>
+        <div class="pf-logo"><i class="mk"></i></div>
         <div><strong>Fillipe</strong><span>Painel geral</span></div>
       </button>
       <button class="pf-dotsbtn" id="dotsbtn" data-act="menu" aria-label="Abas" aria-expanded="false"></button>
@@ -374,7 +387,7 @@
 </aside>
 <div class="pf-lock" id="lock" hidden>
   <div class="pf-lock-box">
-    <div class="pf-logo" id="lock-logo">F</div>
+    <div class="pf-logo" id="lock-logo"><i class="mk"></i></div>
     <b>Digite sua senha</b>
     <div class="pf-dots" id="dots"></div>
     <div class="pf-keys">
@@ -428,6 +441,12 @@ IC.geral = IC.painel;
 IC.hoje = sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
 IC.trabalho = IC.trab = sv('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>');
 IC.conhecimento = IC.livros = sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>');
+IC.nichos = sv('<path d="M12 5v14M5 12h14"/>');
+IC.jogar = sv('<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3M15 12h.01M18 13h.01"/>');
+IC.assistir = sv('<rect x="2" y="5" width="20" height="13" rx="2"/><path d="M8 22h8M10 9l5 2.5-5 2.5z"/>');
+IC.ouvir = sv('<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><rect x="2" y="15" width="5" height="6" rx="2"/><rect x="17" y="15" width="5" height="6" rx="2"/>');
+IC.ir = sv('<path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>');
+IC.outro = sv('<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>');
 IC.cursos = sv('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 9v6"/>');
 IC.frases = sv('<path d="M7 7H4v6h3l-1 4M17 7h-3v6h3l-1 4"/>');
 IC.quadros = sv('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>');
@@ -449,9 +468,9 @@ const SECTIONS = [
   ['agenda', 'Agenda', ['agenda']],
   ['recap', 'Recap', ['rsem', 'rmes']],
 ];
-const SUB = { rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', sal: 'Salário', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
+const SUB = { nichos: '+ Nova aba', rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', sal: 'Salário', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
 const secOf = v => SECTIONS.find(s => s[2].includes(v));
-const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', sal: 'Salário', ajustes: 'Bancos e backup', config: 'Configurações' };
+const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', sal: 'Salário', nichos: 'Nova aba em Conhecimento', ajustes: 'Bancos e backup', config: 'Configurações' };
 const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
 const CAT_IN = ['Salário', 'Freela', 'Venda', 'Presente', 'Outros'];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -484,7 +503,7 @@ function save() {
 }
 // Backup pode vir de fora: ids, datas e horários só com caracteres seguros, números como número
 const SAFE_STR = /^(id|group|goal|bank|from|to|tx|main|date|start|deadline|until|due|doneAt|finished|time|timeEnd|end|logo|color|accent|theme|lastBackup|pin)$/;
-const NUM = /^(cents|pct|day|page|pages|initConta|initGuard|initial|n|limit|pinLen|salMin)$/;
+const NUM = /^(cents|pct|day|page|pages|initConta|initGuard|initial|n|limit|pinLen|salMin|rate)$/;
 function sanitize(o) {
   if (Array.isArray(o)) { o.forEach(sanitize); return; }
   if (!o || typeof o !== 'object') return;
@@ -518,6 +537,7 @@ function fixData() {
       .map(([t, author], i) => ({ id: 'f' + i, t, author, done: false })),
     courses: [{ id: 'c0', title: 'After e Premiere', lessons: [{ id: 'l0', t: 'P01 · Interface e workspaces do Premiere', done: false, doneAt: '' }] }],
   };
+  if (!S.know.niches) S.know.niches = []; // abas criadas em Conhecimento (jogos, filmes, séries…)
   if (!S.cfg.workKinds) S.cfg.workKinds = ['Entrega', 'Tatuagem', 'Origyn'];
   // faixas do "guardar primeiro": a regra de Morar sozinho
   if (!S.cfg.tiers) S.cfg.tiers = { goal: (S.goals.find(g => /morar/i.test(g.title)) || {}).id || '', bank: '',
@@ -1999,11 +2019,42 @@ const bookC = s => (BOOK_ST.find(b => b[0] === s) || BOOK_ST[0])[2];
 const quoteOfDay = () => { const q = S.know.quotes; return q.length ? q[((dayIdx('2026-01-01', today()) % q.length) + q.length) % q.length] : null; };
 const nextLesson = c => c.lessons.find(l => !l.done);
 const coursePct = c => c.lessons.length ? Math.round(c.lessons.filter(l => l.done).length / c.lessons.length * 100) : 0;
+// Nota de 0 a 10 e comentário: servem pros livros (k = 'b') e pras abas criadas (k = id da aba)
+const hasRate = x => typeof x.rate === 'number';
+const byRank = (a, b) => (hasRate(b) ? b.rate : -1) - (hasRate(a) ? a.rate : -1) || (b.finished || '').localeCompare(a.finished || '');
+const kItem = (k, id) => find(k === 'b' ? S.know.books : k === 'q' ? S.know.frames : nicheOf(k).items, id);
+// Foto do item: guardada pequena (JPEG ~240px) dentro dos dados do app
+const safeImg = u => typeof u === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u) ? u : '';
+const coverImg = (x, cls = 'pf-cover') => safeImg(x.img) ? `<img class="${cls}" src="${x.img}" alt="">` : '';
+const photoBtn = (k, x) => `<label class="pf-pick pf-photo">${safeImg(x.img) ? 'Trocar foto' : '+ Foto'}<input type="file" accept="image/*" data-photo data-k="${k}" data-id="${x.id}"></label>${safeImg(x.img) ? `<button class="pf-pick" data-act="kimgdel" data-k="${k}" data-id="${x.id}">Tirar foto</button>` : ''}`;
+function shrinkImg(file, max = 240) {
+  return new Promise((ok, bad) => {
+    const r = new FileReader();
+    r.onerror = bad;
+    r.onload = () => {
+      const img = new Image();
+      img.onerror = bad;
+      img.onload = () => {
+        const sc = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        ok(cv.toDataURL('image/jpeg', 0.78));
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+const starsRow = (k, x) => `<div class="pf-stars" aria-label="Nota de 0 a 10"><button class="pf-star zero ${x.rate === 0 ? 'on' : ''}" data-act="krate" data-k="${k}" data-id="${x.id}" data-v="0">0</button>${[...Array(10)].map((_, i) => `<button class="pf-star ${hasRate(x) && x.rate > i ? 'on' : ''}" data-act="krate" data-k="${k}" data-id="${x.id}" data-v="${i + 1}" aria-label="Nota ${i + 1}">★</button>`).join('')}</div>`;
+const noteForm = (k, x) => `<form data-form="knote" data-k="${k}" data-id="${x.id}" style="display:grid;gap:8px"><textarea name="t" class="pf-in" placeholder="O que achei…" style="min-height:54px">${esc(x.note || '')}</textarea><button class="pf-btn ghost small">Salvar comentário</button></form>`;
+const rankTag = (x, i) => hasRate(x) ? `<span class="pf-rank">#${i + 1}</span>` : '';
+const notaTag = x => hasRate(x) ? `<span class="pf-nota">★ ${x.rate}/10</span>` : '';
 function vLivros() {
   const b = S.know.books, yr = today().slice(0, 4), liAno = b.filter(x => x.status === 'li' && (x.finished || '').startsWith(yr)).length;
-  const card = x => `<article class="pf-book" style="--c:${bookC(x.status)}">
-    <div class="pf-card-h"><span><b>${esc(x.title)}</b><small class="pf-kpi-note" style="display:block">${esc(x.author || 'Autor ?')}${x.finished ? ' · terminei ' + fmtShort(x.finished) : ''}</small></span><button class="pf-x" data-act="bookdel" data-id="${x.id}" aria-label="Apagar">×</button></div>
-    <div class="pf-picks">${BOOK_ST.map(([k, l, c]) => `<button class="pf-pick" style="--accent:${c}" data-act="bookst" data-id="${x.id}" data-v="${k}" aria-pressed="${x.status === k}">${l}</button>`).join('')}${x.status === 'quero' ? `<button class="pf-pick" data-act="bookbuy" data-id="${x.id}">+ Lista de compras</button>` : ''}</div>
+  const card = (x, i) => `<article class="pf-book" style="--c:${bookC(x.status)}">
+    <div class="pf-card-h"><span style="display:flex;gap:10px;align-items:flex-start;min-width:0">${coverImg(x)}<span>${x.status === 'li' ? rankTag(x, i) : ''}<b>${esc(x.title)}</b><small class="pf-kpi-note" style="display:block">${esc(x.author || 'Autor ?')}${x.finished ? ' · terminei ' + fmtShort(x.finished) : ''}</small></span></span>${notaTag(x)}<button class="pf-x" data-act="bookdel" data-id="${x.id}" aria-label="Apagar">×</button></div>
+    ${x.status === 'li' ? starsRow('b', x) : ''}${x.status === 'li' || x.status === 'lendo' ? noteForm('b', x) : ''}
+    <div class="pf-picks">${BOOK_ST.map(([k, l, c]) => `<button class="pf-pick" style="--accent:${c}" data-act="bookst" data-id="${x.id}" data-v="${k}" aria-pressed="${x.status === k}">${l}</button>`).join('')}${x.status === 'quero' ? `<button class="pf-pick" data-act="bookbuy" data-id="${x.id}">+ Lista de compras</button>` : ''}${photoBtn('b', x)}</div>
     ${x.status === 'lendo' ? `<form data-form="bookpg" data-id="${x.id}" style="display:grid;gap:8px;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto"><input name="page" class="pf-in" type="number" min="0" inputmode="numeric" placeholder="Página" value="${x.page || ''}"><input name="pages" class="pf-in" type="number" min="1" inputmode="numeric" placeholder="de quantas" value="${x.pages || ''}"><button class="pf-btn ghost small">Salvar</button></form>
       ${x.pages ? `<div class="pf-track"><div class="pf-fill ok" style="width:${Math.min(100, (x.page || 0) / x.pages * 100)}%;background:var(--blue)"></div></div>` : ''}` : ''}
   </article>`;
@@ -2012,7 +2063,58 @@ function vLivros() {
       <button class="pf-btn">Adicionar livro</button>
     </form>
     <div class="pf-kpis mini">${BOOK_ST.slice(1).map(([k, l, c]) => `<div class="pf-kpi" style="--glow:${c}"><div class="pf-kpi-top"><span class="pf-kpi-label">${l}</span></div><span class="pf-kpi-val">${b.filter(x => x.status === k).length}</span>${k === 'li' ? `<span class="pf-kpi-note">${liAno} em ${yr}</span>` : ''}</div>`).join('')}</div>
-    ${['lendo', 'comprei', 'quero', 'li'].map(st => { const l = b.filter(x => x.status === st); const n = BOOK_ST.find(s => s[0] === st)[1]; return l.length ? `<div class="pf-card"><div class="pf-card-h"><h2>${n}</h2><span class="pf-tag">${l.length}</span></div><div class="pf-books">${l.map(card).join('')}</div></div>` : ''; }).join('')}`;
+    ${['lendo', 'comprei', 'quero', 'li'].map(st => { const l = b.filter(x => x.status === st); if (st === 'li') l.sort(byRank); const n = BOOK_ST.find(s => s[0] === st)[1] + (st === 'li' ? ' · ranking' : ''); return l.length ? `<div class="pf-card"><div class="pf-card-h"><h2>${n}</h2><span class="pf-tag">${l.length}</span></div><div class="pf-books">${l.map(card).join('')}</div></div>` : ''; }).join('')}`;
+}
+
+// ---------- Abas criadas em Conhecimento (jogos, filmes, séries…): só registro, sem cobrança ----------
+const NICHE_T = { jogar: ['Jogos', 'Quero jogar', 'Jogando', 'Joguei'], assistir: ['Filmes / séries', 'Quero assistir', 'Assistindo', 'Assisti'], ler: ['Leitura', 'Quero ler', 'Lendo', 'Li'],
+  ouvir: ['Música / podcast', 'Quero ouvir', 'Ouvindo', 'Ouvi'], ir: ['Lugares', 'Quero ir', 'Indo', 'Fui'], outro: ['Outro', 'Quero', 'Fazendo', 'Terminei'] };
+const nicheOf = id => S.know.niches.find(n => n.id === id);
+const nicheSt = n => { const w = NICHE_T[n.type] || NICHE_T.outro; return [['quero', w[1], '#8a8590'], ...(n.buy ? [['comprei', 'Comprei', '#ffc21a']] : []), ['fazendo', w[2], '#2f7bff'], ['feito', w[3], '#1ee07f']]; };
+// Põe as abas criadas no menu de Conhecimento (entre Livros e Cursos) e o "+ Nova aba" no fim
+const KNOW_FIX = ['livros', 'cursos', 'frases', 'quadros']; // abas que já vêm no app: escondem (os dados ficam guardados)
+function syncNiches() {
+  const sec = SECTIONS.find(s => s[0] === 'conhecimento');
+  sec[2] = ['livros', ...S.know.niches.map(n => 'n_' + n.id), 'cursos', 'frases', 'quadros', 'nichos'];
+  for (const n of S.know.niches) { const k = 'n_' + n.id; VIEWS[k] = () => vNicho(n.id); SUB[k] = n.name; TITLES[k] = n.name; IC[k] = IC[n.type] || IC.outro; }
+  if (!VIEWS[U.view]) U.view = 'livros';
+}
+function vNicho(nid) {
+  const n = nicheOf(nid); if (!n) return '';
+  const st = nicheSt(n), col = s => (st.find(x => x[0] === s) || st[0])[2], yr = today().slice(0, 4);
+  const card = (x, i) => `<article class="pf-book" style="--c:${col(x.status)}">
+    <div class="pf-card-h"><span style="display:flex;gap:10px;align-items:flex-start;min-width:0">${coverImg(x)}<span>${x.status === 'feito' ? rankTag(x, i) : ''}<b>${esc(x.title)}</b>${x.sub || x.finished ? `<small class="pf-kpi-note" style="display:block">${esc(x.sub || '')}${x.sub && x.finished ? ' · ' : ''}${x.finished ? 'terminei ' + fmtShort(x.finished) : ''}</small>` : ''}</span></span>${notaTag(x)}<button class="pf-x" data-act="kdel" data-k="${nid}" data-id="${x.id}" aria-label="Apagar">×</button></div>
+    <div class="pf-picks">${st.map(([k, l, c]) => `<button class="pf-pick" style="--accent:${c}" data-act="kst" data-k="${nid}" data-id="${x.id}" data-v="${k}" aria-pressed="${x.status === k}">${l}</button>`).join('')}${n.buy && x.status === 'quero' ? `<button class="pf-pick" data-act="kbuy" data-k="${nid}" data-id="${x.id}">+ Lista de compras</button>` : ''}${photoBtn(nid, x)}</div>
+    ${x.status === 'feito' ? starsRow(nid, x) : ''}${x.status === 'feito' || x.status === 'fazendo' ? noteForm(nid, x) : ''}
+  </article>`;
+  const order = ['fazendo', 'comprei', 'quero', 'feito'].filter(s => st.some(x => x[0] === s));
+  const edit = U.nedit === nid ? `<div class="pf-card pf-glow" style="--glow:var(--red)">
+      <form class="pf-inline" data-form="nicheren" data-id="${n.id}"><input name="name" class="pf-in" value="${esc(n.name)}" autocomplete="off"><button class="pf-btn ghost small">Renomear</button></form>
+      <button class="pf-btn" data-act="nichedel" data-id="${n.id}" style="background:var(--red);color:#fff">Apagar aba ${esc(n.name)}</button>
+      <span class="pf-kpi-note">Apagar a aba apaga tudo que está dentro dela.</span></div>` : '';
+  return `<div style="display:flex;justify-content:flex-end"><button class="pf-btn ghost small" data-act="nicheedit" data-id="${nid}">${U.nedit === nid ? 'Fechar edição' : 'Editar / apagar aba'}</button></div>
+    ${edit}
+    <form class="pf-card pf-glow" style="--glow:var(--blue)" data-form="kitem" data-k="${nid}">
+      <div class="pf-grid2"><input name="title" class="pf-in" placeholder="Nome" autocomplete="off"><input name="sub" class="pf-in" placeholder="Onde / de quem (opcional)" autocomplete="off"></div>
+      <button class="pf-btn">Adicionar em ${esc(n.name)}</button>
+    </form>
+    <div class="pf-kpis mini">${st.slice(1).map(([k, l, c]) => `<div class="pf-kpi" style="--glow:${c}"><div class="pf-kpi-top"><span class="pf-kpi-label">${l}</span></div><span class="pf-kpi-val">${n.items.filter(x => x.status === k).length}</span>${k === 'feito' ? `<span class="pf-kpi-note">${n.items.filter(x => x.status === 'feito' && (x.finished || '').startsWith(yr)).length} em ${yr}</span>` : ''}</div>`).join('')}</div>
+    ${order.map(s => { const l = n.items.filter(x => x.status === s); if (s === 'feito') l.sort(byRank); const name = st.find(x => x[0] === s)[1] + (s === 'feito' ? ' · ranking' : ''); return l.length ? `<div class="pf-card"><div class="pf-card-h"><h2>${name}</h2><span class="pf-tag">${l.length}</span></div><div class="pf-books">${l.map(card).join('')}</div></div>` : ''; }).join('')}
+    ${n.items.length ? '' : '<p class="pf-card-note" style="margin:0">Nada aqui ainda. Adicione o que você quer, está fazendo ou já terminou.</p>'}`;
+}
+function vNichos() {
+  const opts = Object.entries(NICHE_T).map(([k, w]) => `<option value="${k}">${w[0]} (${w[1].toLowerCase()} · ${w[2].toLowerCase()} · ${w[3].toLowerCase()})</option>`).join('');
+  return `<form class="pf-card pf-glow" style="--glow:var(--blue)" data-form="niche">
+      <div class="pf-card-h"><h2>Nova aba em Conhecimento</h2><span class="pf-ico">${IC.nichos}</span></div>
+      <input name="name" class="pf-in" placeholder="Nome da aba (ex: Jogos, Filmes, Séries)" autocomplete="off">
+      <select name="type" class="pf-in">${opts}</select>
+      <label class="pf-kpi-note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="buy"> Tem etapa "Comprei" e botão pra Lista de compras</label>
+      <button class="pf-btn">Criar aba</button>
+    </form>
+    ${S.know.niches.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Minhas abas</h2><span class="pf-tag">${S.know.niches.length}</span></div><div class="pf-list">${S.know.niches.map(n => `<form class="pf-inline" data-form="nicheren" data-id="${n.id}" style="align-items:center">
+      <input name="name" class="pf-in" value="${esc(n.name)}" autocomplete="off"><button class="pf-btn ghost small">Renomear</button><button type="button" class="pf-x" data-act="nichedel" data-id="${n.id}" aria-label="Apagar aba">×</button></form>`).join('')}</div>
+      <span class="pf-kpi-note">Apagar uma aba apaga tudo que está dentro dela.</span></div>` : ''}
+    ${KNOW_FIX.some(v => S.cfg.hiddenTabs.includes(v)) ? `<div class="pf-card"><div class="pf-card-h"><h2>Abas escondidas</h2></div><div class="pf-picks">${KNOW_FIX.filter(v => S.cfg.hiddenTabs.includes(v)).map(v => `<button class="pf-pick" data-act="tabshow" data-v="${v}">Mostrar ${SUB[v]}</button>`).join('')}</div></div>` : ''}`;
 }
 function vFrases() {
   const q = S.know.quotes, qd = quoteOfDay();
@@ -2040,7 +2142,7 @@ function vCursos() {
 }
 function vQuadros() {
   const l = S.know.frames, pend = l.filter(x => !x.done), done = l.filter(x => x.done);
-  const li = x => `<li><button class="pf-check ${x.done ? 'done' : ''}" data-act="frametg" data-id="${x.id}" aria-label="Já tenho">${x.done ? IC.check : ''}</button><span class="${x.done ? 'done-t' : ''}">${esc(x.t)}<small>${esc(x.author || '')}</small></span><button class="pf-x" data-act="framedel" data-id="${x.id}" aria-label="Apagar">×</button></li>`;
+  const li = x => `<li><button class="pf-check ${x.done ? 'done' : ''}" data-act="frametg" data-id="${x.id}" aria-label="Já tenho">${x.done ? IC.check : ''}</button>${coverImg(x, 'pf-thumb')}<span class="${x.done ? 'done-t' : ''}">${esc(x.t)}<small>${esc(x.author || '')}</small></span><label class="pf-x pf-photo" title="Foto" aria-label="Foto">${IC.quadros}<input type="file" accept="image/*" data-photo data-k="q" data-id="${x.id}"></label><button class="pf-x" data-act="framedel" data-id="${x.id}" aria-label="Apagar">×</button></li>`;
   return `<form class="pf-card pf-glow" style="--glow:var(--pink)" data-form="frame">
       <div class="pf-grid2"><input name="t" class="pf-in" placeholder="Quadro / obra" autocomplete="off"><input name="author" class="pf-in" placeholder="Artista" autocomplete="off"></div>
       <button class="pf-btn">Adicionar</button>
@@ -2242,7 +2344,7 @@ function hashPin(p) {
 }
 let pinBuf = '', unlocked = !S.cfg.pin, hiddenAt = 0;
 function drawDots() { $('#dots').innerHTML = [...Array(S.cfg.pinLen || 4)].map((_, i) => `<i class="${i < pinBuf.length ? 'on' : ''}"></i>`).join(''); }
-function lock() { if (!S.cfg.pin) return; unlocked = false; pinBuf = ''; $('#lock').hidden = false; $('#lock-logo').textContent = S.cfg.name.charAt(0).toUpperCase(); drawDots(); }
+function lock() { if (!S.cfg.pin) return; unlocked = false; pinBuf = ''; $('#lock').hidden = false; drawDots(); }
 function pinKey(k) {
   if (k === 'del') pinBuf = pinBuf.slice(0, -1);
   else if (pinBuf.length < (S.cfg.pinLen || 4)) pinBuf += k;
@@ -2420,13 +2522,15 @@ function notifCard() {
 }
 
 // ---------- Desenhar ----------
-const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, sal: vSalario, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, sal: vSalario, nichos: vNichos, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+syncNiches();
 function navBtn(id, label, extra = '') { return `<button data-go="${id}" aria-selected="${U.view === id}">${IC[id]}${label}${extra}</button>`; }
 function render() {
+  syncNiches();
   const late = billSummary().late.length, behind = S.goals.filter(goalBehind).length;
   const lateT = S.tasks.filter(taskLate).length, cnt = { contas: late, metas: behind, pend: lateT };
   const badge = id => cnt[id] ? `<span class="cnt">${cnt[id]}</span>` : '';
-  const vis = v => v === 'painel' || v === 'hoje' || v === 'trab' || v === 'livros' || !S.cfg.hiddenTabs.includes(v);
+  const vis = v => v === 'painel' || v === 'hoje' || v === 'trab' || !S.cfg.hiddenTabs.includes(v);
   const sec = secOf(U.view);
   $('#nav').innerHTML = SECTIONS.filter(s => s[2].some(vis)).map(([id, l, views]) => {
     const n = views.filter(vis).reduce((t, v) => t + (cnt[v] || 0), 0);
@@ -2445,7 +2549,7 @@ function render() {
   const theme = S.cfg.theme === 'light' ? 'light' : 'dark';
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#ffffff' : '#000000';
-  $('#brand .pf-logo').textContent = S.cfg.name.charAt(0).toUpperCase();
+  tintIcon(COLORS[S.cfg.accent] || COLORS.orange);
   $('#brand strong').textContent = S.cfg.name;
   $('#themebtn').innerHTML = theme === 'light' ? IC.moon : IC.sun;
   $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
@@ -2458,7 +2562,21 @@ function render() {
   $('#titulo').textContent = TITLES[U.view];
   const hoje = fmtLong(today());
   $('#resumo').textContent = hoje.charAt(0).toUpperCase() + hoje.slice(1);
-  $('#view').innerHTML = VIEWS[U.view]();
+  $('#view').innerHTML = (KNOW_FIX.includes(U.view) ? `<div style="display:flex;justify-content:flex-end"><button class="pf-btn ghost small" data-act="tabhide" data-v="${U.view}">Esconder aba ${SUB[U.view]}</button></div>` : '') + VIEWS[U.view]();
+}
+// Ícone da aba/atalho na cor principal: fundo cheio na cor + logo preto
+let iconColor = '';
+function tintIcon(c) {
+  if (c === iconColor) return; iconColor = c;
+  const img = new Image();
+  img.onload = () => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 192;
+    const x = cv.getContext('2d'); x.fillStyle = c; x.fillRect(0, 0, 192, 192);
+    x.drawImage(img, 42, 42, 108, 108);
+    const url = cv.toDataURL('image/png');
+    document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach(l => l.href = url);
+  };
+  img.src = 'logo.png';
 }
 function go(v) { if (U.bell) avSeen(); U.view = v; U.bell = false; U.menu = false; closeSheet(); render(); window.scrollTo(0, 0); try { sessionStorage.setItem('vida-view', v); } catch (e) {} }
 
@@ -2513,6 +2631,26 @@ document.addEventListener('click', e => {
     wf() { U.wf = v; render(); return 'keep'; },
     bookst() { const x = find(S.know.books, id); x.status = v; x.finished = v === 'li' ? (x.finished || today()) : ''; if (v === 'li') toast('Mais um lido 📚'); },
     bookbuy() { const x = find(S.know.books, id); S.shop.push({ id: uid(), name: 'Livro: ' + x.title, done: false }); toast('Foi pra Lista de compras'); },
+    tabhide() {
+      if (!confirm(`Esconder a aba ${SUB[v]}? O que está nela fica guardado, e dá pra mostrar de novo em "+ Nova aba".`)) return 'keep';
+      S.cfg.hiddenTabs = [...new Set([...S.cfg.hiddenTabs, v])];
+      U.view = secOf(v)[2].find(x => !S.cfg.hiddenTabs.includes(x)) || 'nichos';
+    },
+    tabshow() { S.cfg.hiddenTabs = S.cfg.hiddenTabs.filter(x => x !== v); U.view = v; },
+    nicheedit() { U.nedit = U.nedit === id ? '' : id; },
+    kimgdel() { delete kItem(el.dataset.k, id).img; },
+    krate() { const x = kItem(el.dataset.k, id); if (x.rate === +v) delete x.rate; else x.rate = +v; },
+    kst() {
+      const x = kItem(el.dataset.k, id); x.status = v; x.finished = v === 'feito' ? (x.finished || today()) : '';
+      if (v === 'feito') toast('Terminou! Dá a nota de 0 a 10 ★');
+    },
+    kbuy() { const n = nicheOf(el.dataset.k), x = kItem(n.id, id); S.shop.push({ id: uid(), name: n.name + ': ' + x.title, done: false }); toast('Foi pra Lista de compras'); },
+    kdel() { if (!confirm('Apagar esse item?')) return 'keep'; const n = nicheOf(el.dataset.k); n.items = n.items.filter(x => x.id !== id); },
+    nichedel() {
+      const n = nicheOf(id);
+      if (!confirm(`Apagar a aba "${n.name}"${n.items.length ? ` e os ${n.items.length} itens dela` : ''}?`)) return 'keep';
+      S.know.niches = S.know.niches.filter(x => x.id !== id); delete VIEWS['n_' + id];
+    },
     bookdel() { if (!confirm('Apagar esse livro?')) return 'keep'; S.know.books = S.know.books.filter(x => x.id !== id); },
     quotedel() { S.know.quotes = S.know.quotes.filter(x => x.id !== id); },
     frametg() { const x = find(S.know.frames, id); x.done = !x.done; },
@@ -2766,6 +2904,11 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const el = e.target;
+  if (el.matches('[data-photo]') && el.files[0]) {
+    const { k, id } = el.dataset;
+    shrinkImg(el.files[0]).then(u => { kItem(k, id).img = u; save(); render(); toast('Foto salva'); }).catch(() => toast('Não consegui abrir essa foto'));
+    return;
+  }
   if (el.id === 'importfile' && el.files[0]) {
     el.files[0].text().then(txt => {
       const d = JSON.parse(txt);
@@ -2959,6 +3102,17 @@ document.addEventListener('submit', e => {
       setTimeout(() => $('[data-form=dem] input').focus());
     },
     book() { if (!d.title.trim()) return toast('Escreva o livro'); S.know.books.push({ id: uid(), title: d.title.trim(), author: d.author.trim(), status: 'quero', page: 0, pages: 0, finished: '' }); },
+    kitem() {
+      const title = d.title.trim().slice(0, 120); if (!title) return toast('Escreva o nome');
+      nicheOf(f.dataset.k).items.push({ id: uid(), title, sub: d.sub.trim().slice(0, 80), status: 'quero', note: '', finished: '' });
+    },
+    knote() { kItem(f.dataset.k, f.dataset.id).note = d.t.trim().slice(0, 3000); toast('Comentário salvo'); },
+    niche() {
+      const name = d.name.trim().slice(0, 30); if (!name) return toast('Escreva o nome da aba');
+      const id = uid(); S.know.niches.push({ id, name, type: NICHE_T[d.type] ? d.type : 'outro', buy: d.buy === 'on', items: [] });
+      syncNiches(); U.view = 'n_' + id; toast('Aba ' + name + ' criada');
+    },
+    nicheren() { const name = d.name.trim().slice(0, 30); if (!name) return toast('Escreva o nome'); nicheOf(f.dataset.id).name = name; toast('Renomeada'); },
     bookpg() { const x = find(S.know.books, f.dataset.id); x.page = +d.page || 0; x.pages = +d.pages || 0; if (x.pages && x.page >= x.pages) { x.status = 'li'; x.finished = today(); toast('Terminou o livro 📚'); } },
     quote() { if (!d.t.trim()) return toast('Escreva a frase'); S.know.quotes.push({ id: uid(), t: d.t.trim(), author: d.author.trim() }); toast('Frase guardada'); },
     frame() { if (!d.t.trim()) return toast('Escreva o quadro'); S.know.frames.push({ id: uid(), t: d.t.trim(), author: d.author.trim(), done: false }); },
