@@ -505,6 +505,7 @@ function fixData() {
   if (!S.habits) S.habits = [];
   if (!S.sal) S.sal = []; // Salário: estimativas { src, cents, date, sure }
   if (!S.cfg.salMin) S.cfg.salMin = 200000; // mínimo do salário: R$ 2.000
+  if (!Array.isArray(S.cfg.salSrc)) S.cfg.salSrc = []; // fontes de renda criadas com nome livre
   if (!S.tasks) S.tasks = [];
   if (!S.days) S.days = {}; // dias abertos no botão VIDA: { 'AAAA-MM-DD': { start: 'HH:MM' } }
   // Conhecimento: na 1ª vez já vem com o que estava no vault (livros, frase, quadros, curso)
@@ -1363,6 +1364,8 @@ function vCompras() {
 
 // ---------- Salário: o que espero ganhar (certo ou talvez) contra as contas do mês ----------
 const SAL_SRC = ['Origyn', 'Entregas', 'Tattoo'];
+// Fontes: as 3 fixas + as que a pessoa criar (nome livre, ex: outra pessoa usando o app)
+const salSrcs = () => [...new Set([...SAL_SRC, ...S.cfg.salSrc, ...S.sal.map(i => i.src)])];
 function vSalario() {
   const t = today(), cur = t.slice(0, 7), sm = U.sm || cur, [sy, smm] = sm.split('-').map(Number);
   const mesNome = MESES[smm - 1] + (sy !== new Date().getFullYear() ? ' ' + sy : '');
@@ -1370,7 +1373,7 @@ function vSalario() {
   const sure = list.filter(i => i.sure).reduce((s, i) => s + i.cents, 0), maybe = list.filter(i => !i.sure).reduce((s, i) => s + i.cents, 0);
   const contas = billsInMonth(sm).reduce((s, i) => s + i.b.cents, 0), min = S.cfg.salMin;
   const falta = Math.max(0, min - sure), sobra = sure - contas, sobraT = sure + maybe - contas;
-  const bySrc = SAL_SRC.map(src => [src, list.filter(i => i.src === src).reduce((s, i) => s + i.cents, 0)]);
+  const srcs = salSrcs(), bySrc = srcs.map(src => [src, list.filter(i => i.src === src).reduce((s, i) => s + i.cents, 0)]).filter(([s, c]) => c || SAL_SRC.includes(s));
   const nav = `<button class="pf-arrow" data-act="smshift" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${mesNome}</b><button class="pf-arrow" data-act="smshift" data-v="1" aria-label="Próximo mês">${IC.right}</button>`;
   const row = i => `<div class="pf-tx"><span class="t">${esc(i.src)}<small>${fmtD(i.date)}</small></span><span class="v pos">${brl(i.cents)}</span>
     <button class="pf-tag ${i.sure ? 'ok' : 'late'}" data-act="saltg" data-id="${i.id}" title="Trocar certeza" style="border:0;cursor:pointer;${i.sure ? '' : 'background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber)'}">${i.sure ? 'certo' : 'talvez'}</button>
@@ -1390,7 +1393,8 @@ function vSalario() {
     <div style="display:grid;gap:14px;align-content:start">
       <form class="pf-card pf-glow" style="--glow:var(--green)" data-form="sal">
         <div class="pf-card-h"><h2>Nova estimativa</h2><span class="pf-ico">${IC.money}</span></div>
-        <select name="src" class="pf-in">${SAL_SRC.map(s => `<option>${s}</option>`).join('')}</select>
+        <select name="src" class="pf-in" data-salsrc>${srcs.map(s => `<option>${esc(s)}</option>`).join('')}<option value="+">+ Outra fonte (escrever nome)</option></select>
+        <input name="srcNew" class="pf-in sal-new" placeholder="Nome da fonte de renda" autocomplete="off" hidden>
         <div class="pf-grid2"><input name="v" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off"><input name="date" class="pf-in" type="date" value="${sm === cur ? t : sm + '-01'}"></div>
         <select name="sure" class="pf-in"><option value="1">Tenho certeza que vou receber</option><option value="0">Acho que vou receber</option></select>
         <button class="pf-btn">Adicionar</button>
@@ -2776,6 +2780,12 @@ document.addEventListener('change', e => {
     el.form.querySelector('.rep-every').hidden = el.value !== 'every';
     return;
   }
+  if (el.matches('[data-salsrc]')) {
+    const nw = el.form.querySelector('.sal-new');
+    nw.hidden = el.value !== '+';
+    if (!nw.hidden) nw.focus();
+    return;
+  }
   if (el.matches('[data-btype]')) {
     for (const k of ['fixa', 'parc', 'unica']) el.form.querySelector('.b-' + k).hidden = el.value !== k;
     return;
@@ -2973,7 +2983,10 @@ document.addEventListener('submit', e => {
       const c = parseMoney(d.v);
       if (!(c > 0)) return toast('Escreva o valor');
       if (!d.date) return toast('Escolha a data');
-      S.sal.push({ id: uid(), src: d.src, cents: c, date: d.date, sure: d.sure === '1' });
+      const src = d.src === '+' ? (d.srcNew || '').trim().slice(0, 40) : d.src;
+      if (!src) return toast('Escreva o nome da fonte');
+      if (!salSrcs().includes(src)) S.cfg.salSrc.push(src);
+      S.sal.push({ id: uid(), src, cents: c, date: d.date, sure: d.sure === '1' });
       toast('Previsto ' + brlRaw(c));
     },
     salmin() { const c = parseMoney(d.v); if (!(c > 0)) return toast('Escreva o valor'); S.cfg.salMin = c; toast('Mínimo: ' + brlRaw(c)); },
