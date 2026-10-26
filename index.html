@@ -423,6 +423,7 @@ const IC = {
 };
 IC.ajustes = IC.card;
 IC.dinheiro = IC.money;
+IC.sal = IC.money;
 IC.geral = IC.painel;
 IC.hoje = sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
 IC.trabalho = IC.trab = sv('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>');
@@ -442,15 +443,15 @@ const TABS = [
 // Abas principais: cada uma junta as telas do mesmo assunto (a 1ª é o painel dela)
 const SECTIONS = [
   ['vida', 'Vida', ['hoje', 'pend', 'vida']],
-  ['dinheiro', 'Dinheiro', ['painel', 'lanc', 'contas', 'metas', 'hist', 'semana', 'rel', 'compras']],
+  ['dinheiro', 'Dinheiro', ['painel', 'sal', 'lanc', 'contas', 'metas', 'hist', 'semana', 'rel', 'compras']],
   ['trabalho', 'Trabalho', ['trab']],
   ['conhecimento', 'Conhecimento', ['livros', 'cursos', 'frases', 'quadros']],
   ['agenda', 'Agenda', ['agenda']],
   ['recap', 'Recap', ['rsem', 'rmes']],
 ];
-const SUB = { rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
+const SUB = { rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', sal: 'Salário', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
 const secOf = v => SECTIONS.find(s => s[2].includes(v));
-const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', ajustes: 'Bancos e backup', config: 'Configurações' };
+const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', sal: 'Salário', ajustes: 'Bancos e backup', config: 'Configurações' };
 const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
 const CAT_IN = ['Salário', 'Freela', 'Venda', 'Presente', 'Outros'];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -483,7 +484,7 @@ function save() {
 }
 // Backup pode vir de fora: ids, datas e horários só com caracteres seguros, números como número
 const SAFE_STR = /^(id|group|goal|bank|from|to|tx|main|date|start|deadline|until|due|doneAt|finished|time|timeEnd|end|logo|color|accent|theme|lastBackup|pin)$/;
-const NUM = /^(cents|pct|day|page|pages|initConta|initGuard|initial|n|limit|pinLen)$/;
+const NUM = /^(cents|pct|day|page|pages|initConta|initGuard|initial|n|limit|pinLen|salMin)$/;
 function sanitize(o) {
   if (Array.isArray(o)) { o.forEach(sanitize); return; }
   if (!o || typeof o !== 'object') return;
@@ -502,6 +503,8 @@ function fixData() {
   if (!S.debts) S.debts = [];
   if (!S.av) S.av = { seen: [], hid: [] }; // avisos já vistos (sininho apaga) e limpos no ×
   if (!S.habits) S.habits = [];
+  if (!S.sal) S.sal = []; // Salário: estimativas { src, cents, date, sure }
+  if (!S.cfg.salMin) S.cfg.salMin = 200000; // mínimo do salário: R$ 2.000
   if (!S.tasks) S.tasks = [];
   if (!S.days) S.days = {}; // dias abertos no botão VIDA: { 'AAAA-MM-DD': { start: 'HH:MM' } }
   // Conhecimento: na 1ª vez já vem com o que estava no vault (livros, frase, quadros, curso)
@@ -1356,6 +1359,49 @@ function vCompras() {
   <div class="pf-card"><div class="pf-card-h"><h2>Pra comprar</h2><span class="pf-tag main">${pend.length}</span></div>
     ${pend.length ? `<ul class="pf-todo">${pend.map(li).join('')}</ul>` : '<span class="pf-kpi-note">Nada pendente.</span>'}</div>
   ${done.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Já peguei</h2><button class="pf-btn ghost small" data-act="shopclear">Limpar</button></div><ul class="pf-todo">${done.map(li).join('')}</ul></div>` : ''}`;
+}
+
+// ---------- Salário: o que espero ganhar (certo ou talvez) contra as contas do mês ----------
+const SAL_SRC = ['Origyn', 'Entregas', 'Tattoo'];
+function vSalario() {
+  const t = today(), cur = t.slice(0, 7), sm = U.sm || cur, [sy, smm] = sm.split('-').map(Number);
+  const mesNome = MESES[smm - 1] + (sy !== new Date().getFullYear() ? ' ' + sy : '');
+  const list = S.sal.filter(i => i.date.slice(0, 7) === sm).sort((a, b) => a.date.localeCompare(b.date));
+  const sure = list.filter(i => i.sure).reduce((s, i) => s + i.cents, 0), maybe = list.filter(i => !i.sure).reduce((s, i) => s + i.cents, 0);
+  const contas = billsInMonth(sm).reduce((s, i) => s + i.b.cents, 0), min = S.cfg.salMin;
+  const falta = Math.max(0, min - sure), sobra = sure - contas, sobraT = sure + maybe - contas;
+  const bySrc = SAL_SRC.map(src => [src, list.filter(i => i.src === src).reduce((s, i) => s + i.cents, 0)]);
+  const nav = `<button class="pf-arrow" data-act="smshift" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${mesNome}</b><button class="pf-arrow" data-act="smshift" data-v="1" aria-label="Próximo mês">${IC.right}</button>`;
+  const row = i => `<div class="pf-tx"><span class="t">${esc(i.src)}<small>${fmtD(i.date)}</small></span><span class="v pos">${brl(i.cents)}</span>
+    <button class="pf-tag ${i.sure ? 'ok' : 'late'}" data-act="saltg" data-id="${i.id}" title="Trocar certeza" style="border:0;cursor:pointer;${i.sure ? '' : 'background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber)'}">${i.sure ? 'certo' : 'talvez'}</button>
+    <button class="pf-x" data-act="saldel" data-id="${i.id}" aria-label="Apagar">×</button></div>`;
+  return `<div class="pf-kpis">
+    <div class="pf-kpi" style="--glow:var(--green)"><span class="pf-kpi-label">Certo em ${mesNome}</span><span class="pf-kpi-val pos">${brl(sure)}</span><span class="pf-kpi-note">${falta ? 'faltam ' + brl(falta) + ' pro mínimo de ' + brl(min) : 'mínimo de ' + brl(min) + ' batido'}</span><div class="pf-navd">${nav}</div></div>
+    <div class="pf-kpi" style="--glow:var(--amber)"><span class="pf-kpi-label">Talvez</span><span class="pf-kpi-val">${brl(maybe)}</span><span class="pf-kpi-note">acho que vou receber · total ${brl(sure + maybe)}</span></div>
+    <div class="pf-kpi" style="--glow:var(--red)"><span class="pf-kpi-label">Contas do mês</span><span class="pf-kpi-val neg">${brl(contas)}</span><span class="pf-kpi-note">tudo de Contas a pagar em ${mesNome}</span></div>
+    <div class="pf-kpi" style="--glow:var(--${sobra >= 0 ? 'green' : 'red'})"><span class="pf-kpi-label">Sobra</span><span class="pf-kpi-val ${sobra >= 0 ? 'pos' : 'neg'}">${brl(sobra)}</span><span class="pf-kpi-note">só o certo − contas · com o talvez: ${brl(sobraT)}</span></div>
+  </div>
+  <div class="pf-row">
+    <div class="pf-card">
+      <div class="pf-card-h"><h2>Vou receber em ${mesNome}</h2><span class="pf-tag main">${list.length}</span></div>
+      <div class="pf-kpi-note">${bySrc.map(([s, c]) => `${s}: <b>${brl(c)}</b>`).join(' · ')}</div>
+      ${list.length ? `<div class="pf-list">${list.map(row).join('')}</div>` : `<span class="pf-kpi-note">Nada previsto em ${mesNome}.</span>`}
+    </div>
+    <div style="display:grid;gap:14px;align-content:start">
+      <form class="pf-card pf-glow" style="--glow:var(--green)" data-form="sal">
+        <div class="pf-card-h"><h2>Nova estimativa</h2><span class="pf-ico">${IC.money}</span></div>
+        <select name="src" class="pf-in">${SAL_SRC.map(s => `<option>${s}</option>`).join('')}</select>
+        <div class="pf-grid2"><input name="v" class="pf-in" inputmode="decimal" placeholder="Valor R$" autocomplete="off"><input name="date" class="pf-in" type="date" value="${sm === cur ? t : sm + '-01'}"></div>
+        <select name="sure" class="pf-in"><option value="1">Tenho certeza que vou receber</option><option value="0">Acho que vou receber</option></select>
+        <button class="pf-btn">Adicionar</button>
+      </form>
+      <form class="pf-card" data-form="salmin">
+        <div class="pf-card-h"><h2>Mínimo do salário</h2></div>
+        <div class="pf-inline"><input name="v" class="pf-in" inputmode="decimal" placeholder="${brlRaw(min)}" autocomplete="off"><button class="pf-btn ghost">Salvar</button></div>
+        <span class="pf-kpi-note">O "certo" do mês tem que bater esse valor.</span>
+      </form>
+    </div>
+  </div>`;
 }
 
 // ---------- Agenda ----------
@@ -2370,7 +2416,7 @@ function notifCard() {
 }
 
 // ---------- Desenhar ----------
-const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, sal: vSalario, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
 function navBtn(id, label, extra = '') { return `<button data-go="${id}" aria-selected="${U.view === id}">${IC[id]}${label}${extra}</button>`; }
 function render() {
   const late = billSummary().late.length, behind = S.goals.filter(goalBehind).length;
@@ -2581,6 +2627,9 @@ document.addEventListener('click', e => {
       dv.pays.pop();
     },
     debtdel() { if (confirm('Apagar essa dívida? Os gastos já registrados continuam.')) S.debts = S.debts.filter(x => x.id !== id); else return 'keep'; },
+    saltg() { const i = find(S.sal, id); i.sure = !i.sure; },
+    saldel() { S.sal = S.sal.filter(i => i.id !== id); },
+    smshift() { const [y, m] = (U.sm || today().slice(0, 7)).split('-').map(Number); U.sm = iso(new Date(y, m - 1 + +v, 1)).slice(0, 7); },
     shoptg() { const i = find(S.shop, id); i.done = !i.done; },
     shopdel() { S.shop = S.shop.filter(i => i.id !== id); },
     shopclear() { S.shop = S.shop.filter(i => !i.done); },
@@ -2920,6 +2969,14 @@ document.addEventListener('submit', e => {
       S.tasks.push({ id: uid(), t: d.t.trim(), area: d.area || 'Trabalho', date: d.date || '', done: false, doneAt: '' });
       setTimeout(() => $('[data-form=task] input').focus());
     },
+    sal() {
+      const c = parseMoney(d.v);
+      if (!(c > 0)) return toast('Escreva o valor');
+      if (!d.date) return toast('Escolha a data');
+      S.sal.push({ id: uid(), src: d.src, cents: c, date: d.date, sure: d.sure === '1' });
+      toast('Previsto ' + brlRaw(c));
+    },
+    salmin() { const c = parseMoney(d.v); if (!(c > 0)) return toast('Escreva o valor'); S.cfg.salMin = c; toast('Mínimo: ' + brlRaw(c)); },
     shop() { if (!d.name.trim()) return; S.shop.push({ id: uid(), name: d.name.trim(), done: false }); setTimeout(() => $('[data-form=shop] input').focus()); },
     ev() {
       if (!d.title.trim()) return toast('Escreva o que fazer');
