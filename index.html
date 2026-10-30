@@ -128,6 +128,9 @@
   .pf-lbl { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: -4px; }
   .pf-in { width: 100%; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 15px; outline: none; min-width: 0; }
   .pf-in:focus { border-color: var(--accent); }
+  .pf-pw { position: relative; display: block; }
+  .pf-pw .pf-in { padding-right: 46px; }
+  .pf-eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; background: none; border: 0; color: var(--muted, #888); cursor: pointer; }
   textarea.pf-in { resize: vertical; min-height: 70px; }
   .pf-money { display: flex; align-items: baseline; gap: 8px; background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px; }
   .pf-money:focus-within { border-color: var(--glow, var(--accent)); }
@@ -456,19 +459,19 @@ IC.rmes = sv('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M
 IC.pend = sv('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>');
 
 const TABS = [
-  ['lanc', 'Lançamentos'], ['contas', 'Contas a pagar'], ['hist', 'Histórico'], ['semana', 'Resumo da semana'], ['rel', 'Relatório do mês'],
+  ['lanc', 'Lançamentos'], ['ext', 'Extratos'], ['contas', 'Contas a pagar'], ['hist', 'Histórico'], ['semana', 'Resumo da semana'], ['rel', 'Relatório do mês'],
   ['metas', 'Metas'], ['pend', 'Pendências'], ['vida', 'Sistemas'], ['livros', 'Livros'], ['cursos', 'Cursos'], ['frases', 'Frases'], ['quadros', 'Quadros'], ['compras', 'Lista de compras'], ['agenda', 'Agenda'],
 ];
 // Abas principais: cada uma junta as telas do mesmo assunto (a 1ª é o painel dela)
 const SECTIONS = [
   ['vida', 'Vida', ['hoje', 'pend', 'vida']],
-  ['dinheiro', 'Dinheiro', ['painel', 'sal', 'lanc', 'contas', 'metas', 'hist', 'semana', 'rel', 'compras']],
+  ['dinheiro', 'Dinheiro', ['painel', 'sal', 'lanc', 'ext', 'contas', 'metas', 'hist', 'semana', 'rel', 'compras']],
   ['trabalho', 'Trabalho', ['trab']],
   ['conhecimento', 'Conhecimento', ['livros', 'cursos', 'frases', 'quadros']],
   ['agenda', 'Agenda', ['agenda']],
   ['recap', 'Recap', ['rsem', 'rmes']],
 ];
-const SUB = { nichos: '+ Nova aba', rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', sal: 'Salário', lanc: 'Lançamentos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
+const SUB = { nichos: '+ Nova aba', rsem: 'Semanal', rmes: 'Mensal', hoje: 'Hoje', pend: 'Pendências', vida: 'Sistemas', livros: 'Livros', cursos: 'Cursos', frases: 'Frases', quadros: 'Quadros', painel: 'Painel', sal: 'Salário', lanc: 'Lançamentos', ext: 'Extratos', contas: 'Contas a pagar', metas: 'Metas', hist: 'Histórico', semana: 'Semana', rel: 'Mês', compras: 'Compras' };
 const secOf = v => SECTIONS.find(s => s[2].includes(v));
 const TITLES = { ...Object.fromEntries(TABS), rsem: 'Recap da semana', rmes: 'Recap do mês', geral: 'Painel geral', hoje: 'Vida', trab: 'Trabalho', painel: 'Dinheiro', sal: 'Salário', nichos: 'Nova aba em Conhecimento', ajustes: 'Bancos e backup', config: 'Configurações' };
 const CAT_OUT = ['Mercado', 'Comida', 'Transporte', 'Contas', 'Lazer', 'Saúde', 'Compras', 'Outros'];
@@ -1381,6 +1384,99 @@ function vCompras() {
   <div class="pf-card"><div class="pf-card-h"><h2>Pra comprar</h2><span class="pf-tag main">${pend.length}</span></div>
     ${pend.length ? `<ul class="pf-todo">${pend.map(li).join('')}</ul>` : '<span class="pf-kpi-note">Nada pendente.</span>'}</div>
   ${done.length ? `<div class="pf-card"><div class="pf-card-h"><h2>Já peguei</h2><button class="pf-btn ghost small" data-act="shopclear">Limpar</button></div><ul class="pf-todo">${done.map(li).join('')}</ul></div>` : ''}`;
+}
+
+// ---------- Extratos: histórico do banco vindo de um .txt (a IA da pessoa converte o PDF) ----------
+// Formato (uma movimentação por linha): data;tipo;valor;descricao;categoria  ex: 05/10/2026;saida;45,90;iFood;Comida
+// Soma aos lançamentos (não troca nada), pula o que já existe e, por padrão, não mexe no saldo de hoje do banco.
+let EXT = null; // prévia: { bank, list, skip, bad }
+const extPrompt = () => `Vou te mandar o extrato do meu banco (PDF ou print). Transforme TODAS as movimentações num arquivo de texto (.txt), sem nenhum comentário, exatamente neste formato:
+
+A primeira linha é: data;tipo;valor;descricao;categoria
+Depois, UMA movimentação por linha, com os campos separados por ponto e vírgula:
+- data: DD/MM/AAAA
+- tipo: entrada (dinheiro que entrou na conta) ou saida (dinheiro que saiu)
+- valor: só o número, sem R$ e sem sinal, com vírgula nos centavos (ex: 1234,56)
+- descricao: o nome que aparece no extrato (sem ponto e vírgula)
+- categoria: escolha UMA destas. Para saida: ${S.cfg.catsOut.join(', ')}. Para entrada: ${S.cfg.catsIn.join(', ')}. Se não tiver certeza, deixe vazio.
+
+Regras:
+- Não inclua linhas de saldo (saldo do dia, saldo anterior, saldo final), totais nem cabeçalhos do banco.
+- Pix, transferências, pagamento de boleto e de fatura também entram, como entrada ou saida.
+- Confira se nenhuma movimentação ficou de fora.
+
+Exemplo:
+data;tipo;valor;descricao;categoria
+05/10/2026;saida;45,90;iFood;Comida
+06/10/2026;entrada;2500,00;Salário empresa X;Salário
+
+Me entregue como arquivo .txt pra baixar. Se não der, mande o texto dentro de um bloco de código.`;
+function extParse(txt, cats) {
+  const out = [], bad = [];
+  for (const raw of String(txt).split(/\r?\n/)) {
+    const l = raw.trim().replace(/^`+|`+$/g, '');
+    if (!l || /^data\s*;/i.test(l)) continue;
+    const f = l.split(';').map(s => s.trim());
+    let m = f[0].match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/), date;
+    if (m) date = (m[3].length === 2 ? '20' + m[3] : m[3]) + '-' + pad(+m[2]) + '-' + pad(+m[1]);
+    else if (/^\d{4}-\d{2}-\d{2}$/.test(f[0])) date = f[0];
+    let v = (f[2] || '').replace(/R\$|\s/g, ''), neg = /^-/.test(v);
+    v = v.replace(/^[-+]/, '');
+    v = v.includes(',') ? v.replace(/\./g, '').replace(',', '.') : v;
+    const cents = Math.round(parseFloat(v) * 100);
+    const t = (f[1] || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const type = /^(entrada|e|in|credito|\+)$/.test(t) ? 'in' : /^(saida|s|out|debito|-)$/.test(t) ? 'out' : neg ? 'out' : '';
+    if (!date || isNaN(pd(date)) || !type || !(cents > 0)) { bad.push(raw); continue; }
+    const cat = f[4] || '', list = type === 'in' ? cats.in : cats.out;
+    out.push({ date, type, cents, desc: (f[3] || '').slice(0, 120), cat: list.find(c => c.toLowerCase() === cat.toLowerCase()) || '' });
+  }
+  return { out, bad };
+}
+function extRead(txt) {
+  const bank = $('#ext-bank').value;
+  const { out, bad } = extParse(txt, { in: S.cfg.catsIn, out: S.cfg.catsOut });
+  // pula o que já está lançado no banco (mesmo dia, tipo e valor), contando repetidos
+  const has = new Map();
+  for (const t of S.tx) if (t.bank === bank) { const k = t.date + t.type + t.cents; has.set(k, (has.get(k) || 0) + 1); }
+  const list = [];
+  for (const t of out) { const k = t.date + t.type + t.cents; if (has.get(k)) has.set(k, has.get(k) - 1); else list.push(t); }
+  list.sort((a, b) => a.date < b.date ? -1 : 1);
+  EXT = { bank, list, skip: out.length - list.length, bad: bad.length };
+  render();
+}
+function vExtratos() {
+  const step = (n, t) => `<div style="display:flex;gap:10px;align-items:baseline"><span class="pf-tag main">${n}</span><span>${t}</span></div>`;
+  const how = `<div class="pf-card pf-glow" style="--glow:var(--blue)">
+    <div class="pf-card-h"><h2>Trazer o histórico do banco</h2></div>
+    <div style="display:grid;gap:8px">
+      ${step(1, 'Baixe o extrato no app do seu banco (PDF).')}
+      ${step(2, 'Copie o prompt abaixo e mande pra sua IA (ChatGPT, Claude, Gemini…) junto com o PDF.')}
+      ${step(3, 'Ela devolve um arquivo .txt. Escolha o banco aqui e carregue o arquivo (ou cole o texto).')}
+    </div>
+    <div class="pf-actions"><button class="pf-btn" data-act="extprompt">Copiar prompt</button></div>
+  </div>`;
+  if (EXT) {
+    const b = S.banks.find(x => x.id === EXT.bank) || {}, L = EXT.list;
+    const ins = L.filter(t => t.type === 'in').reduce((s, t) => s + t.cents, 0), outs = L.filter(t => t.type === 'out').reduce((s, t) => s + t.cents, 0);
+    const notes = [EXT.skip ? `${EXT.skip} já estavam no app e foram pulados` : '', EXT.bad ? `${EXT.bad} linhas não deu pra ler e ficaram de fora` : ''].filter(Boolean).join(' · ');
+    return `${how}<div class="pf-card">
+      <div class="pf-card-h"><h2>${esc(b.name || '')}: ${L.length} movimentações</h2><button type="button" class="pf-x" data-act="extcancel" aria-label="Cancelar">×</button></div>
+      ${L.length ? `<p class="pf-card-note" style="margin:0">${fmtD(L[0].date)} a ${fmtD(L[L.length - 1].date)} · <span style="color:var(--green)">+${brl(ins)}</span> · <span style="color:var(--red)">−${brl(outs)}</span></p>` : '<p class="pf-card-note" style="margin:0">Nada novo pra lançar.</p>'}
+      ${notes ? `<p class="pf-card-note" style="margin:0">${notes}</p>` : ''}
+      ${L.length ? `<div class="pf-list" style="max-height:340px;overflow:auto">${L.map(t => `<div class="pf-tx" style="grid-template-columns:minmax(0,1fr) auto"><span class="t">${esc(t.desc || '(sem descrição)')}<small>${fmtD(t.date)}${t.cat ? ' · ' + esc(t.cat) : ''}</small></span><span style="color:var(${t.type === 'in' ? '--green' : '--red'})">${t.type === 'in' ? '+' : '−'}${brl(t.cents)}</span></div>`).join('')}</div>
+      <label class="pf-kpi-note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ext-keep" checked> Manter o saldo de hoje do banco (é só histórico)</label>
+      <div class="pf-actions"><button class="pf-btn" data-act="extok">Lançar ${L.length}</button><button class="pf-btn ghost" data-act="extcancel">Cancelar</button></div>` : ''}
+    </div>`;
+  }
+  return `${how}<div class="pf-card">
+    <div class="pf-card-h"><h2>Carregar extrato</h2></div>
+    <span class="pf-lbl">Banco</span>
+    <select id="ext-bank" class="pf-in">${banksOrdered().map(b => `<option value="${b.id}" ${b.id === S.cfg.main ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
+    <div class="pf-actions"><label class="pf-btn">Escolher arquivo .txt<input type="file" accept=".txt,.csv,text/plain" data-extfile hidden></label></div>
+    <span class="pf-lbl">Ou cole o texto que a IA mandou</span>
+    <textarea id="ext-txt" class="pf-in" rows="5" placeholder="data;tipo;valor;descricao;categoria"></textarea>
+    <div class="pf-actions"><button class="pf-btn ghost" data-act="extread">Ler texto</button></div>
+  </div>`;
 }
 
 // ---------- Salário: o que espero ganhar (certo ou talvez) contra as contas do mês ----------
@@ -2524,7 +2620,7 @@ function notifCard() {
 }
 
 // ---------- Desenhar ----------
-const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, sal: vSalario, nichos: vNichos, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
+const VIEWS = { geral: vGeral, hoje: vHoje, pend: vPend, trab: vTrab, livros: vLivros, cursos: vCursos, frases: vFrases, quadros: vQuadros, painel: vPainel, lanc: vLanc, ext: vExtratos, contas: vContas, hist: vHist, semana: vSemana, rel: vRel, rsem: () => vRecap(true), rmes: () => vRecap(false), vida: vVida, compras: vCompras, sal: vSalario, nichos: vNichos, agenda: vAgenda, metas: vMetas, ajustes: vAjustes, config: vConfig };
 syncNiches();
 function navBtn(id, label, extra = '') { return `<button data-go="${id}" aria-selected="${U.view === id}">${IC[id]}${label}${extra}</button>`; }
 function render() {
@@ -2903,6 +2999,16 @@ document.addEventListener('click', e => {
       syncOff(del).then(() => { render(); toast('Sincronização desligada'); }).catch(syncFail);
       return 'keep';
     },
+    extprompt() { navigator.clipboard.writeText(extPrompt()).then(() => toast('Prompt copiado: cole na sua IA com o PDF')).catch(() => alert(extPrompt())); return 'keep'; },
+    extread() { const t = $('#ext-txt').value; if (!t.trim()) { toast('Cole o texto primeiro'); return 'keep'; } extRead(t); return 'keep'; },
+    extcancel() { EXT = null; render(); return 'keep'; },
+    extok() {
+      const b = S.banks.find(x => x.id === EXT.bank), keep = $('#ext-keep').checked;
+      for (const t of EXT.list) S.tx.push({ id: uid(), type: t.type, cents: t.cents, bank: b.id, cat: t.cat, desc: t.desc, date: t.date });
+      // histórico não muda o saldo de hoje: compensa no saldo inicial do banco
+      if (keep) b.initConta = (b.initConta || 0) - EXT.list.reduce((s, t) => s + (t.type === 'in' ? t.cents : -t.cents), 0);
+      toast(`${EXT.list.length} lançamentos do extrato`); EXT = null;
+    },
     bakopen() { bakSheet(); return 'keep'; },
     bakrestore() { bakRestore(+el.dataset.i); return 'keep'; },
   };
@@ -2926,6 +3032,10 @@ document.addEventListener('change', e => {
   if (el.matches('[data-photo]') && el.files[0]) {
     const { k, id } = el.dataset;
     shrinkImg(el.files[0]).then(u => { kItem(k, id).img = u; save(); render(); toast('Foto salva'); }).catch(() => toast('Não consegui abrir essa foto'));
+    return;
+  }
+  if (el.matches('[data-extfile]') && el.files[0]) {
+    el.files[0].text().then(extRead).catch(() => toast('Não consegui abrir esse arquivo'));
     return;
   }
   if (el.id === 'importfile' && el.files[0]) {
@@ -3543,13 +3653,25 @@ function vSyncCard() {
       <div class="pf-actions"><button class="pf-btn small" data-act="syncnew">Ligar (chave nova)</button><button class="pf-btn ghost small" data-act="syncjoin">Já tenho uma chave</button><button class="pf-btn ghost small" data-act="bakopen">Cópias de segurança</button></div>`;
   return `<div class="pf-card pf-glow" style="--glow:var(--purple)"><div class="pf-card-h"><h2>Sincronizar aparelhos</h2>${c.on ? '<span class="pf-tag main">ligada</span>' : ''}</div>${body}</div>`;
 }
+// Campo de senha com olhinho (mostrar/esconder)
+const EYE_ON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.5-.6 4.9-1.4"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+const pwIn = attrs => `<span class="pf-pw"><input type="password" class="pf-in" ${attrs}><button type="button" class="pf-eye" aria-label="Mostrar senha">${EYE_ON}</button></span>`;
+document.addEventListener('click', e => {
+  const b = e.target.closest('.pf-eye');
+  if (!b) return;
+  const i = b.previousElementSibling, show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  b.innerHTML = show ? EYE_OFF : EYE_ON;
+  b.setAttribute('aria-label', show ? 'Esconder senha' : 'Mostrar senha');
+});
 function syncPassForm(form, title, note, twice, withCode) {
   return `<form data-form="${form}" style="display:grid;gap:12px">
     <div class="pf-card-h"><h2>${title}</h2><button type="button" class="pf-x" data-act="sheetclose" aria-label="Fechar">×</button></div>
     <p class="pf-card-note" style="margin:0">${note}</p>
     ${withCode ? '<input name="code" class="pf-in" placeholder="Chave (ABCD-EFGH-…)" autocomplete="off" autocapitalize="characters" spellcheck="false">' : ''}
-    <input name="p1" type="password" class="pf-in" placeholder="Senha${twice ? ' (mínimo 8)' : ''}" autocomplete="${twice ? 'new-password' : 'current-password'}">
-    ${twice ? '<input name="p2" type="password" class="pf-in" placeholder="Repita a senha" autocomplete="new-password">' : ''}
+    ${pwIn(`name="p1" placeholder="Senha${twice ? ' (mínimo 8)' : ''}" autocomplete="${twice ? 'new-password' : 'current-password'}"`)}
+    ${twice ? pwIn('name="p2" placeholder="Repita a senha" autocomplete="new-password"') : ''}
     <div class="pf-actions"><button class="pf-btn">${twice ? 'Ligar' : 'Continuar'}</button><button type="button" class="pf-btn ghost" data-act="sheetclose">Cancelar</button></div>
   </form>`;
 }
