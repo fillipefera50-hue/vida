@@ -368,7 +368,7 @@
     <div class="pf-topbar">
       <button class="pf-brand" data-go="geral" id="brand">
         <div class="pf-logo"><i class="mk"></i></div>
-        <div><strong>Fillipe</strong><span>Painel geral</span></div>
+        <div><strong>Seu nome</strong><span>Painel geral</span></div>
       </button>
       <button class="pf-dotsbtn" id="dotsbtn" data-act="menu" aria-label="Abas" aria-expanded="false"></button>
     </div>
@@ -492,7 +492,8 @@ const LOGOS = {
   picpay: { bg: '#21C25E', fg: '#fff', t: 'P' },
   inter: { bg: '#FF7A00', fg: '#fff', t: 'inter' },
 };
-const SEED = [['nu', 'Nubank Pessoal'], ['nupj', 'Nubank PJ'], ['infinite', 'InfinitePay'], ['itau', 'Itaú'], ['picpay', 'PicPay'], ['inter', 'Inter']];
+// bancos que já vêm cadastrados pra quem instala agora (quem já usava continua com os seus)
+const SEED = [['nu', 'Nubank'], ['itau', 'Itaú'], ['inter', 'Inter'], ['picpay', 'PicPay']];
 
 // ---------- Dados (ficam salvos no próprio aparelho) ----------
 const KEY = 'vida-app';
@@ -520,7 +521,7 @@ function sanitize(o) {
 }
 function fixData() {
   sanitize(S);
-  S.cfg = Object.assign({ name: 'Fillipe', accent: 'orange', main: 'nu', theme: 'dark', hideVals: false, limit: 0,
+  S.cfg = Object.assign({ name: '', accent: 'orange', main: 'nu', theme: 'dark', hideVals: false, limit: 0,
     hiddenBanks: [], hiddenTabs: [], catsOut: CAT_OUT.slice(), catsIn: CAT_IN.slice(), colorNames: { ...COLOR_NAMES }, lastBackup: '' }, S.cfg || {});
   if (!S.bills) S.bills = [];
   if (!S.debts) S.debts = [];
@@ -528,7 +529,10 @@ function fixData() {
   if (!S.habits) S.habits = [];
   if (!S.sal) S.sal = []; // Salário: estimativas { src, cents, date, sure }
   if (!S.cfg.salMin) S.cfg.salMin = 200000; // mínimo do salário: R$ 2.000
-  if (!Array.isArray(S.cfg.salSrc)) S.cfg.salSrc = []; // fontes de renda criadas com nome livre
+  if (!Array.isArray(S.cfg.salSrc)) S.cfg.salSrc = []; // fontes de renda (nome livre); cada pessoa cria as suas
+  // as antigas fontes fixas (Origyn, Entregas, Tattoo) viram fontes normais pra quem já usava o app
+  if (S.seeded && !S.cfg.salSrcV2) S.cfg.salSrc = [...new Set(['Origyn', 'Entregas', 'Tattoo', ...S.cfg.salSrc])];
+  S.cfg.salSrcV2 = 1;
   if (!S.tasks) S.tasks = [];
   if (!S.days) S.days = {}; // dias abertos no botão VIDA: { 'AAAA-MM-DD': { start: 'HH:MM' } }
   // Conhecimento: na 1ª vez já vem com o que estava no vault (livros, frase, quadros, curso)
@@ -542,11 +546,11 @@ function fixData() {
     courses: [{ id: 'c0', title: 'After e Premiere', lessons: [{ id: 'l0', t: 'P01 · Interface e workspaces do Premiere', done: false, doneAt: '' }] }],
   };
   if (!S.know.niches) S.know.niches = []; // abas criadas em Conhecimento (jogos, filmes, séries…)
-  if (!S.cfg.workKinds) S.cfg.workKinds = ['Entrega', 'Tatuagem', 'Origyn'];
+  if (!S.cfg.workKinds) S.cfg.workKinds = ['Trabalho'];
   // faixas do "guardar primeiro": a regra de Morar sozinho
   if (!S.cfg.tiers) S.cfg.tiers = { goal: (S.goals.find(g => /morar/i.test(g.title)) || {}).id || '', bank: '',
     list: [[5000, 25], [10000, 35], [20000, 40], [50000, 50]].map(([from, pct], i) => ({ id: 'r' + i, from, pct })) };
-  // Primeira vez: já cadastra os bancos do Fillipe. Todo banco tem "em conta" e "guardado".
+  // Primeira vez: já cadastra uns bancos comuns (SEED). Todo banco tem "em conta" e "guardado".
   if (!S.seeded) {
     for (const [id, name] of SEED) if (!S.banks.some(b => b.id === id)) S.banks.push({ id, name, logo: id, initConta: 0, initGuard: 0 });
     S.seeded = true;
@@ -1480,9 +1484,8 @@ function vExtratos() {
 }
 
 // ---------- Salário: o que espero ganhar (certo ou talvez) contra as contas do mês ----------
-const SAL_SRC = ['Origyn', 'Entregas', 'Tattoo'];
-// Fontes: as 3 fixas + as que a pessoa criar (nome livre, ex: outra pessoa usando o app)
-const salSrcs = () => [...new Set([...SAL_SRC, ...S.cfg.salSrc, ...S.sal.map(i => i.src)])];
+// Fontes: as que a pessoa criou (nome livre) + as que já têm valor lançado
+const salSrcs = () => [...new Set([...S.cfg.salSrc, ...S.sal.map(i => i.src)])];
 function vSalario() {
   const t = today(), cur = t.slice(0, 7), sm = U.sm || cur, [sy, smm] = sm.split('-').map(Number);
   const mesNome = MESES[smm - 1] + (sy !== new Date().getFullYear() ? ' ' + sy : '');
@@ -1490,7 +1493,7 @@ function vSalario() {
   const sure = list.filter(i => i.sure).reduce((s, i) => s + i.cents, 0), maybe = list.filter(i => !i.sure).reduce((s, i) => s + i.cents, 0);
   const contas = billsInMonth(sm).reduce((s, i) => s + i.b.cents, 0), min = S.cfg.salMin;
   const falta = Math.max(0, min - sure), sobra = sure - contas, sobraT = sure + maybe - contas;
-  const srcs = salSrcs(), bySrc = srcs.map(src => [src, list.filter(i => i.src === src).reduce((s, i) => s + i.cents, 0)]).filter(([s, c]) => c || SAL_SRC.includes(s));
+  const srcs = salSrcs(), bySrc = srcs.map(src => [src, list.filter(i => i.src === src).reduce((s, i) => s + i.cents, 0)]).filter(([s, c]) => c || S.cfg.salSrc.includes(s));
   const nav = `<button class="pf-arrow" data-act="smshift" data-v="-1" aria-label="Mês anterior">${IC.left}</button><b>${mesNome}</b><button class="pf-arrow" data-act="smshift" data-v="1" aria-label="Próximo mês">${IC.right}</button>`;
   const row = i => `<div class="pf-tx"><span class="t">${esc(i.src)}<small>${fmtD(i.date)}</small></span><span class="v pos">${brl(i.cents)}</span>
     <button class="pf-tag ${i.sure ? 'ok' : 'late'}" data-act="saltg" data-id="${i.id}" title="Trocar certeza" style="border:0;cursor:pointer;${i.sure ? '' : 'background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber)'}">${i.sure ? 'certo' : 'talvez'}</button>
@@ -2375,7 +2378,7 @@ function vConfig() {
     <form class="pf-card" data-form="cfg">
       <div class="pf-card-h"><h2>Geral</h2><span class="pf-ico">${IC.config}</span></div>
       <span class="pf-lbl">Meu nome</span>
-      <input name="name" class="pf-in" value="${esc(c.name)}" autocomplete="off">
+      <input name="name" class="pf-in" value="${esc(c.name)}" placeholder="Seu nome" autocomplete="off">
       <span class="pf-lbl">Banco principal</span>
       <select name="main" class="pf-in">${banksOrdered().map(b => `<option value="${b.id}" ${b.id === c.main ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
       <span class="pf-lbl">Limite de gasto por mês</span>
@@ -2648,7 +2651,7 @@ function render() {
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name=theme-color]').content = theme === 'light' ? '#ffffff' : '#000000';
   tintIcon(S.cfg.accent);
-  $('#brand strong').textContent = S.cfg.name;
+  $('#brand strong').textContent = S.cfg.name || 'Seu nome'; // sem nome: convida a pôr em Configurações
   $('#themebtn').innerHTML = theme === 'light' ? IC.moon : IC.sun;
   $('#eye').innerHTML = S.cfg.hideVals ? IC.eyeOff : IC.eye;
   $('#eye').setAttribute('aria-pressed', S.cfg.hideVals);
@@ -3308,7 +3311,7 @@ document.addEventListener('submit', e => {
       toast('Banco adicionado');
     },
     cfg() {
-      S.cfg.name = d.name.trim() || 'Fillipe';
+      S.cfg.name = d.name.trim();
       if (d.main && d.main !== S.cfg.main) {
         S.cfg.main = d.main;
         S.cfg.hiddenBanks = S.cfg.hiddenBanks.filter(x => x !== d.main);
