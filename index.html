@@ -3344,7 +3344,7 @@ document.addEventListener('submit', e => {
 var SYNC_KEY = 'vida-sync', SYNC_META = 'vida-sync-meta';
 var SYNC_LISTS = ['banks', 'tx', 'bills', 'debts', 'shop', 'events', 'goals', 'habits', 'tasks', 'sal'];
 var SYNC_KNOW = ['books', 'quotes', 'frames', 'courses', 'niches'];
-var SYNC_WAIT = 60000; // junta as alterações e grava no máximo 1 vez por minuto (limite grátis do Cloudflare)
+var SYNC_WAIT = 15000; // junta as alterações e grava no máximo 1 vez a cada 15 s (MIN_GAP do vida-push; limite grátis do Cloudflare)
 var SYNC_SERVER = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8787' : PUSH_SERVER; // teste local: wrangler dev
 var syncTimer2 = null, syncBusy = false, syncKeyMem = null, syncPend = null, syncPendCode = '';
 
@@ -3699,6 +3699,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) { if (c.dirty) syncRun(); } // saiu do app: manda o que estava esperando
   else if (Date.now() - (c.at || 0) > 30000) syncLater(1000);
 });
+// app aberto na tela (PC com a aba parada): busca a nuvem a cada 2 min, senão o que foi lançado no celular só aparece ao reabrir
+setInterval(() => { if (syncCfg().on && !document.hidden) syncRun(); }, 120000);
 if (S.cfg.pin) lock();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
 </script>
