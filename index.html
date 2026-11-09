@@ -453,9 +453,18 @@ function vPainel() {
       ${m.e ? `<div class="track" style="margin-top:10px"><div class="fill" style="width:${pct.toFixed(1)}%"></div></div><span class="note">${pct.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% do que entrou já saiu</span>` : ''}</div>
     <div class="grid2"><div class="card"><span class="label">Entrou</span><span class="mid pos">${brl(m.e)}</span></div><div class="card"><span class="label">Saiu</span><span class="mid neg">${brl(m.s)}</span></div></div>
     ${m.g || m.r ? `<div class="card"><div class="row base"><span class="label">Guardado no mês</span><span class="mid save">${brl(m.g - m.r)}</span></div></div>` : ''}
+    ${bancosCard()}
     ${meta ? metaCard(meta, true) : ''}
     ${prox.length ? `<div class="card tight">${prox.map(x => `<div class="item"><div class="t"><span>${esc(x.nome)}</span><small class="acc">${quando(x.d)}</small></div><span class="val">${brl(x.v)}</span></div>`).join('')}</div>` : ''}
     <div class="form"><span class="label">Últimos lançamentos</span>${m.l.length ? `<div class="card tight">${[...m.l].reverse().slice(0, 6).map(lancItem).join('')}</div>` : '<span class="note">Nada lançado este mês.</span>'}</div>`;
+}
+// Bancos: quanto tem em conta e guardado em cada um (o Claude ajusta quando ele conta o saldo real)
+function bancosCard() {
+  const bs = (F && F.bancos) || [];
+  if (!bs.length) return '';
+  const v = (n, cls) => typeof n === 'number' ? `<span class="val ${cls}">${brl(n)}</span>` : '<span class="val dim">a confirmar</span>';
+  return `<div class="form"><span class="label">Bancos</span><div class="card tight">${bs.map(b => `<div class="item"><div class="t"><span>${esc(b.nome)}</span>${b.uso ? `<small>${esc(b.uso)}</small>` : ''}</div>
+    <div class="t" style="align-items:flex-end;text-align:right"><small>em conta</small>${v(b.conta, '')}<small style="margin-top:4px">guardado</small>${v(b.guardado, 'save')}</div></div>`).join('')}</div></div>`;
 }
 function vSalario() {
   const ym = today().slice(0, 7), m = mesStats(ym), sal = (F && F.salario) || {}, min = sal.minimo || 0;
@@ -650,7 +659,7 @@ function sheetAjustes() {
       ${!s.on ? `<form class="form" data-form="syncjoin"><input name="code" class="in" placeholder="Sua chave (XXXX-XXXX-…)" autocomplete="off" aria-label="Chave"><input name="pass" class="in" type="password" placeholder="Senha" aria-label="Senha"><button class="btn small">Ligar neste aparelho</button></form>`
         : s.err === 'senha' ? `<form class="inline" data-form="syncpass"><input name="pass" class="in" type="password" placeholder="Senha" aria-label="Senha"><button class="btn small">Ok</button></form>`
         : `<button class="btn ghost small" data-act="syncnow" style="align-self:flex-start">Sincronizar agora</button>`}</div>
-    <span class="note">App Vida v21.</span>`;
+    <span class="note">App Vida v22.</span>`;
 }
 
 // ---------- Montagem ----------
