@@ -441,8 +441,8 @@ function mesStats(ym) {
 // contas que vencem no mês: fixas + únicas + parcela do mês
 function contasMes(ym) {
   const c = (F && F.contas) || {}, out = [];
-  for (const x of c.fixas || []) out.push({ nome: x.nome, v: x.v, d: ym + '-' + pad(x.dia), pago: (x.pagos || []).includes(ym), tipo: 'fixa' });
-  for (const x of c.unicas || []) if ((x.venc || '').startsWith(ym)) out.push({ nome: x.nome, v: x.v, d: x.venc, pago: !!x.pago, conferir: x.conferir, tipo: 'única' });
+  for (const x of c.fixas || []) out.push({ nome: x.nome, v: x.v, d: ym + '-' + pad(x.dia), pago: (x.pagos || []).includes(ym), tipo: 'fixa', prio: x.prio });
+  for (const x of c.unicas || []) if ((x.venc || '').startsWith(ym)) out.push({ nome: x.nome, v: x.v, d: x.venc, pago: !!x.pago, conferir: x.conferir, tipo: 'única', prio: x.prio });
   for (const x of c.parcelas || []) {
     const i = monthsBetween(x.primeira, ym);
     if (i >= 0 && i < x.valores.length) out.push({ nome: `${x.nome} (${i + 1}/${x.valores.length})`, v: x.valores[i], d: ym + '-' + pad(x.dia), pago: i < x.pagas, conferir: x.conferir, tipo: 'parcela' });
@@ -503,6 +503,7 @@ function vContas() {
   const item = x => `<div class="item"><div class="t"><span>${esc(x.nome)}</span><small class="${x.pago ? 'pos' : x.d < today() ? 'neg' : x === prox ? 'acc' : ''}">${x.pago ? 'pago' : quando(x.d)}${x.conferir && !x.pago ? ' · a conferir' : ''}</small></div><span class="val ${x.pago ? 'dim' : 'neg'}">${brl(x.v)}</span></div>`;
   return `<div class="hero"><span class="label">Falta pagar este mês</span><span class="big">${brl(aberto)}</span>
       <span class="note">fixas: ${brl(fixas)} por mês${prox ? ' · próxima: ' + esc(prox.nome) + ', ' + quando(prox.d) : ''}</span></div>
+    ${(() => { const p = l.filter(x => x.prio && !x.pago).sort((a, b) => a.prio - b.prio || a.d.localeCompare(b.d)); return p.length ? `<div class="form"><span class="label">Ordem pra pagar</span><div class="card tight">${p.map((x, i) => `<div class="item"><div class="t"><span><b class="acc">${i + 1}.</b> ${esc(x.nome)}</span><small>${x.prio === 1 ? 'mais importante' : 'depois'} · ${quando(x.d)}${x.conferir ? ' · a conferir' : ''}</small></div><span class="val neg">${brl(x.v)}</span></div>`).join('')}</div></div>` : ''; })()}
     ${F && F.notas && F.notas.contas ? `<span class="note">${esc(F.notas.contas)}</span>` : ''}
     ${['fixa', 'única', 'parcela'].map(t => { const g = l.filter(x => x.tipo === t); return g.length ? `<div class="form"><span class="label">${{ fixa: 'Fixas', 'única': 'Do mês', parcela: 'Parcelas do mês' }[t]}</span><div class="card tight">${g.map(item).join('')}</div></div>` : ''; }).join('')}
     ${(c.parcelas || []).length ? `<div class="form"><span class="label">Parcelamentos</span>${c.parcelas.map(p => `<div class="card"><div class="row base"><span style="font-size:15px">${esc(p.nome)}</span><span class="note">${p.pagas} de ${p.valores.length} pagas · falta ${brl(p.valores.slice(p.pagas).reduce((a, v) => a + v, 0))}</span></div><div class="track"><div class="fill" style="width:${p.pagas / p.valores.length * 100}%"></div></div></div>`).join('')}</div>` : ''}`;
@@ -709,7 +710,7 @@ function sheetAjustes() {
         <input name="a" class="in" type="password" inputmode="numeric" maxlength="6" placeholder="${cfg().pin ? 'Senha nova (vazio = tirar a senha)' : 'Senha nova'}" aria-label="Senha nova">
         <input name="b" class="in" type="password" inputmode="numeric" maxlength="6" placeholder="Repita a senha nova" aria-label="Repita a senha nova">
         <button class="btn small" style="align-self:flex-start">${cfg().pin ? 'Trocar ou tirar' : 'Criar senha'}</button></form></div>
-    <span class="note">App Vida v23.</span>`;
+    <span class="note">App Vida v24.</span>`;
 }
 
 // ---------- Montagem ----------
