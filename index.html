@@ -124,12 +124,27 @@ nav.bottom button.on { color: var(--accent); font-weight: 600; }
 .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 6px 12px; }
 .status i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: block; }
 .status i.bad { background: var(--red); } .status i.off { background: var(--muted); }
+/* senha pra entrar */
+#lock { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 24px; }
+#lock[hidden] { display: none; }
+#lock h2 { margin: 0; font-family: var(--head); font-size: 22px; }
+#dots { display: flex; gap: 14px; height: 16px; }
+#dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-2); display: block; }
+#dots i.on { background: var(--accent); border-color: var(--accent); }
+#dots.shake { animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.keys { display: grid; grid-template-columns: repeat(3, 72px); gap: 16px; }
+.keys button { width: 72px; height: 72px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--card); font-family: var(--head); font-size: 26px; cursor: pointer; }
+.keys button:active { background: var(--accent); color: #000; }
+.keys .blank { visibility: hidden; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <nav class="bottom" id="nav"></nav>
 <div id="sheet"></div>
+<div id="lock" hidden><h2>Vida</h2><span class="label">Digite sua senha</span><div id="dots"></div>
+  <div class="keys"><button data-pin="1">1</button><button data-pin="2">2</button><button data-pin="3">3</button><button data-pin="4">4</button><button data-pin="5">5</button><button data-pin="6">6</button><button data-pin="7">7</button><button data-pin="8">8</button><button data-pin="9">9</button><span class="blank"></span><button data-pin="0">0</button><button data-pin="del" aria-label="Apagar">⌫</button></div></div>
 <script>
 'use strict';
 // App Vida (v21): só pra olhar. Dinheiro, metas e recap vêm do Claude (feed cifrado no vida-push, chave própria).
@@ -646,6 +661,34 @@ function sheetNiche(id) {
     <button class="btn danger" data-act="nichedel" data-id="${esc(n.id)}">Apagar aba e tudo dentro dela</button>`;
 }
 
+// ---------- Senha pra entrar (mesma do app antigo: S.cfg.pin, 4 a 6 números) ----------
+function hashPin(p) {
+  let h = 2166136261 >>> 0;
+  const s = 'vida-app:' + p;
+  for (let r = 0; r < 800; r++) for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i) + r; h = Math.imul(h, 16777619) >>> 0; }
+  return h.toString(16);
+}
+const cfg = () => (S.cfg && typeof S.cfg === 'object') ? S.cfg : (S.cfg = {});
+const LOCK_AFTER = 60000; // fora do app por mais de 1 minuto: pede a senha de novo
+let pinBuf = '', hiddenAt = 0;
+function drawDots() { $('#dots').innerHTML = [...Array(cfg().pinLen || 4)].map((_, i) => `<i class="${i < pinBuf.length ? 'on' : ''}"></i>`).join(''); }
+function lock() { if (!cfg().pin) return; pinBuf = ''; $('#lock').hidden = false; drawDots(); }
+function pinKey(k) {
+  const n = cfg().pinLen || 4;
+  if (k === 'del') pinBuf = pinBuf.slice(0, -1); else if (pinBuf.length < n) pinBuf += k;
+  drawDots();
+  if (pinBuf.length === n) {
+    if (hashPin(pinBuf) === cfg().pin) { $('#lock').hidden = true; pinBuf = ''; }
+    else { const d = $('#dots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); setTimeout(() => { pinBuf = ''; drawDots(); }, 350); }
+  }
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-pin]'); if (b) pinKey(b.dataset.pin); });
+document.addEventListener('keydown', e => { if ($('#lock').hidden) return; if (/^\d$/.test(e.key)) pinKey(e.key); else if (e.key === 'Backspace') pinKey('del'); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (cfg().pin && $('#lock').hidden && Date.now() - hiddenAt > LOCK_AFTER) lock();
+});
+
 // ---------- Ajustes ----------
 function sheetAjustes() {
   const f = feedCfg(), s = syncCfg(), quando2 = t => t ? new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'nunca';
@@ -659,7 +702,14 @@ function sheetAjustes() {
       ${!s.on ? `<form class="form" data-form="syncjoin"><input name="code" class="in" placeholder="Sua chave (XXXX-XXXX-…)" autocomplete="off" aria-label="Chave"><input name="pass" class="in" type="password" placeholder="Senha" aria-label="Senha"><button class="btn small">Ligar neste aparelho</button></form>`
         : s.err === 'senha' ? `<form class="inline" data-form="syncpass"><input name="pass" class="in" type="password" placeholder="Senha" aria-label="Senha"><button class="btn small">Ok</button></form>`
         : `<button class="btn ghost small" data-act="syncnow" style="align-self:flex-start">Sincronizar agora</button>`}</div>
-    <span class="note">App Vida v22.</span>`;
+    <div class="card"><div class="row"><span style="font-weight:600">Senha pra entrar</span><span class="status"><i class="${cfg().pin ? '' : 'off'}"></i>${cfg().pin ? 'ligada' : 'desligada'}</span></div>
+      <span class="note">De 4 a 6 números. Pede de novo quando você sai do app por mais de 1 minuto.</span>
+      <form class="form" data-form="pin">
+        ${cfg().pin ? '<input name="old" class="in" type="password" inputmode="numeric" maxlength="6" placeholder="Senha atual" aria-label="Senha atual">' : ''}
+        <input name="a" class="in" type="password" inputmode="numeric" maxlength="6" placeholder="${cfg().pin ? 'Senha nova (vazio = tirar a senha)' : 'Senha nova'}" aria-label="Senha nova">
+        <input name="b" class="in" type="password" inputmode="numeric" maxlength="6" placeholder="Repita a senha nova" aria-label="Repita a senha nova">
+        <button class="btn small" style="align-self:flex-start">${cfg().pin ? 'Trocar ou tirar' : 'Criar senha'}</button></form></div>
+    <span class="note">App Vida v23.</span>`;
 }
 
 // ---------- Montagem ----------
@@ -762,6 +812,13 @@ const FORM = {
     try { await syncJoin(code, d.pass); toast('Sincronização ligada'); } catch (e) { alert(SYNC_ERR[e.message] || 'Não consegui falar com o servidor. Tem internet?'); }
     render();
   },
+  pin(d) {
+    if (cfg().pin && hashPin(d.old || '') !== cfg().pin) return toast('Senha atual errada');
+    if (cfg().pin && !d.a && !d.b) { delete cfg().pin; delete cfg().pinLen; toast('Senha tirada'); return true; }
+    if (!/^\d{4,6}$/.test(d.a)) return toast('A senha precisa ter de 4 a 6 números');
+    if (d.a !== d.b) return toast('As duas senhas não são iguais');
+    cfg().pin = hashPin(d.a); cfg().pinLen = d.a.length; toast('Senha salva'); return true;
+  },
   async syncpass(d) { try { await syncRepass(d.pass); toast('Senha certa'); } catch (e) { alert(SYNC_ERR[e.message] || 'Sem conexão.'); } render(); },
 };
 document.addEventListener('click', e => {
@@ -788,9 +845,10 @@ document.addEventListener('change', async e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && U.sheet) { U.sheet = null; render(); } });
 
 // ---------- Início ----------
+lock();
 feedFromHash();
 render();
-feedLoad();
+feedLoad(true);
 if (syncCfg().on) syncRun();
 setInterval(() => { if (document.visibilityState === 'visible') { feedLoad(); if (syncCfg().on) syncRun(); } }, 120000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { feedLoad(); if (syncCfg().on) syncRun(); } });
