@@ -441,7 +441,7 @@ function mesStats(ym) {
 // contas que vencem no mês: fixas + únicas + parcela do mês
 function contasMes(ym) {
   const c = (F && F.contas) || {}, out = [];
-  for (const x of c.fixas || []) out.push({ nome: x.nome, v: x.v, d: ym + '-' + pad(x.dia), pago: (x.pagos || []).includes(ym), tipo: 'fixa', prio: x.prio });
+  for (const x of c.fixas || []) out.push({ nome: x.nome, v: x.v, d: ym + '-' + pad(x.dia), pago: (x.pagos || []).includes(ym), tipo: 'fixa', prio: x.prio, cartao: x.cartao });
   for (const x of c.unicas || []) if ((x.venc || '').startsWith(ym)) out.push({ nome: x.nome, v: x.v, d: x.venc, pago: !!x.pago, conferir: x.conferir, tipo: 'única', prio: x.prio });
   for (const x of c.parcelas || []) {
     const i = monthsBetween(x.primeira, ym);
@@ -461,10 +461,20 @@ const noFeed = () => `<div class="card empty">Ainda não tem dados do Claude nes
 
 // ---------- Telas: Dinheiro ----------
 const DIN = [['painel', 'Painel'], ['salario', 'Salário'], ['contas', 'Contas'], ['metas', 'Metas'], ['historico', 'Histórico']];
+const proxYm = ym => { const y = +ym.slice(0, 4), mo = +ym.slice(5, 7); return mo === 12 ? `${y + 1}-01` : `${y}-${pad(mo + 1)}`; };
 function vPainel() {
   const ym = today().slice(0, 7), m = mesStats(ym), pct = m.e ? Math.min(100, m.s / m.e * 100) : 0;
   const meta = ((F && F.metas) || [])[0], prox = contasMes(ym).filter(x => !x.pago && x.d >= today()).slice(0, 3);
-  return `<div class="hero"><span class="label">Saldo do mês</span><span class="big">${brl(m.saldo)}</span>
+  const bs = (F && F.bancos) || [], num = k => bs.reduce((a, b) => a + (typeof b[k] === 'number' ? b[k] : 0), 0);
+  const conta = num('conta'), limite = num('limite'), nxt = proxYm(ym);
+  // conta no cartão de crédito não sai da conta agora: vai pra fatura do mês que vem
+  const falta = contasMes(ym).filter(x => !x.pago && !x.cartao).reduce((a, x) => a + x.v, 0);
+  const vem = contasMes(nxt).filter(x => !x.pago && !x.cartao).reduce((a, x) => a + x.v, 0) + contasMes(ym).filter(x => x.cartao).reduce((a, x) => a + x.v, 0);
+  return `<div class="hero"><span class="label">Dinheiro em conta</span><span class="big">${brl(conta)}</span>
+      ${limite ? `<span class="note">limite disponível: <b>${brl(limite)}</b></span>` : ''}</div>
+    <div class="card"><div class="row base"><span class="label">Pra gastar</span><span class="mid ${conta - falta < 0 ? 'neg' : 'pos'}">${brl(conta - falta)}</span></div><span class="note">em conta menos o que falta pagar este mês</span></div>
+    <div class="grid2"><div class="card"><span class="label">Falta pagar este mês</span><span class="mid neg">${brl(falta)}</span></div><div class="card"><span class="label">Pagar em ${mesAno(nxt).split(' ')[0].toLowerCase()}</span><span class="mid neg">${brl(vem)}</span></div></div>
+    <div class="hero" style="margin-top:6px"><span class="label">Saldo do mês</span><span class="mid">${brl(m.saldo)}</span>
       ${m.e ? `<div class="track" style="margin-top:10px"><div class="fill" style="width:${pct.toFixed(1)}%"></div></div><span class="note">${pct.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% do que entrou já saiu</span>` : ''}</div>
     <div class="grid2"><div class="card"><span class="label">Entrou</span><span class="mid pos">${brl(m.e)}</span></div><div class="card"><span class="label">Saiu</span><span class="mid neg">${brl(m.s)}</span></div></div>
     ${m.g || m.r ? `<div class="card"><div class="row base"><span class="label">Guardado no mês</span><span class="mid save">${brl(m.g - m.r)}</span></div></div>` : ''}
@@ -479,7 +489,7 @@ function bancosCard() {
   if (!bs.length) return '';
   const v = (n, cls) => typeof n === 'number' ? `<span class="val ${cls}">${brl(n)}</span>` : '<span class="val dim">a confirmar</span>';
   return `<div class="form"><span class="label">Bancos</span><div class="card tight">${bs.map(b => `<div class="item"><div class="t"><span>${esc(b.nome)}</span>${b.uso ? `<small>${esc(b.uso)}</small>` : ''}</div>
-    <div class="t" style="align-items:flex-end;text-align:right"><small>em conta</small>${v(b.conta, '')}<small style="margin-top:4px">guardado</small>${v(b.guardado, 'save')}</div></div>`).join('')}</div></div>`;
+    <div class="t" style="align-items:flex-end;text-align:right"><small>em conta</small>${v(b.conta, '')}${b.guardado ? `<small style="margin-top:4px">guardado</small>${v(b.guardado, 'save')}` : ''}${b.limite ? `<small style="margin-top:4px">limite</small>${v(b.limite, 'dim')}` : ''}</div></div>`).join('')}</div></div>`;
 }
 function vSalario() {
   const ym = today().slice(0, 7), m = mesStats(ym), sal = (F && F.salario) || {}, min = sal.minimo || 0;
